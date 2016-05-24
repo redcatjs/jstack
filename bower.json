@@ -1,0 +1,31 @@
+{
+	"name": "jstack",
+	"main": "jstack.js",
+	"dependencies": {
+		"js": "latest",
+		"jquery": "latest"
+	},
+	"homepage": "https://github.com/redcatphp/jstack",
+	"description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery ",
+	"moduleType": [],
+	"keywords": [
+		"mvc",
+		"route",
+		"template",
+		"tmpl",
+		"data-binding",
+		"two-way data-binding",
+		"asynchronous"
+	],
+	"authors": [
+		"Jo Surikat <jo@surikat.pro>"
+	],
+	"license": "MIT",
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"tests"
+	]
+}

@@ -1,0 +1,29 @@
+concat builder: js/jstack/core.js,js/jstack/url.js,js/jstack/route.js,js/jstack/template.js,js/jstack/controller.js,js/jstack/watch.js,js/jstack/way.js,js/jstack/directive.js,js/jstack/directive-native.js,js/jstack/phpjs.uniqid.js,js/jstack/phpjs.trim.js,js/jstack/phpjs.ltrim.js,js/jstack/phpjs.rtrim.js,js/jstack/get-template.js,js/jstack/process-template.js,js/jstack/load-view.js,js/jstack/ajax.js,js/jstack/params-reflection.js,js/jstack/module-dom.js,js/jstack/helpers.js,js/jstack/jml.js,js/jstack/jsonml.js,js/jstack/string-prototyping.js,js/jstack/jquery-extend.js,js/jstack/jquery.serialize-object.js?src=1?src=1
+
+$js.alias('jstack',[
+	"jstack/core",
+	"jstack/url",
+	"jstack/route",
+	"jstack/template",
+	"jstack/controller",
+	"jstack/watch",
+	"jstack/way",
+	"jstack/directive",
+	"jstack/directive-native",
+	"jstack/phpjs.uniqid",
+	"jstack/phpjs.trim",
+	"jstack/phpjs.ltrim",
+	"jstack/phpjs.rtrim",
+	"jstack/get-template",
+	"jstack/process-template",
+	"jstack/load-view",
+	"jstack/ajax",
+	"jstack/params-reflection",
+	"jstack/module-dom",
+	"jstack/helpers",
+	"jstack/jml",
+	"jstack/jsonml",
+	"jstack/string-prototyping",
+	"jstack/jquery-extend",
+	"jstack/jquery.serialize-object"
+]);
