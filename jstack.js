@@ -1,3 +1,4 @@
+/* js/jstack/core.js */
 (function(w,$js,$){
 	w.jstack = (function(){
 		var j = function(){
@@ -9,6 +10,7 @@
 		return j;
 	})();
 })(window,$js,jQuery);
+/* js/jstack/url.js */
 jstack.url = (function(){
 	var Url = function(){};
 	var recursiveArrayToObject = function(o){
@@ -128,6 +130,7 @@ jstack.url = (function(){
 	};
 	return new Url();
 })();
+/* js/jstack/route.js */
 jstack.route = (function(w,url){
 	
 	var routes = [];
@@ -449,6 +452,7 @@ jstack.route = (function(w,url){
 	return routie;
 	 
 })(window,jstack.url);
+/* js/jstack/template.js */
 (function(w,j){
 	
 	j.templateVarSubstitutions = {};
@@ -508,6 +512,7 @@ jstack.route = (function(w,url){
 	};
 
 })(window,jstack);
+/* js/jstack/controller.js */
 (function(w,j){
 	var registry = {};
 	j.controller = function(id){
@@ -540,6 +545,7 @@ jstack.route = (function(w,url){
 	};
 
 })(window,jstack);
+/* js/jstack/watch.js */
 /*
  DEVELOPED BY GIL LOPES BUENO gilbueno.mail@gmail.com FORK: https://github.com/melanke/Watch.JS
  WORKS WITH: * IE8*, IE 9+, FF 4+, SF 5+, WebKit, CH 7+, OP 12+, BESEN, Rhino 1.7+, For IE8 (and other legacy browsers) WatchJS will use dirty checking  
@@ -1314,6 +1320,7 @@ jstack.route = (function(w,url){
 
     return WatchJS;
 }));
+/* js/jstack/way.js */
 /*
 jstack fork of http://gwendall.github.io/way/
 
@@ -2853,6 +2860,7 @@ jstack.way = (function () {
 	
 	return way;
 })();
+/* js/jstack/directive.js */
 (function(w,j,$){
 	var directives = {};
 	j.directive = function(id, fn){
@@ -2914,6 +2922,7 @@ jstack.way = (function () {
 	};
 	
 })(window,jstack,jQuery);
+/* js/jstack/directive-native.js */
 (function(w,j){
 	
 	j.directive('if',function(val,el){
@@ -3031,6 +3040,7 @@ jstack.way = (function () {
 	});
 	
 })(window,jstack);
+/* js/jstack/phpjs.uniqid.js */
 function uniqid(prefix, more_entropy) {
   //  discuss at: http://phpjs.org/functions/uniqid/
   // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -3090,6 +3100,7 @@ function uniqid(prefix, more_entropy) {
 
   return retId;
 }
+/* js/jstack/phpjs.trim.js */
 function trim (str, charlist){
   //  discuss at: http://locutusjs.io/php/trim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3158,6 +3169,7 @@ function trim (str, charlist){
 
   return whitespace.indexOf(str.charAt(0)) === -1 ? str : ''
 }
+/* js/jstack/phpjs.ltrim.js */
 function ltrim (str, charlist) {
   //  discuss at: http://locutusjs.io/php/ltrim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3175,6 +3187,7 @@ function ltrim (str, charlist) {
   return (str + '')
     .replace(re, '')
 }
+/* js/jstack/phpjs.rtrim.js */
 function rtrim (str, charlist) {
   //  discuss at: http://locutusjs.io/php/rtrim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3193,6 +3206,7 @@ function rtrim (str, charlist) {
 
   return (str + '').replace(re, '')
 }
+/* js/jstack/get-template.js */
 (function(w,j){
 	var templates = {};
 	var requests = {};
@@ -3240,6 +3254,7 @@ function rtrim (str, charlist) {
 	};
 	
 })(window,jstack);
+/* js/jstack/process-template.js */
 jstack.processTemplate = function(el, cacheId, templatesPath, debug){
 	if(typeof(debug)=='undefined') debug = $js.dev;
 	var defer = $.Deferred();
@@ -3251,6 +3266,7 @@ jstack.processTemplate = function(el, cacheId, templatesPath, debug){
 	});
 	return defer;
 };
+/* js/jstack/load-view.js */
 jstack.loadView = (function(){
 	return function(o){
 		var html = $('<tmpl>'+o.templateHtml+'</tmpl>');
@@ -3383,6 +3399,7 @@ jstack.loadView = (function(){
 		});
 	};
 })();
+/* js/jstack/ajax.js */
 (function($,j){
 	
 	var toParams = function(params) {
@@ -3525,6 +3542,7 @@ jstack.loadView = (function(){
 	};
 	
 })(jQuery,jstack);
+/* js/jstack/params-reflection.js */
 jstack.paramsReflection = function(f){
 	var args = f.toString().match(/^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/);
 	var r = {};
@@ -3545,6 +3563,7 @@ jstack.paramsReflection = function(f){
 	}
 	return r;
 };
+/* js/jstack/module-dom.js */
 (function(jstack){
 	
 	var moduleDomElement = function(module,el,attrNs){
@@ -3625,6 +3644,7 @@ jstack.paramsReflection = function(f){
 	};
 	
 })(jstack);
+/* js/jstack/helpers.js */
 jstack.replaceAllRegExp = function(str, find, replace){
   return str.replace(new RegExp(find, 'g'), replace);
 };
@@ -3651,6 +3671,7 @@ jstack.camelCaseDataToObject = function(k,v,r){
 	});
 	return r;
 };
+/* js/jstack/jml.js */
 jstack.jml = function(url,data){
 	if(!data) data = {};
 	var templatesPath = url.split('/');
@@ -3666,6 +3687,7 @@ jstack.jml = function(url,data){
 	});
 	return defer;
 };
+/* js/jstack/jsonml.js */
 /*jslint browser: true */
 /*global jQuery */
 
@@ -3787,6 +3809,7 @@ jstack.jml = function(url,data){
 
 // vim: set ai ts=2 sw=2 et:
 
+/* js/jstack/string-prototyping.js */
 String.prototype.trim = function(charlist){
 	return trim(this,charlist);
 };
@@ -3819,6 +3842,7 @@ String.prototype.lcfirst = function(){
 String.prototype.ucfirst = function(){
 	return this.charAt(0).toUpperCase() + this.substr(1);
 };
+/* js/jstack/jquery-extend.js */
 (function($){
 	
 	$.fn.changeVal = function(v){
@@ -4040,6 +4064,7 @@ String.prototype.ucfirst = function(){
 	};
 
 })(jQuery)
+/* js/jstack/jquery.serialize-object.js */
 /**
  * jQuery serializeObject
  * @copyright 2014, macek <paulmacek@gmail.com>
