@@ -4063,7 +4063,7 @@ String.prototype.ucfirst = function(){
 		return bottomOffset - topOffset - this.offset().top;
 	};
 
-})(jQuery)
+})(jQuery);
 /* js/jstack/jquery.serialize-object.js */
 /**
  * jQuery serializeObject

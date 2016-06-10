@@ -218,4 +218,4 @@
 		return bottomOffset - topOffset - this.offset().top;
 	};
 
-})(jQuery)
+})(jQuery);
