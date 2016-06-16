@@ -3626,7 +3626,7 @@ jstack.paramsReflection = function(f){
 	};
 	
 	jstack.moduleDomNs = 'js';
-	jstack.moduleDomPath = 'js-module-dom/';
+	jstack.moduleDomPath = 'js/js-module-dom/';
 	jstack.moduleDom = function(prefixPath,attrNs){
 		if(!prefixPath)
 			prefixPath = jstack.moduleDomPath;
