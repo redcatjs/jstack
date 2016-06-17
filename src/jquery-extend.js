@@ -105,18 +105,20 @@
 	$.fn.findOrig = $.fn.find;
 	$.fn.find = function(selector){
 		
-		var fork, THIS = this;
-		$.each(findForks,function(k,v){
-			var i = selector.indexOf(':'+k);
-			if(i!==-1){
-				var l = k.length;
-				var selectorPart = selector.substr(0,i);
-				var param = selector.substr(i+l+2,selector.length-i-l-3);
-				fork = findForks[k].call(THIS,selectorPart,param);
-				return false;
-			}
-		});
-		if(fork) return fork;
+		if(typeof(selector)=='string'){
+			var fork, THIS = this;
+			$.each(findForks,function(k,v){
+				var i = selector.indexOf(':'+k);
+				if(i!==-1){
+					var l = k.length;
+					var selectorPart = selector.substr(0,i);
+					var param = selector.substr(i+l+2,selector.length-i-l-3);
+					fork = findForks[k].call(THIS,selectorPart,param);
+					return false;
+				}
+			});
+			if(fork) return fork;
+		}
 		
 		return this.findOrig(selector);
 	};
