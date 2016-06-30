@@ -259,7 +259,7 @@ jstack.route = (function(w,url){
 	
 	var getQuery = function(){
 		return url.getQuery(getHash());
-	}
+	};
 	var getPath = function(){
 		return url.getPath(getHash());
 	};

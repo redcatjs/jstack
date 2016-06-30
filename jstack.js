@@ -392,7 +392,7 @@ jstack.route = (function(w,url){
 	
 	var getQuery = function(){
 		return url.getQuery(getHash());
-	}
+	};
 	var getPath = function(){
 		return url.getPath(getHash());
 	};
@@ -554,6 +554,14 @@ jstack.route = (function(w,url){
 	lazy launch interval
 */
 
+/*
+ DEVELOPED BY GIL LOPES BUENO gilbueno.mail@gmail.com FORK: https://github.com/melanke/Watch.JS
+ WORKS WITH: * IE8*, IE 9+, FF 4+, SF 5+, WebKit, CH 7+, OP 12+, BESEN, Rhino 1.7+, For IE8 (and other legacy browsers) WatchJS will use dirty checking  
+ modifs by surikat 
+	put watch methods in jstack instead of window
+	lazy launch interval
+*/
+
 "use strict";
 (function (factory) {
 	jstack.watcher = factory();
@@ -648,7 +656,7 @@ jstack.route = (function(w,url){
 
         return copy;        
 
-    }
+    };
 
     var defineGetAndSet = function (obj, propName, getter, setter) {
         try {
@@ -705,8 +713,8 @@ jstack.route = (function(w,url){
             object:     obj,
             orig:       clone(obj[propName]),
             callback:   setter
-        }        
-    }
+        };        
+    };
     
     var watch = function () {
         if (isFunction(arguments[1])) {
@@ -842,23 +850,23 @@ jstack.route = (function(w,url){
 
     var timeouts = [],
         timerID = null;
-    function clearTimerID() {
+    var clearTimerID = function() {
         timerID = null;
         for(var i=0; i< timeouts.length; i++) {
             timeouts[i]();
         }
         timeouts.length = 0;
-    }
+    };
     var getTimerID= function () {
         if (!timerID)  {
             timerID = setTimeout(clearTimerID);
         }
         return timerID;
-    }
+    };
     var registerTimeout = function(fn) { // register function to be called on timeout
         if (timerID==null) getTimerID();
         timeouts[timeouts.length] = fn;
-    }
+    };
     
     // Track changes made to an array, object or an object's property 
     // and invoke callback with a single change object containing type, value, oldvalue and array splices
@@ -868,7 +876,7 @@ jstack.route = (function(w,url){
     var trackChange = function() {
         var fn = (isFunction(arguments[2])) ? trackProperty : trackObject ;
         fn.apply(this,arguments);
-    }
+    };
 
     // track changes made to an object and invoke callback with a single change object containing type, value and array splices
     var trackObject= function(obj, callback, recursive, addNRemove) {
@@ -880,7 +888,7 @@ jstack.route = (function(w,url){
                 lastTimerID = timerID;
                 change = {
                     type: 'update'
-                }
+                };
                 change['value'] = obj;
                 change['splices'] = null;
                 registerTimeout(function() {
@@ -911,10 +919,10 @@ jstack.route = (function(w,url){
                 };
             }
 
-        }  
+        };
         level = (recursive==true) ? undefined : 0;        
         watchAll(obj,fn, level, addNRemove);
-    }
+    };
     
     // track changes made to the property of an object and invoke callback with a single change object containing type, value, oldvalue and splices
     var trackProperty = function(obj,prop,callback,recursive, addNRemove) { 
@@ -922,20 +930,20 @@ jstack.route = (function(w,url){
             watchOne(obj,prop,function(prop, action, newvalue, oldvalue) {
                 var change = {
                     type: 'update'
-                }
+                };
                 change['value'] = newvalue;
                 change['oldvalue'] = oldvalue;
                 if (recursive && isObject(newvalue)||isArray(newvalue)) {
                     trackObject(newvalue,callback,recursive, addNRemove);
                 }               
                 callback.call(this,change);
-            },0)
+            },0);
             
             if (recursive && isObject(obj[prop])||isArray(obj[prop])) {
                 trackObject(obj[prop],callback,recursive, addNRemove);
             }                           
         }
-    }
+    };
     
     
     var defineWatcher = function (obj, prop, watcher, level) {
@@ -1131,13 +1139,13 @@ jstack.route = (function(w,url){
             var name = '__wjs_suspend__'+(prop!==undefined ? prop : '');
             obj.watchers[name] = true;
         }
-    }
+    };
     
     var isSuspended = function(obj, prop) {
         return obj.watchers 
                && (obj.watchers['__wjs_suspend__'] || 
                    obj.watchers['__wjs_suspend__'+prop]);
-    }
+    };
     
     // resumes preivously suspended watchers
     var resume = function(obj, prop) {
@@ -1145,7 +1153,7 @@ jstack.route = (function(w,url){
             delete obj.watchers['__wjs_suspend__'];
             delete obj.watchers['__wjs_suspend__'+prop];
         })
-    }
+    };
 
     var pendingTimerID = null;
     var addPendingChange = function(obj,prop, mode, newval, oldval) {
@@ -1174,7 +1182,7 @@ jstack.route = (function(w,url){
             pendingChanges = [];
             change = null;
         }        
-    }
+    };
 
     var loop = function(){		
         // check for new or deleted props
@@ -1248,7 +1256,7 @@ jstack.route = (function(w,url){
             }
         }
         return state;
-    }
+    };
     
     var pushToLengthSubjects = function(obj, prop, watcher, level){
 

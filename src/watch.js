@@ -100,7 +100,7 @@
 
         return copy;        
 
-    }
+    };
 
     var defineGetAndSet = function (obj, propName, getter, setter) {
         try {
@@ -157,8 +157,8 @@
             object:     obj,
             orig:       clone(obj[propName]),
             callback:   setter
-        }        
-    }
+        };        
+    };
     
     var watch = function () {
         if (isFunction(arguments[1])) {
@@ -294,23 +294,23 @@
 
     var timeouts = [],
         timerID = null;
-    function clearTimerID() {
+    var clearTimerID = function() {
         timerID = null;
         for(var i=0; i< timeouts.length; i++) {
             timeouts[i]();
         }
         timeouts.length = 0;
-    }
+    };
     var getTimerID= function () {
         if (!timerID)  {
             timerID = setTimeout(clearTimerID);
         }
         return timerID;
-    }
+    };
     var registerTimeout = function(fn) { // register function to be called on timeout
         if (timerID==null) getTimerID();
         timeouts[timeouts.length] = fn;
-    }
+    };
     
     // Track changes made to an array, object or an object's property 
     // and invoke callback with a single change object containing type, value, oldvalue and array splices
@@ -320,7 +320,7 @@
     var trackChange = function() {
         var fn = (isFunction(arguments[2])) ? trackProperty : trackObject ;
         fn.apply(this,arguments);
-    }
+    };
 
     // track changes made to an object and invoke callback with a single change object containing type, value and array splices
     var trackObject= function(obj, callback, recursive, addNRemove) {
@@ -332,7 +332,7 @@
                 lastTimerID = timerID;
                 change = {
                     type: 'update'
-                }
+                };
                 change['value'] = obj;
                 change['splices'] = null;
                 registerTimeout(function() {
@@ -363,10 +363,10 @@
                 };
             }
 
-        }  
+        };
         level = (recursive==true) ? undefined : 0;        
         watchAll(obj,fn, level, addNRemove);
-    }
+    };
     
     // track changes made to the property of an object and invoke callback with a single change object containing type, value, oldvalue and splices
     var trackProperty = function(obj,prop,callback,recursive, addNRemove) { 
@@ -374,20 +374,20 @@
             watchOne(obj,prop,function(prop, action, newvalue, oldvalue) {
                 var change = {
                     type: 'update'
-                }
+                };
                 change['value'] = newvalue;
                 change['oldvalue'] = oldvalue;
                 if (recursive && isObject(newvalue)||isArray(newvalue)) {
                     trackObject(newvalue,callback,recursive, addNRemove);
                 }               
                 callback.call(this,change);
-            },0)
+            },0);
             
             if (recursive && isObject(obj[prop])||isArray(obj[prop])) {
                 trackObject(obj[prop],callback,recursive, addNRemove);
             }                           
         }
-    }
+    };
     
     
     var defineWatcher = function (obj, prop, watcher, level) {
@@ -583,13 +583,13 @@
             var name = '__wjs_suspend__'+(prop!==undefined ? prop : '');
             obj.watchers[name] = true;
         }
-    }
+    };
     
     var isSuspended = function(obj, prop) {
         return obj.watchers 
                && (obj.watchers['__wjs_suspend__'] || 
                    obj.watchers['__wjs_suspend__'+prop]);
-    }
+    };
     
     // resumes preivously suspended watchers
     var resume = function(obj, prop) {
@@ -597,7 +597,7 @@
             delete obj.watchers['__wjs_suspend__'];
             delete obj.watchers['__wjs_suspend__'+prop];
         })
-    }
+    };
 
     var pendingTimerID = null;
     var addPendingChange = function(obj,prop, mode, newval, oldval) {
@@ -626,7 +626,7 @@
             pendingChanges = [];
             change = null;
         }        
-    }
+    };
 
     var loop = function(){		
         // check for new or deleted props
@@ -700,7 +700,7 @@
             }
         }
         return state;
-    }
+    };
     
     var pushToLengthSubjects = function(obj, prop, watcher, level){
 
