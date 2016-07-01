@@ -1,4 +1,4 @@
-function ltrim (str, charlist) {
+function ltrim ( str, charlist ) {
   //  discuss at: http://locutusjs.io/php/ltrim/
   // original by: Kevin van Zonneveld (http://kvz.io)
   //    input by: Erkekjetter
@@ -7,11 +7,11 @@ function ltrim (str, charlist) {
   //   example 1: ltrim('    Kevin van Zonneveld    ')
   //   returns 1: 'Kevin van Zonneveld    '
 
-  charlist = !charlist ? ' \\s\u00A0' : (charlist + '')
-    .replace(/([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, '$1')
+  charlist = !charlist ? " \\s\u00A0" : ( charlist + "" )
+    .replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "$1" );
 
-  var re = new RegExp('^[' + charlist + ']+', 'g')
+  var re = new RegExp( "^[" + charlist + "]+", "g" );
 
-  return (str + '')
-    .replace(re, '')
+  return ( str + "" )
+    .replace( re, "" );
 }

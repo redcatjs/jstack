@@ -76,7 +76,7 @@ jstack.url = (function(){
 		var startPos = -1;
 		var endPos = -1;
 		var arrayName = '';
-		var arrayKey = '':
+		var arrayKey = '';
 		for ( var i = 0; i < str.length; i++) {
 			this.buildParamFromString(str[i]);
 		}

@@ -1,11 +1,9 @@
-(function(w,$js,$){
-	w.jstack = (function(){
-		var j = function(){
-			
+( function( w, $js, $ ) {
+	w.jstack = ( function() {
+		var j = function() {
+
 		};
-		
-		
-		
+
 		return j;
-	})();
-})(window,$js,jQuery);
+	} )();
+} )( window, $js, jQuery );

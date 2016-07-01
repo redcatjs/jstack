@@ -1,32 +1,32 @@
-(function(w,j){
+( function( w, j ) {
 	var registry = {};
-	j.controller = function(id){
-		var fn,sync,deps = true;
-		for(var i = 0; i < arguments.length; i++){
-			switch(typeof(arguments[i])){
-				case 'boolean':
-					sync = arguments[i];
+	j.controller = function( id ) {
+		var fn, sync, deps = true;
+		for ( var i = 0; i < arguments.length; i++ ) {
+			switch ( typeof( arguments[ i ] ) ){
+				case "boolean":
+					sync = arguments[ i ];
 				break;
-				case 'function':
-					fn = arguments[i];
+				case "function":
+					fn = arguments[ i ];
 				break;
-				case 'object':
-					deps = arguments[i];
+				case "object":
+					deps = arguments[ i ];
 				break;
 			}
 		}
-		if(deps instanceof Array){
-			$js.require(deps,sync);
+		if ( deps instanceof Array ) {
+			$js.require( deps, sync );
 		}
-		
-		if(fn){
-			var ctrl = function(){
-				return fn.apply(ctrl,arguments);
+
+		if ( fn ) {
+			var ctrl = function() {
+				return fn.apply( ctrl, arguments );
 			};
 			ctrl.jstack = {};
-			registry[id] = ctrl;
+			registry[ id ] = ctrl;
 		}
-		return registry[id];
+		return registry[ id ];
 	};
 
-})(window,jstack);
+} )( window, jstack );

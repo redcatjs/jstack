@@ -10,7 +10,7 @@
  * License: LGPL
  *
  */
-(function( $ ) {
+( function( $ ) {
   /**
    * Creates a DOM tree from a JsonML object in the provided document.
    * <p>
@@ -25,31 +25,31 @@
    * @return {Object} the jQuery object
    */
   $.jsonml = function( jsonML, ownerDoc ) {
-    if (typeof ownerDoc == "undefined") {
+    if ( typeof ownerDoc == "undefined" ) {
       ownerDoc = document;
     }
 
-    if (typeof jsonML == "string") {
-      return $(ownerDoc.createTextNode(jsonML));
+    if ( typeof jsonML == "string" ) {
+      return $( ownerDoc.createTextNode( jsonML ) );
     }
 
-    if ($.isArray(jsonML)) {
+    if ( $.isArray( jsonML ) ) {
       var length = jsonML.length;
 
-      if (length >= 1 && typeof jsonML[0] == "string") {
-        var $item = $(ownerDoc.createElement(jsonML[0]));
+      if ( length >= 1 && typeof jsonML[ 0 ] == "string" ) {
+        var $item = $( ownerDoc.createElement( jsonML[ 0 ] ) );
 
-        if (length == 1) {
+        if ( length == 1 ) {
           return $item;
         }
 
         var start = 1;
 
-        /* add attributes */
-        if ($.isPlainObject(jsonML[1])) {
-          $item.attr(jsonML[1]);
+        /* Add attributes */
+        if ( $.isPlainObject( jsonML[ 1 ] ) ) {
+          $item.attr( jsonML[ 1 ] );
 
-          if (length == 2) {
+          if ( length == 2 ) {
             return $item;
           }
 
@@ -57,27 +57,27 @@
         }
 
         var
-          item = $item.get(0),
-          scriptEval = $item.is("script") && !$.support.scriptEval(),
-          ieObject = $.browser.msie && $item.is("object");
+          item = $item.get( 0 ),
+          scriptEval = $item.is( "script" ) && !$.support.scriptEval(),
+          ieObject = $.browser.msie && $item.is( "object" );
 
-        for (var i = start; i < length; i++) {
+        for ( var i = start; i < length; i++ ) {
           try {
-            if (scriptEval && typeof jsonML[i] == "string") {
-              item.text = jsonML[i];
+            if ( scriptEval && typeof jsonML[ i ] == "string" ) {
+              item.text = jsonML[ i ];
               continue;
             }
 
-            var $node = $.jsonml(jsonML[i], ownerDoc);
+            var $node = $.jsonml( jsonML[ i ], ownerDoc );
 
-            if (ieObject) {
-              var object = $item.get(0);
-              object.innerHTML = object.innerHTML + $node.get(0).outerHTML;
+            if ( ieObject ) {
+              var object = $item.get( 0 );
+              object.innerHTML = object.innerHTML + $node.get( 0 ).outerHTML;
             } else {
-              $node.appendTo($item);
+              $node.appendTo( $item );
             }
-          } catch (e) {
-            throw "Could not insert " + $node.get(0).nodeName + " to " + $item.get(0).nodeName + ": " + e;
+          } catch ( e ) {
+            throw "Could not insert " + $node.get( 0 ).nodeName + " to " + $item.get( 0 ).nodeName + ": " + e;
           }
         }
 
@@ -87,34 +87,33 @@
 
     throw "Invalid JsonML format: " + jsonML;
   };
-  
-	//addon by surikat
-	$.fn.jsonml = function(){
+
+	//Addon by surikat
+	$.fn.jsonml = function() {
 		var a = [];
-		if(this.length>1){
-			this.each(function(){
-				a.push($(this).jsonml());
-			});
-		}
-		else{
-			var el = this[0];
-			if(!el) return;
-			a.push(el.tagName.toLowerCase());
+		if ( this.length > 1 ) {
+			this.each( function() {
+				a.push( $( this ).jsonml() );
+			} );
+		} else {
+			var el = this[ 0 ];
+			if ( !el ) return;
+			a.push( el.tagName.toLowerCase() );
 			var props = {}, propNotEmpty;
-			$.each(el.attributes,function(i,v){
-				props[v.name] = v.value;
+			$.each( el.attributes, function( i, v ) {
+				props[ v.name ] = v.value;
 				propNotEmpty = true;
-			});
-			if(propNotEmpty){
-				a.push(props);
+			} );
+			if ( propNotEmpty ) {
+				a.push( props );
 			}
-			var c = this.children().each(function(){
-				a.push($(this).jsonml());
-			});
+			var c = this.children().each( function() {
+				a.push( $( this ).jsonml() );
+			} );
 		}
 		return a;
 	};
-  
-})(jQuery);
 
-// vim: set ai ts=2 sw=2 et:
+} )( jQuery );
+
+// Vim: set ai ts=2 sw=2 et:
