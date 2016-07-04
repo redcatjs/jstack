@@ -211,5 +211,17 @@
 		} );
 		return bottomOffset - topOffset - this.offset().top;
 	};
+	
+	$.fn.findExclude = function (Selector, Mask) {
+		var result = $([]);
+		$(this).each(function (Idx, Elem) {
+			$(Elem).find(Selector).each(function (Idx2, Elem2) {
+				if ($(Elem2).closest(Mask)[0] == Elem) {
+					result =  result.add(Elem2);
+				}
+			});
+		});
+		return result;
+	};
 
 } )( jQuery );
