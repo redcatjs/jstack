@@ -1,4 +1,3 @@
-/* packages/bower-asset/jstack/src/core.js */
 ( function( w, $js, $ ) {
 	w.jstack = ( function() {
 		var j = function() {
@@ -9,7 +8,6 @@
 	} )();
 } )( window, $js, jQuery );
 
-/* packages/bower-asset/jstack/src/url.js */
 jstack.url = (function(){
 	var Url = function(){};
 	var recursiveArrayToObject = function(o){
@@ -129,7 +127,6 @@ jstack.url = (function(){
 	};
 	return new Url();
 })();
-/* packages/bower-asset/jstack/src/route.js */
 jstack.route = ( function( w, url ) {
 
 	var routes = [];
@@ -447,7 +444,6 @@ jstack.route = ( function( w, url ) {
 
 } )( window, jstack.url );
 
-/* packages/bower-asset/jstack/src/template.js */
 ( function( w, j ) {
 
 	j.templateVarSubstitutions = {};
@@ -507,7 +503,6 @@ jstack.route = ( function( w, url ) {
 
 } )( window, jstack );
 
-/* packages/bower-asset/jstack/src/controller.js */
 ( function( w, j ) {
 	var registry = {};
 	j.controller = function( id ) {
@@ -541,7 +536,6 @@ jstack.route = ( function( w, url ) {
 
 } )( window, jstack );
 
-/* packages/bower-asset/jstack/src/watch.js */
 /*
  DEVELOPED BY GIL LOPES BUENO gilbueno.mail@gmail.com FORK: https://github.com/melanke/Watch.JS
  WORKS WITH: * IE8*, IE 9+, FF 4+, SF 5+, WebKit, CH 7+, OP 12+, BESEN, Rhino 1.7+, For IE8 (and other legacy browsers) WatchJS will use dirty checking
@@ -1298,7 +1292,6 @@ jstack.route = ( function( w, url ) {
     return WatchJS;
 } ) );
 
-/* packages/bower-asset/jstack/src/way.js */
 /*
 jstack fork of http://gwendall.github.io/way/
 
@@ -2821,7 +2814,6 @@ jstack.way = ( function() {
 	return way;
 } )();
 
-/* packages/bower-asset/jstack/src/directive.js */
 ( function( w, j, $ ) {
 	var directives = {};
 	j.directive = function( id, fn ) {
@@ -2882,7 +2874,6 @@ jstack.way = ( function() {
 
 } )( window, jstack, jQuery );
 
-/* packages/bower-asset/jstack/src/directive-native.js */
 ( function( w, j ) {
 
 	j.directive( "if", function( val, el ) {
@@ -2999,7 +2990,6 @@ jstack.way = ( function() {
 
 } )( window, jstack );
 
-/* packages/bower-asset/jstack/src/phpjs.uniqid.js */
 function uniqid( prefix, more_entropy ) {
   //  discuss at: http://phpjs.org/functions/uniqid/
   // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -3060,7 +3050,6 @@ function uniqid( prefix, more_entropy ) {
   return retId;
 }
 
-/* packages/bower-asset/jstack/src/phpjs.trim.js */
 function trim ( str, charlist ) {
   //  discuss at: http://locutusjs.io/php/trim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3130,7 +3119,6 @@ function trim ( str, charlist ) {
   return whitespace.indexOf( str.charAt( 0 ) ) === -1 ? str : "";
 }
 
-/* packages/bower-asset/jstack/src/phpjs.ltrim.js */
 function ltrim ( str, charlist ) {
   //  discuss at: http://locutusjs.io/php/ltrim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3149,7 +3137,6 @@ function ltrim ( str, charlist ) {
     .replace( re, "" );
 }
 
-/* packages/bower-asset/jstack/src/phpjs.rtrim.js */
 function rtrim ( str, charlist ) {
   //  discuss at: http://locutusjs.io/php/rtrim/
   // original by: Kevin van Zonneveld (http://kvz.io)
@@ -3169,7 +3156,6 @@ function rtrim ( str, charlist ) {
   return ( str + "" ).replace( re, "" );
 }
 
-/* packages/bower-asset/jstack/src/get-template.js */
 ( function( w, j ) {
 	var templates = {};
 	var requests = {};
@@ -3216,7 +3202,6 @@ function rtrim ( str, charlist ) {
 
 } )( window, jstack );
 
-/* packages/bower-asset/jstack/src/process-template.js */
 jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	if ( typeof( debug ) == "undefined" ) debug = $js.dev;
 	var defer = $.Deferred();
@@ -3229,7 +3214,6 @@ jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	return defer;
 };
 
-/* packages/bower-asset/jstack/src/load-view.js */
 jstack.loadView = ( function() {
 	return function( o ) {
 		var html = $( "<tmpl>" + o.templateHtml + "</tmpl>" );
@@ -3363,7 +3347,6 @@ jstack.loadView = ( function() {
 	};
 } )();
 
-/* packages/bower-asset/jstack/src/ajax.js */
 ( function( $, j ) {
 
 	var toParams = function( params ) {
@@ -3501,7 +3484,6 @@ jstack.loadView = ( function() {
 
 } )( jQuery, jstack );
 
-/* packages/bower-asset/jstack/src/params-reflection.js */
 jstack.paramsReflection = function( f ) {
 	var args = f.toString().match( /^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/ );
 	var r = {};
@@ -3522,7 +3504,6 @@ jstack.paramsReflection = function( f ) {
 	return r;
 };
 
-/* packages/bower-asset/jstack/src/module-dom.js */
 ( function( jstack ) {
 
 	var moduleDomElement = function( module, el, attrNs ) {
@@ -3599,7 +3580,6 @@ jstack.paramsReflection = function( f ) {
 
 } )( jstack );
 
-/* packages/bower-asset/jstack/src/helpers.js */
 jstack.replaceAllRegExp = function( str, find, replace ) {
   return str.replace( new RegExp( find, "g" ), replace );
 };
@@ -3626,7 +3606,6 @@ jstack.camelCaseDataToObject = function( k, v, r ) {
 	return r;
 };
 
-/* packages/bower-asset/jstack/src/jml.js */
 jstack.jml = function( url, data ) {
 	if ( !data ) data = {};
 	var templatesPath = url.split( "/" );
@@ -3643,7 +3622,6 @@ jstack.jml = function( url, data ) {
 	return defer;
 };
 
-/* packages/bower-asset/jstack/src/jsonml.js */
 /*jslint browser: true */
 /*global jQuery */
 
@@ -3764,7 +3742,6 @@ jstack.jml = function( url, data ) {
 
 // Vim: set ai ts=2 sw=2 et:
 
-/* packages/bower-asset/jstack/src/string-prototyping.js */
 String.prototype.trim = function( charlist ) {
 	return trim( this, charlist );
 };
@@ -3798,7 +3775,153 @@ String.prototype.ucfirst = function() {
 	return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
 };
 
-/* packages/bower-asset/jstack/src/jquery-extend.js */
+/**
+ * jQuery serializeObject
+ * @copyright 2014, macek <paulmacek@gmail.com>
+ * @link https://github.com/macek/jquery-serialize-object
+ * @license BSD
+ * @version 2.5.0
+ */
+( function( root, factory ) {
+
+  // AMD
+  if ( typeof define === "function" && define.amd ) {
+    define( [ "exports", "jquery" ], function( exports, $ ) {
+      return factory( exports, $ );
+    } );
+  }
+
+  // CommonJS
+  else if ( typeof exports !== "undefined" ) {
+    var $ = require( "jquery" );
+    factory( exports, $ );
+  }
+
+  // Browser
+  else {
+    factory( root, ( root.jQuery || root.Zepto || root.ender || root.$ ) );
+  }
+
+}( this, function( exports, $ ) {
+
+  var patterns = {
+    validate: /^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,
+    key:      /[a-z0-9_]+|(?=\[\])/gi,
+    push:     /^$/,
+    fixed:    /^\d+$/,
+    named:    /^[a-z0-9_]+$/i
+  };
+
+  function FormSerializer( helper, $form ) {
+
+    // Private variables
+    var data     = {},
+        pushes   = {};
+
+    // Private API
+    function build( base, key, value ) {
+      base[ key ] = value;
+      return base;
+    }
+
+    function makeObject( root, value ) {
+
+      var keys = root.match( patterns.key ), k;
+
+      // Nest, nest, ..., nest
+      while ( ( k = keys.pop() ) !== undefined ) {
+        // Foo[]
+        if ( patterns.push.test( k ) ) {
+          var idx = incrementPush( root.replace( /\[\]$/, "" ) );
+          value = build( [], idx, value );
+        }
+
+        // Foo[n]
+        else if ( patterns.fixed.test( k ) ) {
+          value = build( [], k, value );
+        }
+
+        // Foo; foo[bar]
+        else if ( patterns.named.test( k ) ) {
+          value = build( {}, k, value );
+        }
+      }
+
+      return value;
+    }
+
+    function incrementPush( key ) {
+      if ( pushes[ key ] === undefined ) {
+        pushes[ key ] = 0;
+      }
+      return pushes[ key ]++;
+    }
+
+    function encode( pair ) {
+      switch ( $( '[name="' + pair.name + '"]', $form ).attr( "type" ) ) {
+        case "checkbox":
+          return pair.value === "on" ? true : pair.value;
+        default:
+          return pair.value;
+      }
+    }
+
+    function addPair( pair ) {
+      if ( !patterns.validate.test( pair.name ) ) return this;
+      var obj = makeObject( pair.name, encode( pair ) );
+      data = helper.extend( true, data, obj );
+      return this;
+    }
+
+    function addPairs( pairs ) {
+      if ( !helper.isArray( pairs ) ) {
+        throw new Error( "formSerializer.addPairs expects an Array" );
+      }
+      for ( var i = 0, len = pairs.length; i < len; i++ ) {
+        this.addPair( pairs[ i ] );
+      }
+      return this;
+    }
+
+    function serialize() {
+      return data;
+    }
+
+    function serializeJSON() {
+      return JSON.stringify( serialize() );
+    }
+
+    // Public API
+    this.addPair = addPair;
+    this.addPairs = addPairs;
+    this.serialize = serialize;
+    this.serializeJSON = serializeJSON;
+  }
+
+  FormSerializer.patterns = patterns;
+
+  FormSerializer.serializeObject = function serializeObject() {
+    return new FormSerializer( $, this ).
+      addPairs( this.serializeArray() ).
+      serialize();
+  };
+
+  FormSerializer.serializeJSON = function serializeJSON() {
+    return new FormSerializer( $, this ).
+      addPairs( this.serializeArray() ).
+      serializeJSON();
+  };
+
+  if ( typeof $.fn !== "undefined" ) {
+    $.fn.serializeObject = FormSerializer.serializeObject;
+    $.fn.serializeJSON   = FormSerializer.serializeJSON;
+  }
+
+  exports.FormSerializer = FormSerializer;
+
+  return FormSerializer;
+} ) );
+
 ( function( $ ) {
 
 	$.fn.changeVal = function( v ) {
@@ -4026,152 +4149,3 @@ String.prototype.ucfirst = function() {
 	};
 
 } )( jQuery );
-
-/* packages/bower-asset/jstack/src/jquery.serialize-object.js */
-/**
- * jQuery serializeObject
- * @copyright 2014, macek <paulmacek@gmail.com>
- * @link https://github.com/macek/jquery-serialize-object
- * @license BSD
- * @version 2.5.0
- */
-( function( root, factory ) {
-
-  // AMD
-  if ( typeof define === "function" && define.amd ) {
-    define( [ "exports", "jquery" ], function( exports, $ ) {
-      return factory( exports, $ );
-    } );
-  }
-
-  // CommonJS
-  else if ( typeof exports !== "undefined" ) {
-    var $ = require( "jquery" );
-    factory( exports, $ );
-  }
-
-  // Browser
-  else {
-    factory( root, ( root.jQuery || root.Zepto || root.ender || root.$ ) );
-  }
-
-}( this, function( exports, $ ) {
-
-  var patterns = {
-    validate: /^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,
-    key:      /[a-z0-9_]+|(?=\[\])/gi,
-    push:     /^$/,
-    fixed:    /^\d+$/,
-    named:    /^[a-z0-9_]+$/i
-  };
-
-  function FormSerializer( helper, $form ) {
-
-    // Private variables
-    var data     = {},
-        pushes   = {};
-
-    // Private API
-    function build( base, key, value ) {
-      base[ key ] = value;
-      return base;
-    }
-
-    function makeObject( root, value ) {
-
-      var keys = root.match( patterns.key ), k;
-
-      // Nest, nest, ..., nest
-      while ( ( k = keys.pop() ) !== undefined ) {
-        // Foo[]
-        if ( patterns.push.test( k ) ) {
-          var idx = incrementPush( root.replace( /\[\]$/, "" ) );
-          value = build( [], idx, value );
-        }
-
-        // Foo[n]
-        else if ( patterns.fixed.test( k ) ) {
-          value = build( [], k, value );
-        }
-
-        // Foo; foo[bar]
-        else if ( patterns.named.test( k ) ) {
-          value = build( {}, k, value );
-        }
-      }
-
-      return value;
-    }
-
-    function incrementPush( key ) {
-      if ( pushes[ key ] === undefined ) {
-        pushes[ key ] = 0;
-      }
-      return pushes[ key ]++;
-    }
-
-    function encode( pair ) {
-      switch ( $( '[name="' + pair.name + '"]', $form ).attr( "type" ) ) {
-        case "checkbox":
-          return pair.value === "on" ? true : pair.value;
-        default:
-          return pair.value;
-      }
-    }
-
-    function addPair( pair ) {
-      if ( !patterns.validate.test( pair.name ) ) return this;
-      var obj = makeObject( pair.name, encode( pair ) );
-      data = helper.extend( true, data, obj );
-      return this;
-    }
-
-    function addPairs( pairs ) {
-      if ( !helper.isArray( pairs ) ) {
-        throw new Error( "formSerializer.addPairs expects an Array" );
-      }
-      for ( var i = 0, len = pairs.length; i < len; i++ ) {
-        this.addPair( pairs[ i ] );
-      }
-      return this;
-    }
-
-    function serialize() {
-      return data;
-    }
-
-    function serializeJSON() {
-      return JSON.stringify( serialize() );
-    }
-
-    // Public API
-    this.addPair = addPair;
-    this.addPairs = addPairs;
-    this.serialize = serialize;
-    this.serializeJSON = serializeJSON;
-  }
-
-  FormSerializer.patterns = patterns;
-
-  FormSerializer.serializeObject = function serializeObject() {
-    return new FormSerializer( $, this ).
-      addPairs( this.serializeArray() ).
-      serialize();
-  };
-
-  FormSerializer.serializeJSON = function serializeJSON() {
-    return new FormSerializer( $, this ).
-      addPairs( this.serializeArray() ).
-      serializeJSON();
-  };
-
-  if ( typeof $.fn !== "undefined" ) {
-    $.fn.serializeObject = FormSerializer.serializeObject;
-    $.fn.serializeJSON   = FormSerializer.serializeJSON;
-  }
-
-  exports.FormSerializer = FormSerializer;
-
-  return FormSerializer;
-} ) );
-
