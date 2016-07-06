@@ -70,7 +70,7 @@
 						target[ method ]();
 					}
 				} );
-				el.replaceWith( inc );
+				el.replaceWith( inc.contents() );
 				deferred.resolve();
 			} );
 		} );
