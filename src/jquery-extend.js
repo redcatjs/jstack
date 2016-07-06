@@ -219,7 +219,8 @@
 				var el = $(Elem2);
 				if(Parent)
 					el = el.parent();
-				if (el.closest(Mask)[0] == Elem) {
+				var closest = el.closest(Mask);
+				if (closest[0] == Elem || !closest.length) {
 					result =  result.add(Elem2);
 				}
 			});

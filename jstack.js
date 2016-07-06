@@ -2987,7 +2987,6 @@ jstack.way = ( function() {
 	} );
 
 } )( window, jstack );
-
 function uniqid( prefix, more_entropy ) {
   //  discuss at: http://phpjs.org/functions/uniqid/
   // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -4141,7 +4140,8 @@ String.prototype.ucfirst = function() {
 				var el = $(Elem2);
 				if(Parent)
 					el = el.parent();
-				if (el.closest(Mask)[0] == Elem) {
+				var closest = el.closest(Mask);
+				if (closest[0] == Elem || !closest.length) {
 					result =  result.add(Elem2);
 				}
 			});
