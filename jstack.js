@@ -2933,22 +2933,20 @@ jstack.way = ( function() {
 		jstack.getTemplate( extend ).then( function( html ) {
 			var inc = $( "<tmpl>" + html + "</tmpl>" );
 			$.when.apply( $, jstack.directiveCompile( inc, templatesPath ) ).then( function() {
-				var tmp = $( "<tmpl />" );
-				tmp.html( el.contents() );
-				el.html( inc.contents() );
-				tmp.find( ">*" ).each( function() {
+				el.find( ">*" ).each( function() {
 					var $this = $( this );
 					var selector = $this.attr( "selector" );
 					if ( !selector ) selector = $this.attr( "j" );
 					var method = this.tagName.toLowerCase();
 					var contents = $this.contents();
-					var target = el.find( selector );
+					var target = inc.find( selector );
 					if ( contents.length ) {
 						target[ method ]( $this.contents() );
 					} else {
 						target[ method ]();
 					}
 				} );
+				el.replaceWith( inc );
 				deferred.resolve();
 			} );
 		} );
