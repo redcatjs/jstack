@@ -4158,7 +4158,6 @@ String.prototype.ucfirst = function() {
 			return input.prop('checked')?val:false;
 		}
 		else{
-			console.log(val);
 			return val;
 		}
 	};
