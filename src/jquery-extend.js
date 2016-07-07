@@ -122,76 +122,87 @@
 		return this.findOrig( selector );
 	};
 
-	$.fn.populateForm = function( data, force ) {
+	$.fn.populateForm = function( data, config ) {
+		config = $.extend({
+			addMissingOption: false,
+			not: false,
+			notContainer: false
+		},config);
 		var $this = this;
-		var populateSelect = function( $ctrls, value ) {
+		var populateSelect = function( input, value ) {
 			var found = false;
-			$( "option", $ctrls ).each( function() {
+			$( "option", input ).each( function() {
 				if ( $( this ).val() == value ) {
 					$( this ).prop( "selected", true );
 					found = true;
 				}
 			} );
-			if ( !found && force ) {
-				$ctrls.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
+			if ( !found && config.addMissingOption ) {
+				input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
 			}
 		};
 		$.each( data, function( key, value ) {
-			var $ctrls = $this.find( '[name="' + key + '"]' );
-			if ( $ctrls.is( "select" ) ) {
-				if ( value instanceof Array ) {
-					for ( var i = 0, l = value.length; i < l; i++ ) {
-						populateSelect( $ctrls, value[ i ] );
+			$this.find( '[name="' + key + '"]' ).each(function(){
+				var input = $(this);
+				if(config.not&&input.is(config.not)) return;
+				if(config.notContainer&&input.closest(config.notContainer).length) return;
+				if ( input.is( "select" ) ) {
+					if ( value instanceof Array ) {
+						for ( var i = 0, l = value.length; i < l; i++ ) {
+							populateSelect( input, value[ i ] );
+						}
+					} else {
+						populateSelect( input, value );
 					}
-				} else {
-					populateSelect( $ctrls, value );
 				}
-			} else if ( $ctrls.is( "textarea" ) ) {
-				$ctrls.val( value );
-			} else {
-				switch ( $ctrls.attr( "type" ) ){
-					case "text":
-					case "hidden":
-						$ctrls.val( value );
-						break;
-					case "radio":
-						if ( $ctrls.length >= 1 ) {
-							$.each( $ctrls, function( index ) {
-								var elemValue = $( this ).attr( "value" );
-								var elemValueInData = singleVal = value;
-								if ( elemValue === value ) {
-									$( this ).prop( "checked", true );
-								} else {
-									$( this ).prop( "checked", false );
-								}
-							} );
-						}
-						break;
-					case "checkbox":
-						if ( $ctrls.length > 1 ) {
-							$.each( $ctrls, function( index ) {
-								var elemValue = $( this ).attr( "value" );
-								var elemValueInData = undefined;
-								var singleVal;
-								for ( var i = 0; i < value.length; i++ ) {
-									singleVal = value[ i ];
-									if ( singleVal === elemValue ) {elemValueInData = singleVal;};
-								}
-
-								if ( elemValueInData ) {
-									$( this ).prop( "checked", true );
-								} else {
-									$( this ).prop( "checked", false );
-								}
-							} );
-						} else if ( $ctrls.length == 1 ) {
-							$ctrl = $ctrls;
-							if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
-
-						}
-						break;
+				else if ( input.is( "textarea" ) ) {
+					input.val( value );
 				}
-			}
+				else {
+					switch ( input.attr( "type" ) ){
+						case "text":
+						case "hidden":
+							input.val( value );
+							break;
+						case "radio":
+							if ( input.length >= 1 ) {
+								$.each( input, function( index ) {
+									var elemValue = $( this ).attr( "value" );
+									var elemValueInData = singleVal = value;
+									if ( elemValue === value ) {
+										$( this ).prop( "checked", true );
+									} else {
+										$( this ).prop( "checked", false );
+									}
+								} );
+							}
+							break;
+						case "checkbox":
+							if ( input.length > 1 ) {
+								$.each( input, function( index ) {
+									var elemValue = $( this ).attr( "value" );
+									var elemValueInData = undefined;
+									var singleVal;
+									for ( var i = 0; i < value.length; i++ ) {
+										singleVal = value[ i ];
+										if ( singleVal === elemValue ) {elemValueInData = singleVal;};
+									}
+
+									if ( elemValueInData ) {
+										$( this ).prop( "checked", true );
+									} else {
+										$( this ).prop( "checked", false );
+									}
+								} );
+							} else if ( input.length == 1 ) {
+								$ctrl = input;
+								if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
+
+							}
+							break;
+					}
+				}
+			});
 		} );
 		return this;
 	};
