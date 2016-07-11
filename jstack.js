@@ -424,7 +424,15 @@ jstack.route = ( function( w, url ) {
 		path.pop();
 		path = path.join( "/" ) || "/";
 		var inlineAuth = location.username ? location.username + ( location.password ? ":" + location.password : "" ) + "@" : "";
-		routie.baseHref = location.protocol + "//" + inlineAuth + location.host + ( location.port && location.port != "80" ? ":" + location.port : "" ) + path;
+		
+		var port;
+		if(location.port){
+			port = (location.protocol=='https'&&location.port!="443") || location.port!="80" ? ":" + location.port : "";
+		}
+		else{
+			port = '';
+		}
+		routie.baseHref = location.protocol + "//" + inlineAuth + location.host + port + path;
 	}
 
 	var basePath = w.location.href;
