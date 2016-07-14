@@ -4167,12 +4167,6 @@ String.prototype.ucfirst = function() {
 		});
 		return result;
 	};
-	
-	$.fn.verticalCenter = function(){
-		return this.each(function(){
-			$(this).css('top', $(this).innerHeight()/2-$(this).parent().outerHeight() )
-		});
-	};
 
 } )( jQuery );
 
