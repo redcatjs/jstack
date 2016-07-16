@@ -4222,8 +4222,12 @@ String.prototype.ucfirst = function() {
 						var input = $this.closest(options.closestSelector).find('[name="'+v+'"]:eq(0)');
 						if(!input.data(uid)){
 							input.data(uid,true);
-							input.on('input change val',function(){
-								self.trigger('data-if:change');
+							input.on('input change val',function(e){
+								e.stopPropagation();
+								if(options.onChange){
+									options.onChange();
+								}
+								$this.trigger('data-if:change');
 							});
 						}
 						input.on('input change val',function(){
@@ -4231,19 +4235,16 @@ String.prototype.ucfirst = function() {
 						});
 					});
 				}
-				
-				if(options.onShow){
-					self.on('data-if:show','[data-if]',options.onShow);
-				}
-				if(options.onHide){
-					self.on('data-if:hide','[data-if]',options.onHide);
-				}
-				if(options.onChange){
-					self.on('data-if:change',options.onChange);
-				}
-				
 				showOrHide();				
 			});
+			
+			if(options.onShow){
+				self.on('data-if:show','[data-if]',options.onShow);
+			}
+			if(options.onHide){
+				self.on('data-if:hide','[data-if]',options.onHide);
+			}
+			
 		});
 	};
 })(jstack,jQuery);
