@@ -4194,14 +4194,10 @@ String.prototype.ucfirst = function() {
 		options = $.extend({
 			closestSelector: 'form'
 		},options||{});
+		var uid = uniqid('data-if');
 		return this.each(function(){
-			if(options.onShow){
-				$(this).on('data-if:show','[data-if]',options.onShow);
-			}
-			if(options.onHide){
-				$(this).on('data-if:hide','[data-if]',options.onHide);
-			}
-			$(this).find('[data-if]').each(function(){
+			var self = $(this);
+			self.find('[data-if]').each(function(){
 				var $this = $(this);
 				var dataIf = $this.attr('data-if');
 				var match = dataIf.match(/\${\s*[\w\.]+\s*}\$/g);
@@ -4223,11 +4219,29 @@ String.prototype.ucfirst = function() {
 				if(match){
 					$.each(match,function(i,x){
 						var v = x.match(/[\w\.]+/)[0];
-						$this.closest(options.closestSelector).find('[name="'+v+'"]:eq(0)').on('input change val',function(){
+						var input = $this.closest(options.closestSelector).find('[name="'+v+'"]:eq(0)');
+						if(!input.data(uid)){
+							input.data(uid,true);
+							input.on('input change val',function(){
+								self.trigger('data-if:change');
+							});
+						}
+						input.on('input change val',function(){
 							showOrHide();
 						});
 					});
 				}
+				
+				if(options.onShow){
+					self.on('data-if:show','[data-if]',options.onShow);
+				}
+				if(options.onHide){
+					self.on('data-if:hide','[data-if]',options.onHide);
+				}
+				if(options.onChange){
+					self.on('data-if:change',options.onChange);
+				}
+				
 				showOrHide();				
 			});
 		});
