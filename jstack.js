@@ -4171,9 +4171,10 @@ String.prototype.ucfirst = function() {
 	$.fn.removeCss = function(style){
         var search = new RegExp(style + '[^;]+;?', 'g');
         return this.each(function(){
-            $(this).attr('style', function(i, style){
-                return style.replace(search, '');
-            });
+			var style = $(this).attr('style');
+			if(style){
+				$(this).attr('style', return style.replace(search, ''));
+			}
         });
     };
 
