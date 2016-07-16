@@ -244,7 +244,7 @@
         return this.each(function(){
 			var style = $(this).attr('style');
 			if(style){
-				$(this).attr('style', return style.replace(search, ''));
+				$(this).attr('style', style.replace(search, ''));
 			}
         });
     };
