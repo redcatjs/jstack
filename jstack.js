@@ -4223,7 +4223,6 @@ String.prototype.ucfirst = function() {
 						if(!input.data(uid)){
 							input.data(uid,true);
 							input.on('input change val',function(e){
-								e.stopPropagation();
 								if(options.onChange){
 									options.onChange();
 								}
