@@ -4136,14 +4136,20 @@ String.prototype.ucfirst = function() {
 		return this;
 	};
 
-	$.fn.childrenHeight = function( outer ) {
+	$.fn.childrenHeight = function( outer, marginOuter, filterVisible ) {
 		var topOffset = bottomOffset = 0;
 		if ( typeof( outer ) == "undefined" ) outer = true;
-		this.children().each( function( i, e ) {
+		if ( typeof( marginOuter ) == "undefined" ) marginOuter = true;
+		if ( typeof( filterVisible ) == "undefined" ) filterVisible = true;
+		var children = this.children();
+		if(filterVisible){
+			children = children.filter(':visible');
+		}
+		children.each( function( i, e ) {
 			var $e = $( e );
 			var eTopOffset = $e.offset().top;
-			var eBottomOffset = eTopOffset + ( outer ? $e.outerHeight() : $e.height() );
-
+			var eBottomOffset = eTopOffset + ( outer ? $e.outerHeight(marginOuter) : $e.height() );
+			
 			if ( eTopOffset < topOffset )
 				topOffset = eTopOffset;
 			if ( eBottomOffset > bottomOffset )
