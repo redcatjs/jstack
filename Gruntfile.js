@@ -33,6 +33,7 @@ grunt.initConfig({
 				"src/jquery.serialize-object.js",
 				"src/jquery-extend.js",
 				"src/data-if.js",
+				"src/json_encode.js",
 			],
 			dest: 'jstack.js'
 		}
