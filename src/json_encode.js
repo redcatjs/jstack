@@ -176,4 +176,4 @@ jstack.json_encode = function (mixedVal) { // eslint-disable-line camelcase
     $locutus.php.last_error_json = 4
     return null
   }
-}
+};
