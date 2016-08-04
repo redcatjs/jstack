@@ -34,6 +34,7 @@ grunt.initConfig({
 				"src/jquery-extend.js",
 				"src/data-if.js",
 				"src/json_encode.js",
+				"src/formToObject.js",
 			],
 			dest: 'jstack.js'
 		}
