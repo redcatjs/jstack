@@ -8,6 +8,10 @@
 	} )();
 } )( window, $js, jQuery );
 
+jstack.hasOwnProperty2 = function(o,k){
+	var v = o[k];
+	return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
+};
 jstack.url = (function(){
 	var Url = function(){};
 	var recursiveArrayToObject = function(o){
@@ -3390,6 +3394,20 @@ jstack.loadView = ( function() {
 			}
 		}
 	};
+	
+	var recurseCleanNull = function(o){
+		for(var k in o){
+			if(jstack.hasOwnProperty2(o,k)){
+				if(typeof(o[k])=='undefined'||o[k]===null){
+					o[k] = '';
+				}
+				else if(typeof(o[k])=='object'){
+					o[k] = recurseCleanNull(o[k]);
+				}
+			}
+		}
+		return o;
+	};
 
 	j.ajax = function() {
 		var settings, files = {};
@@ -3435,6 +3453,8 @@ jstack.loadView = ( function() {
 				settings.data = fd;
 			}
 		}
+		settings.data = recurseCleanNull(settings.data);
+		console.log(settings.data);
 		return $.ajax( settings );
 	};
 

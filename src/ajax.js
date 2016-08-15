@@ -36,6 +36,20 @@
 			}
 		}
 	};
+	
+	var recurseCleanNull = function(o){
+		for(var k in o){
+			if(jstack.hasOwnProperty2(o,k)){
+				if(typeof(o[k])=='undefined'||o[k]===null){
+					o[k] = '';
+				}
+				else if(typeof(o[k])=='object'){
+					o[k] = recurseCleanNull(o[k]);
+				}
+			}
+		}
+		return o;
+	};
 
 	j.ajax = function() {
 		var settings, files = {};
@@ -81,6 +95,7 @@
 				settings.data = fd;
 			}
 		}
+		settings.data = recurseCleanNull(settings.data);
 		return $.ajax( settings );
 	};
 
