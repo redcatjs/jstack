@@ -3454,7 +3454,6 @@ jstack.loadView = ( function() {
 			}
 		}
 		settings.data = recurseCleanNull(settings.data);
-		console.log(settings.data);
 		return $.ajax( settings );
 	};
 
