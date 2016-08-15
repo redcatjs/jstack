@@ -8,6 +8,7 @@ grunt.initConfig({
         dist: {
 			src: [
 				"src/core.js",
+				"src/hasOwnProperty2.js",
 				"src/url.js",
 				"src/route.js",
 				"src/template.js",
