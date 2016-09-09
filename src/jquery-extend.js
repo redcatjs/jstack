@@ -131,8 +131,11 @@
 		var $this = this;
 		var populateSelect = function( input, value ) {
 			var found = false;
+			if(input.hasClass('select2-hidden-accessible')){
+				input.select2('val', value);
+				return;
+			}
 			$( "option", input ).each( function() {
-				console.log($( this ).val());
 				if ( $( this ).val() == value ) {
 					$( this ).prop( "selected", true );
 					found = true;
