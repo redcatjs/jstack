@@ -4220,7 +4220,7 @@ String.prototype.ucfirst = function() {
 							input.data(uid,true);
 							input.on('input change val',function(e){
 								if(options.onChange){
-									options.onChange();
+									options.onChange.call(self);
 								}
 								$this.trigger('data-if:change');
 							});
