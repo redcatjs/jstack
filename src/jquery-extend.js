@@ -132,10 +132,10 @@
 		var populateSelect = function( input, value ) {
 			var found = false;
 			if(input.hasClass('select2-hidden-accessible')){
-				input.select2('val', value);
+				input.val(value);
 				return;
 			}
-			if(input.hasAttr('data-preselect')){
+			if(input[0].hasAttribute('data-preselect')){
 				input.attr('data-preselect',value);
 				return;
 			}
