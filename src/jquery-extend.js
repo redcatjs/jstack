@@ -135,6 +135,10 @@
 				input.select2('val', value);
 				return;
 			}
+			if(input.hasAttr('data-preselect')){
+				input.attr('data-preselect',value);
+				return;
+			}
 			$( "option", input ).each( function() {
 				if ( $( this ).val() == value ) {
 					$( this ).prop( "selected", true );
