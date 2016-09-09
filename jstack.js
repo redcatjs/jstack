@@ -4040,6 +4040,14 @@ String.prototype.ucfirst = function() {
 		var $this = this;
 		var populateSelect = function( input, value ) {
 			var found = false;
+			if(input.hasClass('select2-hidden-accessible')){
+				input.select2('val', value);
+				return;
+			}
+			if(input.hasAttr('data-preselect')){
+				input.attr('data-preselect',value);
+				return;
+			}
 			$( "option", input ).each( function() {
 				if ( $( this ).val() == value ) {
 					$( this ).prop( "selected", true );
@@ -4048,6 +4056,7 @@ String.prototype.ucfirst = function() {
 			} );
 			if ( !found && config.addMissingOption ) {
 				input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
+				$( this ).prop( "selected", true );
 			}
 		};
 		$.each( data, function( key, value ) {
@@ -4175,7 +4184,6 @@ String.prototype.ucfirst = function() {
 	};
 
 } )( jQuery );
-
 (function(j,$){
 	var getVal = function(input){
 		var val = input.val();
