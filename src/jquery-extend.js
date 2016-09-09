@@ -132,6 +132,7 @@
 		var populateSelect = function( input, value ) {
 			var found = false;
 			$( "option", input ).each( function() {
+				console.log($( this ).val());
 				if ( $( this ).val() == value ) {
 					$( this ).prop( "selected", true );
 					found = true;
@@ -139,6 +140,7 @@
 			} );
 			if ( !found && config.addMissingOption ) {
 				input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
+				$( this ).prop( "selected", true );
 			}
 		};
 		$.each( data, function( key, value ) {
