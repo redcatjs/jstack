@@ -273,5 +273,14 @@
 		});
 		return this;
 	};
+	
+	var origValFn = $.fn.val;
+	$.fn.val = function() {
+		var returnValue = origValFn.apply( this, arguments );
+		if ( arguments.length ) {
+			this.trigger( "val" );
+		}
+		return returnValue;
+	};
 
 } )( jQuery );

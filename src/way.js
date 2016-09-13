@@ -16,15 +16,6 @@ surikat modifs:
 */
 jstack.way = ( function() {
 
-	var origValFn = $.fn.val;
-	$.fn.val = function() {
-		var returnValue = origValFn.apply( this, arguments );
-		if ( arguments.length ) {
-			this.trigger( "val" );
-		}
-		return returnValue;
-	};
-
 	var way, w, tagPrefix = "way";
 
 	// EVENT EMITTER DEFINITION
