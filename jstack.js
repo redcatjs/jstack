@@ -1322,15 +1322,6 @@ surikat modifs:
 */
 jstack.way = ( function() {
 
-	var origValFn = $.fn.val;
-	$.fn.val = function() {
-		var returnValue = origValFn.apply( this, arguments );
-		if ( arguments.length ) {
-			this.trigger( "val" );
-		}
-		return returnValue;
-	};
-
 	var way, w, tagPrefix = "way";
 
 	// EVENT EMITTER DEFINITION
@@ -2825,7 +2816,6 @@ jstack.way = ( function() {
 
 	return way;
 } )();
-
 ( function( w, j, $ ) {
 	var directives = {};
 	j.directive = function( id, fn ) {
@@ -4181,6 +4171,40 @@ String.prototype.ucfirst = function() {
 			el.className = $.trim(classes.join(" "));
 		});
 		return this;
+	};
+	
+	$.fn.setVal = $.fn.val;
+	$.fn.val = function() {
+		var returnValue = $.fn.setVal.apply( this, arguments );
+		if ( arguments.length ) {
+			this.trigger( "val" );
+		}
+		return returnValue;
+	};
+	
+	
+	var getNamespaceSuspend = function(event,namespace){
+		if(typeof(namespace)=='undefined'){
+			namespace = 'suspend';
+		}
+		if(namespace){
+			event = event.split(' ');
+			$.each(event,function(i,v){
+				event[i] = v+'.'+namespace;
+			});
+			event = event.join(' ');
+		}
+		return event;
+	};
+	$.fn.suspendEvent = function(event,namespace){
+		event = getNamespaceSuspend(event,namespace);
+		return this.on(event,function(e){
+			e.stopPropagation();
+		});
+	};
+	$.fn.resumeEvent = function(event,namespace){
+		event = getNamespaceSuspend(event,namespace);
+		return this.off(event);
 	};
 
 } )( jQuery );
