@@ -274,9 +274,9 @@
 		return this;
 	};
 	
-	var origValFn = $.fn.val;
+	$.fn.setVal = $.fn.val;
 	$.fn.val = function() {
-		var returnValue = origValFn.apply( this, arguments );
+		var returnValue = $.fn.setVal.apply( this, arguments );
 		if ( arguments.length ) {
 			this.trigger( "val" );
 		}
