@@ -4206,6 +4206,10 @@ String.prototype.ucfirst = function() {
 		event = getNamespaceSuspend(event,namespace);
 		return this.off(event);
 	};
+	
+	$.arrayCompare = function (a, b) {
+		return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
+	};
 
 } )( jQuery );
 (function(j,$){
