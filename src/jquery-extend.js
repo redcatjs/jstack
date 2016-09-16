@@ -150,7 +150,7 @@
 				$( this ).prop( "selected", true );
 			}
 		};
-		$.each( data, function( key, value ) {
+		var assignValue = function( key, value ){
 			$this.find( '[name="' + key + '"]' ).each(function(){
 				var input = $(this);
 				if(config.not&&input.is(config.not)) return;
@@ -212,7 +212,26 @@
 					}
 				}
 			});
-		} );
+		};
+		var assignValueRecursive = function(key, value){
+			for(var k in value){
+				var keyAssign = key+'['+k+']';
+				if(typeof(value[k])=='object'){
+					assignValueRecursive(keyAssign, value[k]);
+				}
+				else{
+					assignValue(keyAssign, value[k]);
+				}
+			}
+		};
+		$.each(data, function(key, value){
+			if(typeof(value)=='object'){
+				var keyname = assignValueRecursive(key, value);
+			}
+			else{
+				assignValue(key, value);
+			}
+		});
 		return this;
 	};
 
