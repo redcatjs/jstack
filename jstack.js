@@ -4023,7 +4023,7 @@ String.prototype.ucfirst = function() {
 
 	$.fn.populateForm = function( data, config ) {
 		config = $.extend({
-			addMissingOption: false,
+			addMissing: false,
 			not: false,
 			notContainer: false
 		},config);
@@ -4044,13 +4044,17 @@ String.prototype.ucfirst = function() {
 					found = true;
 				}
 			} );
-			if ( !found && config.addMissingOption ) {
+			if ( !found && config.addMissing ) {
 				input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
 				$( this ).prop( "selected", true );
 			}
 		};
 		var assignValue = function( key, value ){
-			$this.find( '[name="' + key + '"]' ).each(function(){
+			var inputs = $this.find( '[name="' + key + '"]' );
+			if(config.addMissing&&!inputs.length){
+				$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
+			}
+			inputs.each(function(){
 				var input = $(this);
 				if(config.not&&input.is(config.not)) return;
 				if(config.notContainer&&input.closest(config.notContainer).length) return;
