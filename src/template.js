@@ -27,7 +27,7 @@
 			html = html.html();
 			for ( var k in substitutions ) {
 				if ( substitutions.hasOwnProperty( k ) ) {
-					html = html.replace( k, separatorStart + substitutions[ k ] + separatorEnd );
+					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
 
