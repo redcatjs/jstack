@@ -485,7 +485,7 @@ jstack.route = ( function( w, url ) {
 			html = html.html();
 			for ( var k in substitutions ) {
 				if ( substitutions.hasOwnProperty( k ) ) {
-					html = html.replace( k, separatorStart + substitutions[ k ] + separatorEnd );
+					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
 
@@ -514,7 +514,6 @@ jstack.route = ( function( w, url ) {
 	};
 
 } )( window, jstack );
-
 ( function( w, j ) {
 	var registry = {};
 	j.controller = function( id ) {
@@ -3212,7 +3211,6 @@ jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	} );
 	return defer;
 };
-
 jstack.loadView = ( function() {
 	return function( o ) {
 		var html = $( "<tmpl>" + o.templateHtml + "</tmpl>" );
