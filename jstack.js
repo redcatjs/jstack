@@ -4019,13 +4019,10 @@ String.prototype.ucfirst = function() {
 		return this.findOrig( selector );
 	};
 
-	$.fn.populateForm = function( data, config ) {
+	$.fn.populateInput = function( value, config ) {
 		config = $.extend({
 			addMissing: false,
-			not: false,
-			notContainer: false
 		},config);
-		var $this = this;
 		var populateSelect = function( input, value ) {
 			var found = false;
 			if(input.hasClass('select2-hidden-accessible')){
@@ -4047,8 +4044,75 @@ String.prototype.ucfirst = function() {
 				$( this ).prop( "selected", true );
 			}
 		};
+		return this.each(function(){
+			var input = $(this);
+			if ( input.is( "select" ) ) {
+				if ( value instanceof Array ) {
+					for ( var i = 0, l = value.length; i < l; i++ ) {
+						populateSelect( input, value[ i ] );
+					}
+				} else {
+					populateSelect( input, value );
+				}
+			}
+			else if ( input.is( "textarea" ) ) {
+				input.val( value );
+			}
+			else {
+				switch ( input.attr( "type" ) ){
+					case "text":
+					case "hidden":
+						input.val( value );
+						break;
+					case "radio":
+						if ( input.length >= 1 ) {
+							$.each( input, function( index ) {
+								var elemValue = $( this ).attr( "value" );
+								var elemValueInData = singleVal = value;
+								if ( elemValue === value ) {
+									$( this ).prop( "checked", true );
+								} else {
+									$( this ).prop( "checked", false );
+								}
+							} );
+						}
+						break;
+					case "checkbox":
+						if ( input.length > 1 ) {
+							$.each( input, function( index ) {
+								var elemValue = $( this ).attr( "value" );
+								var elemValueInData = undefined;
+								var singleVal;
+								for ( var i = 0; i < value.length; i++ ) {
+									singleVal = value[ i ];
+									if ( singleVal === elemValue ) {elemValueInData = singleVal;};
+								}
+
+								if ( elemValueInData ) {
+									$( this ).prop( "checked", true );
+								} else {
+									$( this ).prop( "checked", false );
+								}
+							} );
+						} else if ( input.length == 1 ) {
+							$ctrl = input;
+							if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
+
+						}
+						break;
+				}
+			}
+		});
+	};
+	$.fn.populateForm = function( data, config ) {
+		config = $.extend({
+			addMissing: false,
+			not: false,
+			notContainer: false
+		},config);
+		var $this = this;
 		var assignValue = function( key, value ){
-			var inputs = $this.find( '[name="' + key + '"]' );
+			var inputs = $this.find('[name="'+key+'"]');
 			if(config.addMissing&&!inputs.length){
 				$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
 			}
@@ -4056,62 +4120,7 @@ String.prototype.ucfirst = function() {
 				var input = $(this);
 				if(config.not&&input.is(config.not)) return;
 				if(config.notContainer&&input.closest(config.notContainer).length) return;
-				if ( input.is( "select" ) ) {
-					if ( value instanceof Array ) {
-						for ( var i = 0, l = value.length; i < l; i++ ) {
-							populateSelect( input, value[ i ] );
-						}
-					} else {
-						populateSelect( input, value );
-					}
-				}
-				else if ( input.is( "textarea" ) ) {
-					input.val( value );
-				}
-				else {
-					switch ( input.attr( "type" ) ){
-						case "text":
-						case "hidden":
-							input.val( value );
-							break;
-						case "radio":
-							if ( input.length >= 1 ) {
-								$.each( input, function( index ) {
-									var elemValue = $( this ).attr( "value" );
-									var elemValueInData = singleVal = value;
-									if ( elemValue === value ) {
-										$( this ).prop( "checked", true );
-									} else {
-										$( this ).prop( "checked", false );
-									}
-								} );
-							}
-							break;
-						case "checkbox":
-							if ( input.length > 1 ) {
-								$.each( input, function( index ) {
-									var elemValue = $( this ).attr( "value" );
-									var elemValueInData = undefined;
-									var singleVal;
-									for ( var i = 0; i < value.length; i++ ) {
-										singleVal = value[ i ];
-										if ( singleVal === elemValue ) {elemValueInData = singleVal;};
-									}
-
-									if ( elemValueInData ) {
-										$( this ).prop( "checked", true );
-									} else {
-										$( this ).prop( "checked", false );
-									}
-								} );
-							} else if ( input.length == 1 ) {
-								$ctrl = input;
-								if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
-
-							}
-							break;
-					}
-				}
+				input.populateInput(value, config);
 			});
 		};
 		var assignValueRecursive = function(key, value){
