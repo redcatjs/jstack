@@ -215,6 +215,9 @@
 		},config);
 		var $this = this;
 		var assignValue = function( key, value ){
+			if(value===null){
+				value = '';
+			}
 			var inputs = $this.find('[name="'+key+'"]');
 			if(config.addMissing&&!inputs.length){
 				$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
@@ -227,17 +230,19 @@
 			});
 		};
 		var assignValueRecursive = function(key, value){
-			for(var k in value){
+			$.each(value,function(k,v){
 				var keyAssign = key+'['+k+']';
-				if(typeof(value[k])=='object'&&value!=null){
-					assignValueRecursive(keyAssign, value[k]);
+				if(typeof(v)=='object'&&v!=null){
+					assignValueRecursive(keyAssign, v);
 				}
 				else{
-					assignValue(keyAssign, value[k]);
+					assignValue(keyAssign, v);
 				}
-			}
+			});
 		};
+		console.log(data);
 		$.each(data, function(key, value){
+			console.log(key, value);
 			if(typeof(value)=='object'&&value!=null){
 				assignValueRecursive(key, value);
 			}
