@@ -229,7 +229,7 @@
 		var assignValueRecursive = function(key, value){
 			for(var k in value){
 				var keyAssign = key+'['+k+']';
-				if(typeof(value[k])=='object'){
+				if(typeof(value[k])=='object'&&value!=null){
 					assignValueRecursive(keyAssign, value[k]);
 				}
 				else{
@@ -238,7 +238,7 @@
 			}
 		};
 		$.each(data, function(key, value){
-			if(typeof(value)=='object'){
+			if(typeof(value)=='object'&&value!=null){
 				var keyname = assignValueRecursive(key, value);
 			}
 			else{
