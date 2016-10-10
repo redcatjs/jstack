@@ -240,9 +240,7 @@
 				}
 			});
 		};
-		console.log(data);
 		$.each(data, function(key, value){
-			console.log(key, value);
 			if(typeof(value)=='object'&&value!=null){
 				assignValueRecursive(key, value);
 			}
