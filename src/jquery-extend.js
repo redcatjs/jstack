@@ -239,7 +239,7 @@
 		};
 		$.each(data, function(key, value){
 			if(typeof(value)=='object'&&value!=null){
-				var keyname = assignValueRecursive(key, value);
+				assignValueRecursive(key, value);
 			}
 			else{
 				assignValue(key, value);
