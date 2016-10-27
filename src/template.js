@@ -18,6 +18,7 @@
 	var cache = {};
 	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
 	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
+	
 	j.template = function( html, data, id, debug ) {
 		var fn;
 		if ( id && cache[ id ] ) {
@@ -31,17 +32,17 @@
 				}
 			}
 
-			var compile = "var p=[];with(obj){p.push('" + html
+			var compile = "var tmplString=''; for(var tmplKey in tmplObj){ if(tmplObj.hasOwnProperty(tmplKey)) eval('var '+tmplKey+' = tmplObj['+tmplKey+'];');} tmplString += '" + html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )
 				.split( "'" ).join( "\\'" )
 				.split( "\t" ).join( "'" )
-				.replace( reg2, "',$1,'" )
-				.split( separatorStart ).join( "');" )
-				.split( separatorEnd ).join( "p.push('" ) +
-				"');}return p.join('');";
+				.replace( reg2, "'+(typeof($1)!=='undefined'?($1):'')+'" )
+				.split( separatorStart ).join( "';" )
+				.split( separatorEnd ).join( "tmplString += '" ) +
+				"'; return tmplString;";
 			try {
-				fn = new Function( "obj", compile );
+				fn = new Function( "tmplObj", compile );
 				if ( id ) cache[ id ] = fn;
 			}
 			catch ( e ) {
