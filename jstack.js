@@ -489,13 +489,13 @@ jstack.route = ( function( w, url ) {
 					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
-
+			var logUndefined = debug?'console.log(tmplException.message);':'';
 			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )
 				.split( "'" ).join( "\\'" )
 				.split( "\t" ).join( "'" )
-				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ console.log(tmplException.message); }; tmplString += '" )
+				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ "+logUndefined+" }; tmplString += '" )
 				.split( separatorStart ).join( "';" )
 				.split( separatorEnd ).join( "tmplString += '" ) +
 				"';} return tmplString;";
