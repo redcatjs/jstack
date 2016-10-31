@@ -37,7 +37,7 @@
 				.replace( reg1, "\t" )
 				.split( "'" ).join( "\\'" )
 				.split( "\t" ).join( "'" )
-				.replace( reg2, "'; try{ tmplString += $1 }catch(e){}; tmplString += '" )
+				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ console.log(tmplException.message); }; tmplString += '" )
 				.split( separatorStart ).join( "';" )
 				.split( separatorEnd ).join( "tmplString += '" ) +
 				"';} return tmplString;";
