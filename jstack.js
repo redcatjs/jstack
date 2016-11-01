@@ -2761,6 +2761,7 @@ jstack.way = ( function() {
 		timeoutInput = setTimeout( function() {
 			var element = w.dom( e.target ).get( 0 );
 			way.dom( element ).toStorage();
+			$(element).trigger('change:model');
 		}, way.options.timeout );
 	};
 	var eventClear = function( e ) {
