@@ -1508,7 +1508,7 @@ jstack.way = ( function() {
 					return;
 				}
 				//w.dom( element ).val( a );
-				$( element ).val( a );
+				$( element ).setVal( a ).trigger( 'val', ['way-prevent-update'] );
 			},
 			"INPUT": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
@@ -1523,13 +1523,14 @@ jstack.way = ( function() {
 					return;
 				} else if ( type != "submit" ) {
 					//w.dom( element ).val( a || "" );
-					$( element ).val( a || "" );
+					$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
 				}
 			},
 			"TEXTAREA": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
 				//w.dom( element ).val( a || "" );
-				$( element ).val( a || "" );
+				$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
+				
 			},
 			"PRE": function( a ) {
 				if ( options.html ) {
@@ -2754,7 +2755,8 @@ jstack.way = ( function() {
 	// WATCH DOM EVENTS
 	way = new WAY();
 	var timeoutInput = null;
-	var eventInputChange = function( e ) {
+	var eventInputChange = function( e, param ) {
+		if(param==='way-prevent-update') return;
 		if ( timeoutInput ) { clearTimeout( timeoutInput ); }
 		timeoutInput = setTimeout( function() {
 			var element = w.dom( e.target ).get( 0 );
