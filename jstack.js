@@ -1507,7 +1507,8 @@ jstack.way = ( function() {
 				if(!a&& w.dom( element ).find('option:first-child[selected][disabled]') ){
 					return;
 				}
-				w.dom( element ).val( a );
+				//w.dom( element ).val( a );
+				$( element ).val( a );
 			},
 			"INPUT": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
@@ -1521,12 +1522,14 @@ jstack.way = ( function() {
 				} else if ( type == "file" ) {
 					return;
 				} else if ( type != "submit" ) {
-					w.dom( element ).val( a || "" );
+					//w.dom( element ).val( a || "" );
+					$( element ).val( a || "" );
 				}
 			},
 			"TEXTAREA": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
-				w.dom( element ).val( a || "" );
+				//w.dom( element ).val( a || "" );
+				$( element ).val( a || "" );
 			},
 			"PRE": function( a ) {
 				if ( options.html ) {
