@@ -198,6 +198,9 @@ jstack.way = ( function() {
 		} );
 		var setters = {
 			"SELECT": function( a ) {
+				if(!a&& w.dom( element ).find('option:first-child[selected][disabled]') ){
+					return;
+				}
 				w.dom( element ).val( a );
 			},
 			"INPUT": function( a ) {
