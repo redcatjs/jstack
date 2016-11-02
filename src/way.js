@@ -408,13 +408,16 @@ jstack.way = ( function() {
 
 			repeat.filter = repeat.filter || [];
 			w.dom( wrapper ).empty();
-
+			
+			var i = 1;
 			for ( var key in data ) {
 				if ( !data.hasOwnProperty( key ) ) continue;
 				w.dom( repeat.element ).attr( tagPrefix + "-scope", key );
 				var html = w.dom( repeat.element ).get( 0 ).outerHTML;
 				html = html.replace( /\$\$key/gi, key );
+				html = html.replace( /\$\$i/gi, i );
 				items.push( html );
+				i++;
 			}
 
 			w.dom( wrapper ).html( items.join( "" ) );
