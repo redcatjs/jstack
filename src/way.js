@@ -80,7 +80,7 @@ jstack.way = ( function() {
 
 	// DOM METHODS CHAINING
 	WAY.prototype.dom = function( element ) {
-		this._element = w.dom( element ).get( 0 );
+		this._element = element;
 		return this;
 	};
 
@@ -148,12 +148,12 @@ jstack.way = ( function() {
 			element = element || self._element;
 		var getters = {
 			"SELECT": function() {
-				return w.dom( element ).val();
+				return $( element ).val();
 			},
 			"INPUT": function() {
-				var type = w.dom( element ).type();
+				var type = $( element ).prop('type');
 				if ( _w.contains( [ "checkbox", "radio" ], type ) ) {
-					return w.dom( element ).prop( "checked" ) ? w.dom( element ).val() : null;
+					return $( element ).prop( "checked" ) ? $( element ).val() : null;
 				} else if ( type == "file" ) {
 					return element.files;
 				} else if ( type != "submit" ) {
@@ -162,13 +162,13 @@ jstack.way = ( function() {
 
 			},
 			"TEXTAREA": function() {
-				return w.dom( element ).val();
+				return $( element ).val();
 			}
 		};
 		var defaultGetter = function( a ) {
-			return w.dom( element ).html();
+			return $( element ).html();
 		};
-		var elementType = w.dom( element ).get( 0 ).tagName;
+		var elementType = element.tagName;
 		var getter = getters[ elementType ] || defaultGetter;
 		return getter();
 	};
@@ -198,80 +198,76 @@ jstack.way = ( function() {
 		} );
 		var setters = {
 			"SELECT": function( a ) {
-				if(!a&& w.dom( element ).find('option:first-child[selected][disabled]') ){
+				if(!a&& $( element ).find('option:first-child[selected][disabled]') ){
 					return;
 				}
-				//w.dom( element ).val( a );
 				$( element ).setVal( a ).trigger( 'val', ['way-prevent-update'] );
 			},
 			"INPUT": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
-				var type = w.dom( element ).get( 0 ).type;
+				var type = element.type;
 				if ( _w.contains( [ "checkbox", "radio" ], type ) ) {
-					if ( a === w.dom( element ).val() ) {
-						w.dom( element ).prop( "checked", true );
+					if ( a === $( element ).val() ) {
+						$( element ).prop( "checked", true );
 					} else {
-						w.dom( element ).prop( "checked", false );
+						$( element ).prop( "checked", false );
 					}
 				} else if ( type == "file" ) {
 					return;
 				} else if ( type != "submit" ) {
-					//w.dom( element ).val( a || "" );
 					$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
 				}
 			},
 			"TEXTAREA": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
-				//w.dom( element ).val( a || "" );
 				$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
 				
 			},
 			"PRE": function( a ) {
 				if ( options.html ) {
-					w.dom( element ).html( a );
+					$( element ).html( a );
 				} else {
-					w.dom( element ).text( a );
+					$( element ).text( a );
 				}
 			},
 			"IMG": function( a ) {
 				if ( !a ) {
 					a = options.default || "";
-					w.dom( element ).attr( "src", a );
+					$( element ).attr( "src", a );
 					return false;
 				}
 				var isValidImageUrl = function( url, cb ) {
-					w.dom( element ).addClass( "way-loading" );
-					w.dom( "img", {
+					$( element ).addClass( "way-loading" );
+					$( "<img>", {
 						src: url,
 						onerror: function() { cb( false ); },
 						onload: function() { cb( true ); }
 					} );
 				};
 				isValidImageUrl( a, function( response ) {
-					w.dom( element ).removeClass( "way-loading" );
+					$( element ).removeClass( "way-loading" );
 					if ( response ) {
-						w.dom( element ).removeClass( "way-error" ).addClass( "way-success" );
+						$( element ).removeClass( "way-error" ).addClass( "way-success" );
 					} else {
 						if ( a ) {
-							w.dom( element ).addClass( "way-error" );
+							$( element ).addClass( "way-error" );
 						} else {
-							w.dom( element ).removeClass( "way-error" ).removeClass( "way-success" );
+							$( element ).removeClass( "way-error" ).removeClass( "way-success" );
 						}
 						a = options.default || "";
 					}
-					w.dom( element ).attr( "src", a );
+					$( element ).attr( "src", a );
 				} );
 			}
 		};
 		var defaultSetter = function( a ) {
-			console.log(element,a);
 			if ( options.html ) {
-				w.dom( element ).html( a || "" );
+				$( element ).html( a || "" );
 			} else {
-				w.dom( element ).text( a || "" );
+				$( element ).text( a || "" );
 			}
 		};
-		var elementType = w.dom( element ).get( 0 ).tagName;
+		var elementType = $( element ).get( 0 ).tagName;
 		var setter = setters[ elementType ] || defaultSetter;
 		if ( data === null || typeof( data ) == "undefined" ) data = "";
 		setter( data );
@@ -293,7 +289,7 @@ jstack.way = ( function() {
 		var self = this,
 			dataSelector = "[" + tagPrefix + "-default]";
 
-		var elements = w.dom( dataSelector ).get();
+		var elements = $( dataSelector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions(),
 				selector = options.data || null,
@@ -317,15 +313,15 @@ jstack.way = ( function() {
 		var selector = "[" + tagPrefix + "-data]";
 		self._bindings = {};
 
-		var elements = w.dom( selector ).get();
+		var elements = $( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions(),
 				scope = self.dom( element ).scope(),
 				selector = scope ? scope + "." + options.data : options.data;
 
 			self._bindings[ selector ] = self._bindings[ selector ] || [];
-			if ( !_w.contains( self._bindings[ selector ], w.dom( element ).get( 0 ) ) ) {
-				self._bindings[ selector ].push( w.dom( element ).get( 0 ) );
+			if ( !_w.contains( self._bindings[ selector ], $( element ).get( 0 ) ) ) {
+				self._bindings[ selector ].push( $( element ).get( 0 ) );
 			}
 
 		} );
@@ -361,8 +357,6 @@ jstack.way = ( function() {
 		var selector = "[" + tagPrefix + "-repeat]";
 		self._repeats = self._repeats || {};
 		self._repeatsCount = self._repeatsCount || 0;
-		
-		console.log('registerRepeats');
 		
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, element ) {
@@ -1429,7 +1423,7 @@ jstack.way = ( function() {
 		if(param==='way-prevent-update') return;
 		if ( timeoutInput ) { clearTimeout( timeoutInput ); }
 		timeoutInput = setTimeout( function() {
-			var element = w.dom( e.target ).get( 0 );
+			var element = $( e.target ).get( 0 );
 			way.dom( element ).toStorage();
 			$(element).trigger('change:model');
 		}, way.options.timeout );
@@ -1466,13 +1460,9 @@ jstack.way = ( function() {
 			console.log('eventDOMChange');
 
 			way.updateForms();
-			
 			way.registerBindings();
 			way.registerRepeats();
-			
-			//way.updateDependencies();
-
-			//setEventListeners();
+			way.updateBindings();
 
 		}, way.options.timeoutDOM );
 
