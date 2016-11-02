@@ -1025,7 +1025,6 @@ jstack.loadView = ( function() {
 						var value = $(this).val();
 						var key = getScoped(this);
 						dotSet(key,data,value);
-						console.log(data);
 					});
 					self.find(':input[name]').each(function(){
 						var key = getScoped(this);
