@@ -261,6 +261,11 @@ jstack.way = ( function() {
 			}
 		};
 		var defaultSetter = function( a ) {
+			var read = $( element ).html();
+			if(!a){
+				a = "";
+			}
+			if(read==a) return;
 			if ( options.html ) {
 				$( element ).html( a || "" );
 			} else {
@@ -303,7 +308,8 @@ jstack.way = ( function() {
 
 	// Scans the DOM to look for new bindings
 	WAY.prototype.registerBindings = function() {
-
+		console.log('registerBindings');
+		
 		// Dealing with bindings removed from the DOM by just resetting all the bindings all the time.
 		// Isn't there a better way?
 		// One idea would be to add a "way-bound" class to bound elements
@@ -328,6 +334,8 @@ jstack.way = ( function() {
 
 	};
 	WAY.prototype.updateBindings = function( selector ) {
+		console.log('updateBindings');
+		
 		var self = this;
 			self._bindings = self._bindings || {};
 
@@ -351,7 +359,8 @@ jstack.way = ( function() {
 
 	// DOM METHODS: GET - SET REPEATS
 	WAY.prototype.registerRepeats = function() {
-
+		console.log('registerRepeats');
+		
 		// Register repeats
 		var self = this;
 		var selector = "[" + tagPrefix + "-repeat]";
@@ -396,6 +405,8 @@ jstack.way = ( function() {
 	};
 
 	WAY.prototype.updateRepeats = function( selector ) {
+		console.log('updateRepeats');
+		
 		var self = this;
 			self._repeats = self._repeats || {};
 		var repeats = pickAndMergeParentArrays( self._repeats, selector );
@@ -421,15 +432,19 @@ jstack.way = ( function() {
 			}
 
 			w.dom( wrapper ).html( items.join( "" ) );
-			self.registerBindings();
-			self.updateBindings();
+			//self.registerBindings();
+			//self.updateBindings();
 
 		} );
-
+		
+		self.registerBindings();
+		self.updateBindings();
 	};
 
 	// DOM METHODS: FORMS
 	WAY.prototype.updateForms = function() {
+		console.log('updateForms');
+		
 		// If we just parse the forms with form2js (see commits before 08/19/2014) and set the data with way.set(),
 		// we reset the entire data for this pathkey in the datastore. It causes the bug
 		// reported here: https://github.com/gwendall/way.js/issues/10
@@ -1462,7 +1477,9 @@ jstack.way = ( function() {
 			way.updateForms();
 			way.registerBindings();
 			way.registerRepeats();
+			
 			way.updateBindings();
+			//way.updateRepeats();
 
 		}, way.options.timeoutDOM );
 
@@ -1505,8 +1522,11 @@ jstack.way = ( function() {
 	
 	way.setDefaults();
 	way.registerBindings();
-	way.registerRepeats();
-	way.updateDependencies();
+	//way.registerRepeats();
+	
+	//way.updateRepeats();
+	way.updateForms();
+	way.updateBindings();
 
 	return way;
 } )();
