@@ -68,7 +68,6 @@ jstack.way = ( function() {
 		this.data = {};
 		this._bindings = {};
 		this.options = {
-			persistent: true,
 			timeoutInput: 50,
 			timeoutDOM: 1500
 		};
@@ -522,7 +521,6 @@ jstack.way = ( function() {
 				html: false,
 				readonly: false,
 				writeonly: false,
-				persistent: false
 			};
 		return _w.extend( defaultOptions, self.dom( element ).getAttrs( tagPrefix ) );
 
@@ -540,7 +538,6 @@ jstack.way = ( function() {
 				writeonly: "boolean",
 				json: "boolean",
 				html: "boolean",
-				persistent: "boolean"
 			};
 			var parsers = {
 				array: function( value ) {
@@ -618,7 +615,6 @@ jstack.way = ( function() {
 			self.data = selector ? _json.set( self.data, selector, value ) : {};
 			self.updateDependencies( selector );
 			self.emitChange( selector, value );
-			if ( options.persistent ) { self.backup( selector ); }
 		}
 	};
 	WAY.prototype.push = function( selector, value, options ) {
@@ -630,7 +626,6 @@ jstack.way = ( function() {
 		}
 		self.updateDependencies( selector );
 		self.emitChange( selector, null );
-		if ( options.persistent ) { self.backup( selector ); }
 	};
 	WAY.prototype.remove = function( selector, options ) {
 		var self = this;
@@ -644,37 +639,7 @@ jstack.way = ( function() {
 		self.emitChange( selector, null );
 	};
 	WAY.prototype.clear = function() {
-		this.remove( null, { persistent: true } );
-	};
-
-	// LOCALSTORAGE METHODS
-	WAY.prototype.backup = function() {
-		var self = this;
-		if ( !self.options.persistent ) { return; }
-		try {
-			var data = self.data || {};
-			localStorage.setItem( tagPrefix, JSON.stringify( data ) );
-		}
-		catch ( e ) {
-			console.log( "Your browser does not support localStorage." );
-		}
-	};
-	WAY.prototype.restore = function() {
-		var self = this;
-		if ( !self.options.persistent ) { return; }
-		try {
-			var data = localStorage.getItem( tagPrefix );
-			try {
-				data = JSON.parse( data );
-				for ( var key in data ) {
-					if ( !data.hasOwnProperty( key ) ) continue;
-					self.set( key, data[ key ] );
-				}
-			} catch ( e ) {}
-		}
-		catch ( e ) {
-			console.log( "Your browser does not support localStorage." );
-		}
+		this.remove( null );
 	};
 
 	// MISC //
@@ -1517,8 +1482,6 @@ jstack.way = ( function() {
 	};
 
 	setEventListeners();
-
-	//way.restore();
 	
 	//way.setDefaults();
 	//way.registerBindings();
