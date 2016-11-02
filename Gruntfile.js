@@ -2,10 +2,10 @@ module.exports = function(grunt) {
 
 // config
 grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
+	pkg: grunt.file.readJSON('package.json'),
 
-    concat: {
-        dist: {
+	concat: {
+		dist: {
 			src: [
 				"src/core.js",
 				"src/hasOwnProperty2.js",
@@ -39,20 +39,31 @@ grunt.initConfig({
 			],
 			dest: 'jstack.js'
 		}
-    },
-    
-    uglify: {
+	},
+	
+	uglify: {
 		build: {
 			src: 'jstack.js',
 			dest: 'jstack.min.js'
 		}
-	}
+	},
+	
+	watch: {
+		scripts: {
+			files: '**/*.js',
+			tasks: ['concat','uglify'],
+			options: {
+				debounceDelay: 250,
+			},
+		},
+	},
 
 });
 
 // plug-in register
 grunt.loadNpmTasks('grunt-contrib-concat');
 grunt.loadNpmTasks('grunt-contrib-uglify');
+grunt.loadNpmTasks('grunt-contrib-watch');
 
 // cli exec
 grunt.registerTask('default', ['concat']);
