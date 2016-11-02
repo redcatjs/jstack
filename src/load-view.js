@@ -41,48 +41,16 @@ jstack.loadView = ( function() {
 					
 					self.html( processedTemplate );
 					
-					var ui = {};
-					
 					self.data('data-model',data);
-					
-					var dotGet = function(key,data){
-						return key.split('.').reduce(function(obj,i){return obj[i];}, data);
-					};
-					var dotSet = function(key,data,value){
-						key.split('.').reduce(function(obj,i,index,array){ if(array.length==index+2) obj[i] = value; return obj[i];}, data);
-					};
-					var getKey = function(key){
-						return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
-					};
-					var getScope = function(input){
-						return $(input).parents('[data-j-model]')
-							.map(function() {
-								return $(this).attr('data-j-model');
-							})
-							.get()
-							.reverse()
-							.join('.')
-						;
-					};
-					var getScoped = function(input){
-						var scope = getScope(input);
-						if(scope){
-							scope += '.';
-						}
-						var name = $(input).attr('name');
-						var key = getKey(name);
-						scope += key;
-						return scope;
-					}
 					self.on('input',':input[name]',function(){
 						var name = $(this).attr('name');
 						var value = $(this).val();
-						var key = getScoped(this);
-						dotSet(key,data,value);
+						var key = jstack.dataBinder.getScoped(this);
+						jstack.dataBinder.dotSet(key,data,value);
 					});
 					self.find(':input[name]').each(function(){
-						var key = getScoped(this);
-						var value = dotGet(key,data);
+						var key = jstack.dataBinder.getScoped(this);
+						var value = jstack.dataBinder.dotGet(key,data);
 						$(this).val(value);
 					});
 					

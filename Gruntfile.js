@@ -21,6 +21,7 @@ grunt.initConfig({
 				"src/phpjs.rtrim.js",
 				"src/get-template.js",
 				"src/process-template.js",
+				"src/data-binder.js",
 				"src/load-view.js",
 				"src/ajax.js",
 				"src/params-reflection.js",
