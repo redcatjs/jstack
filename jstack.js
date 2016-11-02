@@ -989,59 +989,48 @@ jstack.loadView = ( function() {
 					
 					var ui = {};
 					
-					//self.data('data-model',data);
+					self.data('data-model',data);
 					
 					var dotGet = function(key,data){
 						return key.split('.').reduce(function(obj,i){return obj[i];}, data);
 					};
 					var dotSet = function(key,data,value){
-						key.split('.').reduce(function(obj,i,array,index){ if(array.length==index+1) obj[i] = value; return obj[i];}, data);
+						key.split('.').reduce(function(obj,i,index,array){ if(array.length==index+2) obj[i] = value; return obj[i];}, data);
 					};
-					
-					self.find('form').each(function(){
-						var form = $(this);
-						self.find(':input[name]').each(function(){
-							var input = $(this);
-							var scope = input.parents('[data-j-model]')
-								.map(function() {
-									return $(this).attr('data-j-model');
-								})
-								.get()
-								.reverse()
-								.join('.')
-							;
-							if(scope){
-								scope += '.';
-							}
-							
-							var name = input.attr('name');
-							ui['[name="'+name+'"]'] = { bind: scope+name };
-							ui['[name="'+name+'"]'] = {
-							  bind: function (data, value, $control) {
-								  console.log(value);
-								if(value===null){
-									var val = dotGet(scope+name, data);
-									value = val;
-								}
-								else{
-									dotSet(scope+name, data, value);
-								}
-								//console.log(data);
-								
-								$control.val(value);
-								return value;
-							  }
-	
-							};
-							
-						});
-						
-						//console.log(JSON.stringify(ui));
-						//console.log(JSON.stringify(data));
-						form.my({
-							ui: ui,
-						},data);
-						//console.log(JSON.stringify(data));
+					var getKey = function(key){
+						return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
+					};
+					var getScope = function(input){
+						return $(input).parents('[data-j-model]')
+							.map(function() {
+								return $(this).attr('data-j-model');
+							})
+							.get()
+							.reverse()
+							.join('.')
+						;
+					};
+					var getScoped = function(input){
+						var scope = getScope(input);
+						if(scope){
+							scope += '.';
+						}
+						var name = $(input).attr('name');
+						var key = getKey(name);
+						scope += key;
+						return scope;
+					}
+					self.on('input',':input[name]',function(){
+						var name = $(this).attr('name');
+						var value = $(this).val();
+						var key = getScoped(this);
+						dotSet(key,data,value);
+						console.log(data);
+					});
+					self.find(':input[name]').each(function(){
+						var key = getScoped(this);
+						var value = dotGet(key,data);
+						$(this).val(value);
 					});
 					
 					
