@@ -2565,7 +2565,9 @@ jstack.way = ( function() {
 		timeoutDOM = setTimeout( function() {
 			
 			console.log('eventDOMChange');
-
+			
+			way.setDefaults();
+			
 			way.updateForms();
 			way.registerBindings();
 			way.registerRepeats();
@@ -2600,15 +2602,7 @@ jstack.way = ( function() {
 	};
 
 	setEventListeners();
-	
-	//way.setDefaults();
-	//way.registerBindings();
-	
-	//way.registerRepeats();
-	//way.updateRepeats();
-	
-	//way.updateForms();
-	//way.updateBindings();
+	eventDOMChange();
 
 	return way;
 } )();
