@@ -1684,7 +1684,9 @@ jstack.way = ( function() {
 					filter: options.filter
 				} );
 
-				var wrapper = document.createElement( "div" );
+				//var wrapper = document.createElement( "div" );
+				var wrapper = document.createElement( $(element).prop('tagName') );
+				
 				w.dom( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
 				w.dom( wrapper ).attr( tagPrefix + "-scope", options.repeat );
 				if ( options.filter ) { w.dom( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
@@ -1712,14 +1714,16 @@ jstack.way = ( function() {
 
 			repeat.filter = repeat.filter || [];
 			w.dom( wrapper ).empty();
-
+			
+			var i = 1;
 			for ( var key in data ) {
 				if ( !data.hasOwnProperty( key ) ) continue;
 				w.dom( repeat.element ).attr( tagPrefix + "-scope", key );
 				var html = w.dom( repeat.element ).get( 0 ).outerHTML;
 				html = html.replace( /\$\$key/gi, key );
+				html = html.replace( /\$\$i/gi, i );
 				items.push( html );
-
+				i++;
 			}
 
 			w.dom( wrapper ).html( items.join( "" ) );
