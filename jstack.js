@@ -1389,18 +1389,6 @@ jstack.way = ( function() {
 		return this;
 	};
 
-	// DOM METHODS: DOM -> JSON
-	WAY.prototype.toStorage = function( options, element ) {
-		var self = this,
-			element = element || self._element,
-			options = options || self.dom( element ).getOptions(),
-			data = self.dom( element ).toJSON( options ),
-			scope = self.dom( element ).scope(),
-			selector = scope ? scope + "." + options.data : options.data;
-		if ( options.readonly ) { return false; }
-		self.set( selector, data, options );
-
-	};
 	WAY.prototype.toJSON = function( options, element ) {
 		var self = this,
 			element = element || self._element,
@@ -2531,7 +2519,6 @@ jstack.way = ( function() {
 		if ( timeoutInput ) { clearTimeout( timeoutInput ); }
 		timeoutInput = setTimeout( function() {
 			var element = $( e.target ).get( 0 );
-			way.dom( element ).toStorage();
 			$(element).trigger('change:model');
 		}, way.options.timeout );
 	};
@@ -2557,10 +2544,7 @@ jstack.way = ( function() {
 	};
 
 	var timeoutDOM = null;
-	var eventDOMChange = function(mutations) {		
-		// We need to register dynamically added bindings so we do it by watching DOM changes
-		// We use a timeout since "DOMSubtreeModified" gets triggered on every change in the DOM (even input value changes)
-		// so we can limit the number of scans when a user is typing something
+	var eventDOMChange = function(mutations){
 		if ( timeoutDOM ) { clearTimeout( timeoutDOM ); }
 		timeoutDOM = setTimeout( function() {
 			
@@ -2576,7 +2560,6 @@ jstack.way = ( function() {
 			//way.updateRepeats();
 
 		}, way.options.timeoutDOM );
-
 	};
 
 	var setEventListeners = function() {
