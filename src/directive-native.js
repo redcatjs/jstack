@@ -27,7 +27,7 @@
 	} );
 
 	j.directive( "model", function( val, el ) {
-		el.attr( "way-data", val );
+		el.attr( "data-j-model", val );
 	} );
 
 	j.directive( "include", function( val, el, templatesPath ) {

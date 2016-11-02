@@ -26,7 +26,7 @@ jstack.loadView = ( function() {
 			var self = $( this );
 			var controllerPath = self.attr( "j-controller" );
 			var controllerName = controllerPath.replace( "/", "." );
-			self.attr( "way-scope", controllerName );
+			//self.attr( "way-scope", controllerName );
 
 			var cacheId = o.templatePath + "#" + controllerPath;
 
@@ -38,54 +38,76 @@ jstack.loadView = ( function() {
 			var compileView = jstack.processTemplate( self, cacheId, templatesPath ).then( function( templateProcessor ) {
 				processors[ controllerPath ] = function( data ) {
 					var processedTemplate = templateProcessor( data );
+					
 					self.html( processedTemplate );
-					jstack.way.set( controllerName, data );
+					
+					var ui = {};
+					
+					//self.data('data-model',data);
+					
+					var dotGet = function(key,data){
+						return key.split('.').reduce(function(obj,i){return obj[i];}, data);
+					};
+					var dotSet = function(key,data,value){
+						key.split('.').reduce(function(obj,i,array,index){ if(array.length==index+1) obj[i] = value; return obj[i];}, data);
+					};
+					
+					self.find('form').each(function(){
+						var form = $(this);
+						self.find(':input[name]').each(function(){
+							var input = $(this);
+							var scope = input.parents('[data-j-model]')
+								.map(function() {
+									return $(this).attr('data-j-model');
+								})
+								.get()
+								.reverse()
+								.join('.')
+							;
+							if(scope){
+								scope += '.';
+							}
+							
+							var name = input.attr('name');
+							ui['[name="'+name+'"]'] = { bind: scope+name };
+							ui['[name="'+name+'"]'] = {
+							  bind: function (data, value, $control) {
+								  console.log(value);
+								if(value===null){
+									var val = dotGet(scope+name, data);
+									value = val;
+								}
+								else{
+									dotSet(scope+name, data, value);
+								}
+								//console.log(data);
+								
+								$control.val(value);
+								return value;
+							  }
+	
+							};
+							
+						});
+						
+						//console.log(JSON.stringify(ui));
+						//console.log(JSON.stringify(data));
+						form.my({
+							ui: ui,
+						},data);
+						//console.log(JSON.stringify(data));
+					});
+					
+					
 				};
 			} );
-			var loadOnce;
-			var initController = function( ctrl ) {
-				if ( loadOnce ) return;
-				loadOnce = true;
-
-				ctrl.jstack.bindUpdate = function() {
-					jstack.way.set( controllerName, ctrl.jstack.data );
-				};
-				ctrl.jstack.bindWatch = function() {
-					var data = ctrl.jstack.data;
-					ctrl.jstack.bindUpdate();
-
-					jstack.watcher.start();
-					jstack.watch( data, function( prop, action, newvalue, oldvalue ) {
-						jstack.way.set( controllerName + "." + prop, newvalue );
-						if ( ctrl.jstack.bindSyncReload )
-							processors[ controllerPath ]();
-					} );
-					jstack.watch( data, function( prop, action, difference, oldvalue ) {
-						var update, added = difference.added, removed = difference.removed;
-						for ( var i = 0, length = added.length; i < length; i++ ) {
-							jstack.way.set( controllerName + "." + added[ i ], data[ added[ i ] ] );
-						}
-						for ( var i = 0, length = removed.length; i < length; i++ ) {
-							jstack.way.set( controllerName + "." + removed[ i ], data[ added[ i ] ] );
-						}
-						if ( update && ctrl.jstack.bindSyncReload )
-							processors[ controllerPath ]();
-					}, 0, true );
-
-				};
-
-				if ( ctrl.jstack.bindSync ) {
-					ctrl.jstack.bindWatch();
-				}
-			};
 			var controllerRendered = $.Deferred();
 			var loadController = function() {
 				var ctrl = jstack.controller( controllerPath );
-				if ( !ctrl )
+				if ( !ctrl ){
 					console.log( 'jstack controller "' + controllerPath + '" not found as expected (or parse error) in "' + o.controllersPath + controllerPath + '"' );
-
-				initController( ctrl );
-
+				}
+				
 				ctrl.jstack.render = function( data ) {
 					if ( !data ) data = {};
 					ctrl.jstack.data = data;

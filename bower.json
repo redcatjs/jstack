@@ -3,7 +3,8 @@
 	"main": "jstack.js",
 	"dependencies": {
 		"js": "latest",
-		"jquery": "latest"
+		"jquery": "latest",
+		"jquerymy": "latest"
 	},
 	"homepage": "https://github.com/redcatphp/jstack",
 	"description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery ",

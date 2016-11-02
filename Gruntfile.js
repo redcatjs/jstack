@@ -13,8 +13,6 @@ grunt.initConfig({
 				"src/route.js",
 				"src/template.js",
 				"src/controller.js",
-				"src/watch.js",
-				"src/way.js",
 				"src/directive.js",
 				"src/directive-native.js",
 				"src/phpjs.uniqid.js",
