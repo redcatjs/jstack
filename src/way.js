@@ -70,7 +70,7 @@ jstack.way = ( function() {
 		this.options = {
 			persistent: true,
 			timeoutInput: 50,
-			timeoutDOM: 500
+			timeoutDOM: 1500
 		};
 	};
 
@@ -264,6 +264,7 @@ jstack.way = ( function() {
 			}
 		};
 		var defaultSetter = function( a ) {
+			console.log(element,a);
 			if ( options.html ) {
 				w.dom( element ).html( a || "" );
 			} else {
@@ -360,7 +361,9 @@ jstack.way = ( function() {
 		var selector = "[" + tagPrefix + "-repeat]";
 		self._repeats = self._repeats || {};
 		self._repeatsCount = self._repeatsCount || 0;
-
+		
+		console.log('registerRepeats');
+		
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions();
@@ -379,13 +382,15 @@ jstack.way = ( function() {
 				} );
 
 				//var wrapper = document.createElement( "div" );
-				var wrapper = document.createElement( $(element).prop('tagName') );
+				//var wrapper = document.createElement( $(element).parent().prop('tagName') );
+				var wrapper = $(element).parent().get(0);
 				
 				w.dom( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
 				w.dom( wrapper ).attr( tagPrefix + "-scope", options.repeat );
 				if ( options.filter ) { w.dom( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
 
-				w.dom( element ).replaceWith( wrapper );
+				//w.dom( element ).replaceWith( wrapper );
+				
 				self.updateRepeats( options.repeat );
 
 				self._repeatsCount++;
@@ -476,12 +481,6 @@ jstack.way = ( function() {
 
 	};
 
-	// DOM METHODS: GET - SET ALL DEPENDENCIES
-	WAY.prototype.registerDependencies = function() {
-		this.registerBindings();
-		this.registerRepeats();
-
-	};
 	WAY.prototype.updateDependencies = function( selector ) {
 		this.updateBindings( selector );
 		this.updateRepeats( selector );
@@ -1422,34 +1421,6 @@ jstack.way = ( function() {
 		parent.replaceChild( newDOM, oldDOM );
 	};
 
-	wQuery.prototype.observeDOM = function() {
-		var self = this, elements = self._elements;
-		if ( window.MutationObserver ) {
-			var observer = new MutationObserver( function( mutations ) {
-				mutations.forEach( function( mutation ) {
-					if ( mutation.type == "childList" || mutation.type == "subtree" ) {
-						eventDOMChange();
-					}
-				} );
-			} );
-			for ( var i = 0, lenEl = elements.length; i < lenEl; i++ ) {
-				var element = elements[ i ];
-				observer.observe( element, {
-					subtree: true,  // Observe the subtree rooted at myNode
-					childList: true,  // Include information childNode insertion/removals
-					attribute: true  // Include information about changes to attributes within the subtree
-				} );
-			}
-		} else {
-			for ( var i = 0, lenEl = elements.length; i < lenEl; i++ ) {
-				var element = elements[ i ];
-				if ( element.addEventListener ) {
-					element.addEventListener( "DOMSubtreeModified", eventDOMChange, false );
-				}
-			}
-		}
-	};
-
 	// WATCH DOM EVENTS
 	way = new WAY();
 	var timeoutInput = null;
@@ -1484,17 +1455,24 @@ jstack.way = ( function() {
 	};
 
 	var timeoutDOM = null;
-	var eventDOMChange = function() {
+	var eventDOMChange = function(mutations) {
+		
+		console.log('eventDOMChange');
+		
 		// We need to register dynamically added bindings so we do it by watching DOM changes
 		// We use a timeout since "DOMSubtreeModified" gets triggered on every change in the DOM (even input value changes)
 		// so we can limit the number of scans when a user is typing something
 		if ( timeoutDOM ) { clearTimeout( timeoutDOM ); }
 		timeoutDOM = setTimeout( function() {
+			
+			console.log('eventDOMChange');
 
-			//Way.registerDependencies();
 			way.updateForms();
-			way.registerDependencies();
-			way.updateDependencies();
+			
+			way.registerBindings();
+			way.registerRepeats();
+			
+			//way.updateDependencies();
 
 			setEventListeners();
 
@@ -1507,7 +1485,21 @@ jstack.way = ( function() {
 	way.w = w;
 
 	var setEventListeners = function() {
-		w.dom( "body" ).observeDOM();
+		
+		var observer;
+		if (typeof MutationObserver !== 'undefined'){
+			observer = new MutationObserver(eventDOMChange);
+		}
+		else if (typeof WebKitMutationObserver !== 'undefined'){
+			observer = new WebKitMutationObserver(eventDOMChange);
+		}
+		if (observer) {
+			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
+		}
+		else {
+			document.body.bind('DOMSubtreeModified', eventDOMChange);
+		}
+		
 		$( "[" + tagPrefix + "-data]" ).on( "input change val", eventInputChange );
 		$( "[" + tagPrefix + "-clear]" ).on( "click", eventClear );
 		$( "[" + tagPrefix + "-action-remove]" ).on( "click", eventRemove );
@@ -1517,9 +1509,11 @@ jstack.way = ( function() {
 	setEventListeners();
 
 	way.restore();
-	//Way.setDefaults();
-	//way.registerDependencies();
-	//way.updateDependencies();
+	
+	way.setDefaults();
+	way.registerBindings();
+	way.registerRepeats();
+	way.updateDependencies();
 
 	return way;
 } )();
