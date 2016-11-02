@@ -1376,7 +1376,7 @@ jstack.way = ( function() {
 		this.options = {
 			persistent: true,
 			timeoutInput: 50,
-			timeoutDOM: 500
+			timeoutDOM: 1500
 		};
 	};
 
@@ -1386,7 +1386,7 @@ jstack.way = ( function() {
 
 	// DOM METHODS CHAINING
 	WAY.prototype.dom = function( element ) {
-		this._element = w.dom( element ).get( 0 );
+		this._element = element;
 		return this;
 	};
 
@@ -1454,12 +1454,12 @@ jstack.way = ( function() {
 			element = element || self._element;
 		var getters = {
 			"SELECT": function() {
-				return w.dom( element ).val();
+				return $( element ).val();
 			},
 			"INPUT": function() {
-				var type = w.dom( element ).type();
+				var type = $( element ).prop('type');
 				if ( _w.contains( [ "checkbox", "radio" ], type ) ) {
-					return w.dom( element ).prop( "checked" ) ? w.dom( element ).val() : null;
+					return $( element ).prop( "checked" ) ? $( element ).val() : null;
 				} else if ( type == "file" ) {
 					return element.files;
 				} else if ( type != "submit" ) {
@@ -1468,13 +1468,13 @@ jstack.way = ( function() {
 
 			},
 			"TEXTAREA": function() {
-				return w.dom( element ).val();
+				return $( element ).val();
 			}
 		};
 		var defaultGetter = function( a ) {
-			return w.dom( element ).html();
+			return $( element ).html();
 		};
-		var elementType = w.dom( element ).get( 0 ).tagName;
+		var elementType = element.tagName;
 		var getter = getters[ elementType ] || defaultGetter;
 		return getter();
 	};
@@ -1504,79 +1504,81 @@ jstack.way = ( function() {
 		} );
 		var setters = {
 			"SELECT": function( a ) {
-				if(!a&& w.dom( element ).find('option:first-child[selected][disabled]') ){
+				if(!a&& $( element ).find('option:first-child[selected][disabled]') ){
 					return;
 				}
-				//w.dom( element ).val( a );
 				$( element ).setVal( a ).trigger( 'val', ['way-prevent-update'] );
 			},
 			"INPUT": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
-				var type = w.dom( element ).get( 0 ).type;
+				var type = element.type;
 				if ( _w.contains( [ "checkbox", "radio" ], type ) ) {
-					if ( a === w.dom( element ).val() ) {
-						w.dom( element ).prop( "checked", true );
+					if ( a === $( element ).val() ) {
+						$( element ).prop( "checked", true );
 					} else {
-						w.dom( element ).prop( "checked", false );
+						$( element ).prop( "checked", false );
 					}
 				} else if ( type == "file" ) {
 					return;
 				} else if ( type != "submit" ) {
-					//w.dom( element ).val( a || "" );
 					$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
 				}
 			},
 			"TEXTAREA": function( a ) {
 				if ( !_w.isString( a ) ) { a = $.isEmptyObject( a ) ? "" : JSON.stringify( a ); }
-				//w.dom( element ).val( a || "" );
 				$( element ).setVal( a || "" ).trigger( 'val', ['way-prevent-update'] );
 				
 			},
 			"PRE": function( a ) {
 				if ( options.html ) {
-					w.dom( element ).html( a );
+					$( element ).html( a );
 				} else {
-					w.dom( element ).text( a );
+					$( element ).text( a );
 				}
 			},
 			"IMG": function( a ) {
 				if ( !a ) {
 					a = options.default || "";
-					w.dom( element ).attr( "src", a );
+					$( element ).attr( "src", a );
 					return false;
 				}
 				var isValidImageUrl = function( url, cb ) {
-					w.dom( element ).addClass( "way-loading" );
-					w.dom( "img", {
+					$( element ).addClass( "way-loading" );
+					$( "<img>", {
 						src: url,
 						onerror: function() { cb( false ); },
 						onload: function() { cb( true ); }
 					} );
 				};
 				isValidImageUrl( a, function( response ) {
-					w.dom( element ).removeClass( "way-loading" );
+					$( element ).removeClass( "way-loading" );
 					if ( response ) {
-						w.dom( element ).removeClass( "way-error" ).addClass( "way-success" );
+						$( element ).removeClass( "way-error" ).addClass( "way-success" );
 					} else {
 						if ( a ) {
-							w.dom( element ).addClass( "way-error" );
+							$( element ).addClass( "way-error" );
 						} else {
-							w.dom( element ).removeClass( "way-error" ).removeClass( "way-success" );
+							$( element ).removeClass( "way-error" ).removeClass( "way-success" );
 						}
 						a = options.default || "";
 					}
-					w.dom( element ).attr( "src", a );
+					$( element ).attr( "src", a );
 				} );
 			}
 		};
 		var defaultSetter = function( a ) {
+			var read = $( element ).html();
+			if(!a){
+				a = "";
+			}
+			if(read==a) return;
 			if ( options.html ) {
-				w.dom( element ).html( a || "" );
+				$( element ).html( a || "" );
 			} else {
-				w.dom( element ).text( a || "" );
+				$( element ).text( a || "" );
 			}
 		};
-		var elementType = w.dom( element ).get( 0 ).tagName;
+		var elementType = $( element ).get( 0 ).tagName;
 		var setter = setters[ elementType ] || defaultSetter;
 		if ( data === null || typeof( data ) == "undefined" ) data = "";
 		setter( data );
@@ -1598,7 +1600,7 @@ jstack.way = ( function() {
 		var self = this,
 			dataSelector = "[" + tagPrefix + "-default]";
 
-		var elements = w.dom( dataSelector ).get();
+		var elements = $( dataSelector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions(),
 				selector = options.data || null,
@@ -1612,7 +1614,8 @@ jstack.way = ( function() {
 
 	// Scans the DOM to look for new bindings
 	WAY.prototype.registerBindings = function() {
-
+		//console.log('registerBindings');
+		
 		// Dealing with bindings removed from the DOM by just resetting all the bindings all the time.
 		// Isn't there a better way?
 		// One idea would be to add a "way-bound" class to bound elements
@@ -1622,21 +1625,23 @@ jstack.way = ( function() {
 		var selector = "[" + tagPrefix + "-data]";
 		self._bindings = {};
 
-		var elements = w.dom( selector ).get();
+		var elements = $( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions(),
 				scope = self.dom( element ).scope(),
 				selector = scope ? scope + "." + options.data : options.data;
 
 			self._bindings[ selector ] = self._bindings[ selector ] || [];
-			if ( !_w.contains( self._bindings[ selector ], w.dom( element ).get( 0 ) ) ) {
-				self._bindings[ selector ].push( w.dom( element ).get( 0 ) );
+			if ( !_w.contains( self._bindings[ selector ], $( element ).get( 0 ) ) ) {
+				self._bindings[ selector ].push( $( element ).get( 0 ) );
 			}
 
 		} );
 
 	};
 	WAY.prototype.updateBindings = function( selector ) {
+		//console.log('updateBindings');
+		
 		var self = this;
 			self._bindings = self._bindings || {};
 
@@ -1660,16 +1665,21 @@ jstack.way = ( function() {
 
 	// DOM METHODS: GET - SET REPEATS
 	WAY.prototype.registerRepeats = function() {
-
+		//console.log('registerRepeats');
+		
 		// Register repeats
 		var self = this;
 		var selector = "[" + tagPrefix + "-repeat]";
 		self._repeats = self._repeats || {};
 		self._repeatsCount = self._repeatsCount || 0;
-
+		
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions();
+			
+			var scope = self.dom( element ).scope();
+			console.log('test',scope);
+			options.repeat = (scope?scope+'.':'')+options.repeat;
 
 			self._repeats[ options.repeat ] = self._repeats[ options.repeat ] || [];
 
@@ -1685,13 +1695,15 @@ jstack.way = ( function() {
 				} );
 
 				//var wrapper = document.createElement( "div" );
-				var wrapper = document.createElement( $(element).prop('tagName') );
+				//var wrapper = document.createElement( $(element).parent().prop('tagName') );
+				var wrapper = $(element).parent().get(0);
 				
 				w.dom( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
 				w.dom( wrapper ).attr( tagPrefix + "-scope", options.repeat );
 				if ( options.filter ) { w.dom( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
 
-				w.dom( element ).replaceWith( wrapper );
+				//w.dom( element ).replaceWith( wrapper );
+				
 				self.updateRepeats( options.repeat );
 
 				self._repeatsCount++;
@@ -1703,9 +1715,12 @@ jstack.way = ( function() {
 	};
 
 	WAY.prototype.updateRepeats = function( selector ) {
+		//console.log('updateRepeats');
+		
 		var self = this;
 			self._repeats = self._repeats || {};
 		var repeats = pickAndMergeParentArrays( self._repeats, selector );
+		
 		repeats.forEach( function( repeat ) {
 
 			var wrapper = "[" + tagPrefix + "-repeat-wrapper=\"" + repeat.id + "\"]",
@@ -1727,15 +1742,19 @@ jstack.way = ( function() {
 			}
 
 			w.dom( wrapper ).html( items.join( "" ) );
-			self.registerBindings();
-			self.updateBindings();
+			//self.registerBindings();
+			//self.updateBindings();
 
 		} );
-
+		
+		self.registerBindings();
+		self.updateBindings();
 	};
 
 	// DOM METHODS: FORMS
 	WAY.prototype.updateForms = function() {
+		//console.log('updateForms');
+		
 		// If we just parse the forms with form2js (see commits before 08/19/2014) and set the data with way.set(),
 		// we reset the entire data for this pathkey in the datastore. It causes the bug
 		// reported here: https://github.com/gwendall/way.js/issues/10
@@ -1746,15 +1765,17 @@ jstack.way = ( function() {
 		// -> so that each input is set separately to way.js' datastore
 		var self = this;
 		var selector = "form[" + tagPrefix + "-data], form[" + tagPrefix + "-data-binded]";
-		//Var selector = "form";
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, form ) {
 			var options = self.dom( form ).getOptions(),
 				formDataSelector = options.data;
-
+			
+			$( form ).attr(tagPrefix + '-scope', options.data);
+			
 			if ( formDataSelector ) {
 				$( form ).data( "formDataSelector", formDataSelector );
-			} else {
+			}
+			else {
 				formDataSelector = $( form ).data( "formDataSelector" );
 			}
 
@@ -1782,12 +1803,6 @@ jstack.way = ( function() {
 
 	};
 
-	// DOM METHODS: GET - SET ALL DEPENDENCIES
-	WAY.prototype.registerDependencies = function() {
-		this.registerBindings();
-		this.registerRepeats();
-
-	};
 	WAY.prototype.updateDependencies = function( selector ) {
 		this.updateBindings( selector );
 		this.updateRepeats( selector );
@@ -1933,7 +1948,6 @@ jstack.way = ( function() {
 		}
 		self.updateDependencies( selector );
 		self.emitChange( selector, null );
-		if ( options.persistent ) { self.backup( selector ); }
 	};
 	WAY.prototype.clear = function() {
 		this.remove( null, { persistent: true } );
@@ -2728,34 +2742,6 @@ jstack.way = ( function() {
 		parent.replaceChild( newDOM, oldDOM );
 	};
 
-	wQuery.prototype.observeDOM = function() {
-		var self = this, elements = self._elements;
-		if ( window.MutationObserver ) {
-			var observer = new MutationObserver( function( mutations ) {
-				mutations.forEach( function( mutation ) {
-					if ( mutation.type == "childList" || mutation.type == "subtree" ) {
-						eventDOMChange();
-					}
-				} );
-			} );
-			for ( var i = 0, lenEl = elements.length; i < lenEl; i++ ) {
-				var element = elements[ i ];
-				observer.observe( element, {
-					subtree: true,  // Observe the subtree rooted at myNode
-					childList: true,  // Include information childNode insertion/removals
-					attribute: true  // Include information about changes to attributes within the subtree
-				} );
-			}
-		} else {
-			for ( var i = 0, lenEl = elements.length; i < lenEl; i++ ) {
-				var element = elements[ i ];
-				if ( element.addEventListener ) {
-					element.addEventListener( "DOMSubtreeModified", eventDOMChange, false );
-				}
-			}
-		}
-	};
-
 	// WATCH DOM EVENTS
 	way = new WAY();
 	var timeoutInput = null;
@@ -2763,7 +2749,7 @@ jstack.way = ( function() {
 		if(param==='way-prevent-update') return;
 		if ( timeoutInput ) { clearTimeout( timeoutInput ); }
 		timeoutInput = setTimeout( function() {
-			var element = w.dom( e.target ).get( 0 );
+			var element = $( e.target ).get( 0 );
 			way.dom( element ).toStorage();
 			$(element).trigger('change:model');
 		}, way.options.timeout );
@@ -2790,19 +2776,21 @@ jstack.way = ( function() {
 	};
 
 	var timeoutDOM = null;
-	var eventDOMChange = function() {
+	var eventDOMChange = function(mutations) {		
 		// We need to register dynamically added bindings so we do it by watching DOM changes
 		// We use a timeout since "DOMSubtreeModified" gets triggered on every change in the DOM (even input value changes)
 		// so we can limit the number of scans when a user is typing something
 		if ( timeoutDOM ) { clearTimeout( timeoutDOM ); }
 		timeoutDOM = setTimeout( function() {
+			
+			console.log('eventDOMChange');
 
-			//Way.registerDependencies();
 			way.updateForms();
-			way.registerDependencies();
-			way.updateDependencies();
-
-			setEventListeners();
+			way.registerBindings();
+			way.registerRepeats();
+			
+			way.updateBindings();
+			//way.updateRepeats();
 
 		}, way.options.timeoutDOM );
 
@@ -2813,19 +2801,39 @@ jstack.way = ( function() {
 	way.w = w;
 
 	var setEventListeners = function() {
-		w.dom( "body" ).observeDOM();
-		$( "[" + tagPrefix + "-data]" ).on( "input change val", eventInputChange );
-		$( "[" + tagPrefix + "-clear]" ).on( "click", eventClear );
-		$( "[" + tagPrefix + "-action-remove]" ).on( "click", eventRemove );
-		$( "[" + tagPrefix + "-action-push]" ).on( "click", eventPush );
+		
+		var observer;
+		if (typeof MutationObserver !== 'undefined'){
+			observer = new MutationObserver(eventDOMChange);
+		}
+		else if (typeof WebKitMutationObserver !== 'undefined'){
+			observer = new WebKitMutationObserver(eventDOMChange);
+		}
+		if (observer) {
+			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
+		}
+		else {
+			document.body.bind('DOMSubtreeModified', eventDOMChange);
+		}
+		
+		$(document.body).on("input change val", "["+tagPrefix+"-data]",eventInputChange);
+		$(document.body).on("click","["+tagPrefix+"-clear]",eventClear);
+		$(document.body).on("click","["+tagPrefix+"-action-remove]",eventRemove);
+		$(document.body).on("click","["+tagPrefix+"-action-push]",eventPush);
 	};
 
 	setEventListeners();
 
-	way.restore();
-	//Way.setDefaults();
-	//way.registerDependencies();
-	//way.updateDependencies();
+	//way.restore();
+	
+	//way.setDefaults();
+	//way.registerBindings();
+	
+	//way.registerRepeats();
+	//way.updateRepeats();
+	
+	//way.updateForms();
+	//way.updateBindings();
 
 	return way;
 } )();
@@ -4255,6 +4263,10 @@ String.prototype.ucfirst = function() {
 	
 	$.arrayCompare = function (a, b) {
 		return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
+	};
+	
+	$.fn.reverse = function(){
+		return $(this.get().reverse());
 	};
 
 } )( jQuery );

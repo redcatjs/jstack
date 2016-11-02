@@ -308,7 +308,7 @@ jstack.way = ( function() {
 
 	// Scans the DOM to look for new bindings
 	WAY.prototype.registerBindings = function() {
-		console.log('registerBindings');
+		//console.log('registerBindings');
 		
 		// Dealing with bindings removed from the DOM by just resetting all the bindings all the time.
 		// Isn't there a better way?
@@ -334,7 +334,7 @@ jstack.way = ( function() {
 
 	};
 	WAY.prototype.updateBindings = function( selector ) {
-		console.log('updateBindings');
+		//console.log('updateBindings');
 		
 		var self = this;
 			self._bindings = self._bindings || {};
@@ -359,7 +359,7 @@ jstack.way = ( function() {
 
 	// DOM METHODS: GET - SET REPEATS
 	WAY.prototype.registerRepeats = function() {
-		console.log('registerRepeats');
+		//console.log('registerRepeats');
 		
 		// Register repeats
 		var self = this;
@@ -370,6 +370,10 @@ jstack.way = ( function() {
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions();
+			
+			var scope = self.dom( element ).scope();
+			console.log('test',scope);
+			options.repeat = (scope?scope+'.':'')+options.repeat;
 
 			self._repeats[ options.repeat ] = self._repeats[ options.repeat ] || [];
 
@@ -405,7 +409,7 @@ jstack.way = ( function() {
 	};
 
 	WAY.prototype.updateRepeats = function( selector ) {
-		console.log('updateRepeats');
+		//console.log('updateRepeats');
 		
 		var self = this;
 			self._repeats = self._repeats || {};
@@ -443,7 +447,7 @@ jstack.way = ( function() {
 
 	// DOM METHODS: FORMS
 	WAY.prototype.updateForms = function() {
-		console.log('updateForms');
+		//console.log('updateForms');
 		
 		// If we just parse the forms with form2js (see commits before 08/19/2014) and set the data with way.set(),
 		// we reset the entire data for this pathkey in the datastore. It causes the bug
@@ -455,15 +459,17 @@ jstack.way = ( function() {
 		// -> so that each input is set separately to way.js' datastore
 		var self = this;
 		var selector = "form[" + tagPrefix + "-data], form[" + tagPrefix + "-data-binded]";
-		//Var selector = "form";
 		var elements = w.dom( selector ).get();
 		$.each( elements, function( i, form ) {
 			var options = self.dom( form ).getOptions(),
 				formDataSelector = options.data;
-
+			
+			$( form ).attr(tagPrefix + '-scope', options.data);
+			
 			if ( formDataSelector ) {
 				$( form ).data( "formDataSelector", formDataSelector );
-			} else {
+			}
+			else {
 				formDataSelector = $( form ).data( "formDataSelector" );
 			}
 
@@ -636,7 +642,6 @@ jstack.way = ( function() {
 		}
 		self.updateDependencies( selector );
 		self.emitChange( selector, null );
-		if ( options.persistent ) { self.backup( selector ); }
 	};
 	WAY.prototype.clear = function() {
 		this.remove( null, { persistent: true } );
@@ -1505,11 +1510,6 @@ jstack.way = ( function() {
 			document.body.bind('DOMSubtreeModified', eventDOMChange);
 		}
 		
-		//$( "[" + tagPrefix + "-data]" ).on( "input change val", eventInputChange );
-		//$( "[" + tagPrefix + "-clear]" ).on( "click", eventClear );
-		//$( "[" + tagPrefix + "-action-remove]" ).on( "click", eventRemove );
-		//$( "[" + tagPrefix + "-action-push]" ).on( "click", eventPush );
-		
 		$(document.body).on("input change val", "["+tagPrefix+"-data]",eventInputChange);
 		$(document.body).on("click","["+tagPrefix+"-clear]",eventClear);
 		$(document.body).on("click","["+tagPrefix+"-action-remove]",eventRemove);
@@ -1518,15 +1518,16 @@ jstack.way = ( function() {
 
 	setEventListeners();
 
-	way.restore();
+	//way.restore();
 	
-	way.setDefaults();
-	way.registerBindings();
+	//way.setDefaults();
+	//way.registerBindings();
+	
 	//way.registerRepeats();
-	
 	//way.updateRepeats();
-	way.updateForms();
-	way.updateBindings();
+	
+	//way.updateForms();
+	//way.updateBindings();
 
 	return way;
 } )();
