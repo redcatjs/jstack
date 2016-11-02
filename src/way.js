@@ -341,7 +341,7 @@ jstack.way = ( function() {
 		// Set bindings for the data selector
 		var bindings = pickAndMergeParentArrays( self._bindings, selector );
 		bindings.forEach( function( element ) {
-			var focused = ( w.dom( element ).get( 0 ) === w.dom( ":focus" ).get( 0 ) ) ? true : false;
+			var focused = ( $( element ).get( 0 ) === $( ":focus" ).get( 0 ) ) ? true : false;
 			if ( !focused || element.getAttribute( "data-way-focus-nosync" ) != "true" //Surikat patch for focus don't break sync
 			) {
 				self.dom( element ).fromStorage();
@@ -366,23 +366,22 @@ jstack.way = ( function() {
 		self._repeats = self._repeats || {};
 		self._repeatsCount = self._repeatsCount || 0;
 		
-		var elements = w.dom( selector ).get();
+		var elements = $( selector ).get();
 		$.each( elements, function( i, element ) {
 			var options = self.dom( element ).getOptions();
 			
 			var scope = self.dom( element ).scope();
-			console.log('test',scope);
 			options.repeat = (scope?scope+'.':'')+options.repeat;
 
 			self._repeats[ options.repeat ] = self._repeats[ options.repeat ] || [];
 
 			var wrapperAttr = tagPrefix + "-repeat-wrapper=\"" + self._repeatsCount + "\"",
-					parent = w.dom( element ).parent( "[" + wrapperAttr + "]" );
+					parent = $( element ).parent( "[" + wrapperAttr + "]" );
 			if ( !parent.length ) {
 
 				self._repeats[ options.repeat ].push( {
 					id: self._repeatsCount,
-					element: w.dom( element ).clone( true ).removeAttr( tagPrefix + "-repeat" ).removeAttr( tagPrefix + "-filter" ).get( 0 ),
+					element: $( element ).clone( true ).removeAttr( tagPrefix + "-repeat" ).removeAttr( tagPrefix + "-filter" ).get( 0 ),
 					selector: options.repeat,
 					filter: options.filter
 				} );
@@ -391,11 +390,11 @@ jstack.way = ( function() {
 				//var wrapper = document.createElement( $(element).parent().prop('tagName') );
 				var wrapper = $(element).parent().get(0);
 				
-				w.dom( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
-				w.dom( wrapper ).attr( tagPrefix + "-scope", options.repeat );
-				if ( options.filter ) { w.dom( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
+				$( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
+				$( wrapper ).attr( tagPrefix + "-scope", options.repeat );
+				if ( options.filter ) { $( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
 
-				//w.dom( element ).replaceWith( wrapper );
+				//$( element ).replaceWith( wrapper );
 				
 				self.updateRepeats( options.repeat );
 
@@ -421,20 +420,20 @@ jstack.way = ( function() {
 				items = [];
 
 			repeat.filter = repeat.filter || [];
-			w.dom( wrapper ).empty();
+			$( wrapper ).empty();
 			
 			var i = 1;
 			for ( var key in data ) {
 				if ( !data.hasOwnProperty( key ) ) continue;
-				w.dom( repeat.element ).attr( tagPrefix + "-scope", key );
-				var html = w.dom( repeat.element ).get( 0 ).outerHTML;
+				$( repeat.element ).attr( tagPrefix + "-scope", key );
+				var html = $( repeat.element ).get( 0 ).outerHTML;
 				html = html.replace( /\$\$key/gi, key );
 				html = html.replace( /\$\$i/gi, i );
 				items.push( html );
 				i++;
 			}
 
-			w.dom( wrapper ).html( items.join( "" ) );
+			$( wrapper ).html( items.join( "" ) );
 			//self.registerBindings();
 			//self.updateBindings();
 
@@ -458,7 +457,7 @@ jstack.way = ( function() {
 		// -> so that each input is set separately to way.js' datastore
 		var self = this;
 		var selector = "form[" + tagPrefix + "-data], form[" + tagPrefix + "-data-binded]";
-		var elements = w.dom( selector ).get();
+		var elements = $( selector ).get();
 		$.each( elements, function( i, form ) {
 			var options = self.dom( form ).getOptions(),
 				formDataSelector = options.data;
@@ -472,17 +471,17 @@ jstack.way = ( function() {
 				formDataSelector = $( form ).data( "formDataSelector" );
 			}
 
-			w.dom( form ).removeAttr( tagPrefix + "-data" ).attr( tagPrefix + "-data-binded", true );
+			$( form ).removeAttr( tagPrefix + "-data" ).attr( tagPrefix + "-data-binded", true );
 
 			// Reverse needed to set the right index for "[]" names
-			var inputs = w.dom( form ).find( "[name]:not([way-data])" ).reverse().get();
+			var inputs = $( form ).find( "[name]:not([way-data])" ).reverse().get();
 			$.each( inputs, function( ii, input ) {
-				//If(w.dom(input).attr("type")=='file') return;
-				var name = w.dom( input ).attr( "name" );
+				//If($(input).attr("type")=='file') return;
+				var name = $( input ).attr( "name" );
 				if ( endsWith( name, "[]" ) ) {
 					var array = name.split( "[]" )[ 0 ],
 							arraySelector = "[name^='" + array + "']",
-							arrayIndex = w.dom( form ).find( arraySelector ).get().length;
+							arrayIndex = $( form ).find( arraySelector ).get().length;
 					name = array + "." + arrayIndex;
 				}
 				var selector = formDataSelector + "." + name;
@@ -510,7 +509,7 @@ jstack.way = ( function() {
 			if ( !options.hasOwnProperty( k ) ) continue;
 			var attr = tagPrefix + "-" + k,
 				value = options[ k ];
-			w.dom( element ).attr( attr, value );
+			$( element ).attr( attr, value );
 		}
 	};
 	WAY.prototype.getOptions = function( element ) {
@@ -556,7 +555,7 @@ jstack.way = ( function() {
 		};
 
 		var attributes = {};
-		var attrs = [].slice.call( w.dom( element ).get( 0 ).attributes );
+		var attrs = [].slice.call( $( element ).get( 0 ).attributes );
 		attrs.forEach( function( attr ) {
 			var include = ( prefix && startsWith( attr.name, prefix + "-" ) ) ? true : false;
 			if ( include ) {
@@ -579,14 +578,14 @@ jstack.way = ( function() {
 			scope = "";
 
 		var parentsSelector = "[" + scopeBreakAttr + "], [" + scopeAttr + "]";
-		var elements = w.dom( element ).parents( parentsSelector ).get();
+		var elements = $( element ).parents( parentsSelector ).get();
 		$.each( elements, function( i, el ) {
-			if ( w.dom( el ).attr( scopeBreakAttr ) ) { return false; }
-			var attr = w.dom( el ).attr( scopeAttr );
+			if ( $( el ).attr( scopeBreakAttr ) ) { return false; }
+			var attr = $( el ).attr( scopeAttr );
 			scopes.unshift( attr );
 		} );
-		if ( w.dom( element ).attr( scopeAttr ) ) { scopes.push( w.dom( element ).attr( scopeAttr ) ); }
-		if ( w.dom( element ).attr( scopeBreakAttr ) ) { scopes = []; }
+		if ( $( element ).attr( scopeAttr ) ) { scopes.push( $( element ).attr( scopeAttr ) ); }
+		if ( $( element ).attr( scopeBreakAttr ) ) { scopes = []; }
 		scope = _w.compact( scopes ).join( "." );
 		return scope;
 
@@ -1218,189 +1217,6 @@ jstack.way = ( function() {
 
 	};
 
-	//////////////////////////////////////////
-	// wQuery (mini replacement for jQuery) //
-	//////////////////////////////////////////
-
-	var wQuery = function() {};
-	wQuery.constructor = wQuery;
-
-	wQuery.prototype.dom = function( selector, createOptions ) {
-
-		var self = this,
-				elements = [];
-
-		if ( createOptions ) {
-			var element = document.createElement( selector );
-			for ( var k in createOptions ) {
-				if ( !createOptions.hasOwnProperty( k ) ) continue;
-				element[ k ] = createOptions[ k ];
-			}
-		} else {
-			if ( _w.isString( selector ) ) {
-				elements = [].slice.call( document.querySelectorAll( selector ) );
-			} else {
-				if ( _w.isObject( selector ) && selector.attributes ) { elements = [ selector ]; }
-			}
-			self._elements = elements;
-			self.length = elements.length;
-			return self;
-		}
-
-	};
-
-	wQuery.prototype.find = function( selector ) {
-
-			var self = this,
-					element = self.get( 0 ),
-					elements = [];
-
-			if ( _w.isString( selector ) ) {
-				elements = [].slice.call( element.querySelectorAll( selector ) );
-			}
-			self._elements = elements;
-			return self;
-
-	};
-
-	wQuery.prototype.get = function( index, chain ) {
-
-			var self = this,
-					elements = self._elements || [],
-					element = elements[ index ] || {};
-
-			if ( chain ) {
-				self._element = element;
-				return self;
-			} else {
-				return _w.isNumber( index ) ? element : elements;
-			}
-
-	};
-
-	wQuery.prototype.reverse = function() {
-		this._elements = this._elements.reverse();
-		return this;
-	};
-
-	wQuery.prototype.val = function( value ) {
-		return this.prop( "value", value );
-	};
-
-	wQuery.prototype.type = function( value ) {
-		return this.prop( "type", value );
-	};
-
-	wQuery.prototype.html = function( value ) {
-		return this.prop( "innerHTML", value );
-	};
-
-	wQuery.prototype.text = function( value ) {
-		return this.prop( "innerHTML", escapeHTML( value ) );
-	};
-
-	wQuery.prototype.prop = function( prop, value ) {
-
-		var self = this,
-				elements = self._elements;
-		var r;
-		$.each( elements, function( i, element ) {
-			if ( _w.isUndefined( value ) ) {
-				r = element[ prop ];
-				return false;
-			} else {
-				element[ prop ] = value;
-			}
-		} );
-		return r;
-	};
-
-	wQuery.prototype.attr = function( attr, value ) {
-		var r = this;
-		$.each( this._elements, function( i, element ) {
-			if ( value === undefined ) {
-				r = element.getAttribute( attr );
-				return false;
-			}
-			element.setAttribute( attr, value );
-		} );
-		return r;
-	};
-
-	wQuery.prototype.removeAttr = function( attr ) {
-		$.each( this._elements, function( i, element ) {
-			element.removeAttribute( attr );
-		} );
-		return this;
-	};
-
-	wQuery.prototype.addClass = function( c ) {
-		$.each( this._elements, function( i, element ) {
-			element.classList.add( c );
-		} );
-		return this;
-	};
-
-	wQuery.prototype.removeClass = function( c ) {
-		$.each( this._elements, function( i, element ) {
-			element.classList.remove( c );
-		} );
-		return this;
-	};
-
-	wQuery.prototype.parents = function( selector ) {
-		var self = this,
-				element = self.get( 0 ),
-				parent = element.parentNode,
-				parents = [];
-
-		while ( parent !== null ) {
-			var o = parent,
-					matches = matchesSelector( o, selector ),
-					isNotDomRoot = ( o.doctype === undefined ) ? true : false;
-			if ( !selector ) { matches = true; }
-			if ( matches && isNotDomRoot ) { parents.push( o ); }
-			parent = o.parentNode;
-		}
-		self._elements = parents;
-		return self;
-	};
-
-	wQuery.prototype.parent = function( selector ) {
-		var self = this,
-				element = self.get( 0 ),
-				o = element.parentNode,
-				matches = matchesSelector( o, selector );
-		if ( !selector ) { matches = true; }
-		return matches ? o : {};
-	};
-
-	wQuery.prototype.clone = function( chain ) {
-		var self = this,
-				element = self.get( 0 ),
-				clone = element.cloneNode( true );
-		self._elements = [ clone ];
-		return chain ? self : clone;
-	};
-
-	wQuery.prototype.empty = function( chain ) {
-		var self = this,
-				element = self.get( 0 );
-		if ( !element || !element.hasChildNodes ) { return chain ? self : element; }
-
-		while ( element.hasChildNodes() ) {
-			element.removeChild( element.lastChild );
-		}
-		return chain ? self : element;
-	};
-
-	wQuery.prototype.replaceWith = function( newDOM ) {
-		var self = this,
-				oldDOM = self.get( 0 ),
-				parent = oldDOM.parentNode;
-		parent.replaceChild( newDOM, oldDOM );
-	};
-
 	// WATCH DOM EVENTS
 	way = new WAY();
 	var timeoutInput = null;
@@ -1454,10 +1270,6 @@ jstack.way = ( function() {
 		}, way.options.timeoutDOM );
 
 	};
-
-	//INITIATE
-	w = new wQuery();
-	way.w = w;
 
 	var setEventListeners = function() {
 		
