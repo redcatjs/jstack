@@ -378,7 +378,9 @@ jstack.way = ( function() {
 					filter: options.filter
 				} );
 
-				var wrapper = document.createElement( "div" );
+				//var wrapper = document.createElement( "div" );
+				var wrapper = document.createElement( $(element).prop('tagName') );
+				
 				w.dom( wrapper ).attr( tagPrefix + "-repeat-wrapper", self._repeatsCount );
 				w.dom( wrapper ).attr( tagPrefix + "-scope", options.repeat );
 				if ( options.filter ) { w.dom( wrapper ).attr( tagPrefix + "-filter", options.filter ); }
@@ -413,7 +415,6 @@ jstack.way = ( function() {
 				var html = w.dom( repeat.element ).get( 0 ).outerHTML;
 				html = html.replace( /\$\$key/gi, key );
 				items.push( html );
-
 			}
 
 			w.dom( wrapper ).html( items.join( "" ) );
