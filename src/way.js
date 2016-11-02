@@ -405,6 +405,7 @@ jstack.way = ( function() {
 		var self = this;
 			self._repeats = self._repeats || {};
 		var repeats = pickAndMergeParentArrays( self._repeats, selector );
+		
 		repeats.forEach( function( repeat ) {
 
 			var wrapper = "[" + tagPrefix + "-repeat-wrapper=\"" + repeat.id + "\"]",
@@ -1455,10 +1456,7 @@ jstack.way = ( function() {
 	};
 
 	var timeoutDOM = null;
-	var eventDOMChange = function(mutations) {
-		
-		console.log('eventDOMChange');
-		
+	var eventDOMChange = function(mutations) {		
 		// We need to register dynamically added bindings so we do it by watching DOM changes
 		// We use a timeout since "DOMSubtreeModified" gets triggered on every change in the DOM (even input value changes)
 		// so we can limit the number of scans when a user is typing something
@@ -1474,7 +1472,7 @@ jstack.way = ( function() {
 			
 			//way.updateDependencies();
 
-			setEventListeners();
+			//setEventListeners();
 
 		}, way.options.timeoutDOM );
 
@@ -1500,10 +1498,15 @@ jstack.way = ( function() {
 			document.body.bind('DOMSubtreeModified', eventDOMChange);
 		}
 		
-		$( "[" + tagPrefix + "-data]" ).on( "input change val", eventInputChange );
-		$( "[" + tagPrefix + "-clear]" ).on( "click", eventClear );
-		$( "[" + tagPrefix + "-action-remove]" ).on( "click", eventRemove );
-		$( "[" + tagPrefix + "-action-push]" ).on( "click", eventPush );
+		//$( "[" + tagPrefix + "-data]" ).on( "input change val", eventInputChange );
+		//$( "[" + tagPrefix + "-clear]" ).on( "click", eventClear );
+		//$( "[" + tagPrefix + "-action-remove]" ).on( "click", eventRemove );
+		//$( "[" + tagPrefix + "-action-push]" ).on( "click", eventPush );
+		
+		$(document.body).on("input change val", "["+tagPrefix+"-data]",eventInputChange);
+		$(document.body).on("click","["+tagPrefix+"-clear]",eventClear);
+		$(document.body).on("click","["+tagPrefix+"-action-remove]",eventRemove);
+		$(document.body).on("click","["+tagPrefix+"-action-push]",eventPush);
 	};
 
 	setEventListeners();
