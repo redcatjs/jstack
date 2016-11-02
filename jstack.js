@@ -1443,7 +1443,6 @@ jstack.way = ( function() {
 			var currentData = _w.isObject( self.dom( element ).toJSON() ) ? self.dom( element ).toJSON() : {};
 			data = _w.extend( currentData, data );
 		}
-		if ( options.json ) { data = _json.isStringified( data ) ? data : _json.prettyprint( data ); }
 		self.dom( element ).setValue( data, options );
 	};
 
