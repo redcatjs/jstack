@@ -950,7 +950,7 @@ jstack.dataBinder = (function(){
 			return key.split('.').reduce(function(obj,i){return obj[i];}, data);
 		},
 		dotSet: function(key,data,value){
-			key.split('.').reduce(function(obj,i,index,array){ if(array.length==index+2) obj[i] = value; return obj[i];}, data);
+			key.split('.').reduce(function(obj,k,index,array){ if(array.length==index+1) obj[k] = value; return obj[k];}, data);
 		},
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
