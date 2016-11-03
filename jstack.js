@@ -995,8 +995,8 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var varAttr = $this.attr('j-var');
 				var key = self.getScoped(this,varAttr);
-				console.log(key);
 				var value = self.dotGet(key,data);
+				$this.html(value);
 			});
 		},
 		eventListener: function(){
