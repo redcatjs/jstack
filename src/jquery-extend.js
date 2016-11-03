@@ -256,5 +256,9 @@
         });
         return attrs;
     };
-
+	
+	$.escapeRegExp = function(str){
+		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+	};
+	
 } )( jQuery );
