@@ -29,12 +29,38 @@ jstack.dataBinder = (function(){
 			scope += key;
 			return scope;
 		},
+		getters: {
+			"SELECT": function(element){
+				return $( element ).val();
+			},
+			"INPUT": function(element) {
+				var type = $( element ).prop('type');
+				if ( type=="checkbox" || type=="radio" ) {
+					return $( element ).prop( "checked" ) ? $( element ).val() : null;
+				} else if ( type == "file" ) {
+					return element.files;
+				} else if ( type != "submit" ) {
+					return $( element ).val();
+				}
+			},
+			"TEXTAREA": function(element){
+				return $( element ).val();
+			}
+		},
+		defaultGetter: function(element){
+			return $( element ).html();
+		},
+		getValue: function(element){
+			var elementType = element.tagName;
+			var getter = this.getters[elementType] || this.defaultGetter;
+			return getter(element);
+		},
 		register: function(controller,data){
 			var self = this;
 			controller.data('data-model',data);
 			controller.on('input',':input[name]',function(){
 				var name = $(this).attr('name');
-				var value = $(this).val();
+				var value = self.getValue(this);
 				var key = self.getScoped(this);
 				self.dotSet(key,data,value);
 			});
