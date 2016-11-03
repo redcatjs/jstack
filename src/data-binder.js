@@ -158,10 +158,10 @@ jstack.dataBinder = (function(){
 			this.update();
 		},
 		update: function(){
-			self.stopObserver();
+			this.stopObserver();
 			this.updateIf();
 			this.updateController();
-			self.startObserver();
+			this.startObserver();
 		},
 		updateController: function(){
 			var self = this;
