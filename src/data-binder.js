@@ -148,21 +148,20 @@ jstack.dataBinder = (function(){
 				clearTimeout(self.timeouts[methodName]);
 			}
 			self.timeouts[methodName] = setTimeout( function() {
-				self.stopObserver();
 				method.apply(self,args);
-				self.startObserver();
 			}, 100);
 		},
 		eventDOMChange: function(mutations){
-			console.log('eventDOMChange');
 			this.update();
 		},
 		eventInputChange: function(mutations){
 			this.update();
 		},
 		update: function(){
+			self.stopObserver();
 			this.updateIf();
 			this.updateController();
+			self.startObserver();
 		},
 		updateController: function(){
 			var self = this;
