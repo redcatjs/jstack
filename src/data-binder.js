@@ -80,12 +80,6 @@ jstack.dataBinder = (function(){
 		register: function(controller,data){
 			var self = this;
 			controller.data('j-model',data);
-			controller.on('input',':input[name]',function(){
-				var name = $(this).attr('name');
-				var value = self.getValue(this);
-				var key = self.getScopedInput(this);
-				self.dotSet(key,data,value);
-			});
 			this.populate(controller, data);
 		},
 		populate: function(controller, data){
@@ -154,8 +148,17 @@ jstack.dataBinder = (function(){
 		eventDOMChange: function(mutations){
 			this.update();
 		},
-		eventInputChange: function(mutations){
-			this.update();
+		eventInputChange: function(input){
+			var self = this;
+			
+			var controller = $(input).closest('[j-controller]');
+			var data = controller.data('j-model');
+			var name = $(input).attr('name');
+			var value = self.getValue(input);
+			var key = self.getScopedInput(input);
+			self.dotSet(key,data,value);
+			
+			self.update();
 		},
 		update: function(){
 			//console.log('update');
