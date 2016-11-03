@@ -10,7 +10,7 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	else{
-		setValue = function(){
+		setValue = function(input,val){
 			input.val(val);
 		};
 	}
