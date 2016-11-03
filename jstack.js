@@ -945,7 +945,10 @@ jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	return defer;
 };
 jstack.dataBinder = (function(){
-	var dataBinder = {
+	var dataBinder = function(){
+		
+	};
+	dataBinder.prototype = {
 		dotGet: function(key,data){
 			return key.split('.').reduce(function(obj,i){return obj[i];}, data);
 		},
@@ -1024,18 +1027,22 @@ jstack.dataBinder = (function(){
 		},
 		eventListener: function(){
 			var self = this;
-			var observer = new MutationObserver(self.eventDOMChange);
+			var observer = new MutationObserver(function(mutations){
+				self.eventDOMChange(mutations);
+			});
 			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 		},
-		eventDOMChange: function(){
+		eventDOMChange: function(mutations){
+			var self = this;
 			$('[j-controller]').each(function(){
 				var controller = $(this);
-				this.populate(controller);
+				self.populate(controller);
 			});
 		},
 	};
-	dataBinder.eventListener();
-	return dataBinder;
+	var o = new dataBinder();
+	o.eventListener();
+	return o;
 })();
 jstack.loadView = ( function() {
 	return function( o ) {
