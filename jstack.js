@@ -2116,7 +2116,12 @@ $.fn.populateInput = function( value, config ) {
 					}
 					else if ( input.length == 1 ) {
 						$ctrl = input;
-						if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
+						if ( value ) {
+							$ctrl.prop( "checked", true );
+						}
+						else {
+							$ctrl.prop( "checked", false );
+						}
 
 					}
 				break;
