@@ -126,42 +126,66 @@ jstack.dataBinder = (function(){
 		eventListener: function(){
 			var self = this;
 			self.observer = new MutationObserver(function(mutations){
-				self.triggerEvent('eventDOMChange',[mutations]);
+				self.triggerEvent('eventDOMChange');
 			});
 			self.startObserver();
 			$(document.body).on('input val', ':input[name]', function(){
-				self.triggerEvent('eventInputChange',[this]);
+				var input = $(this);
+				var controller = input.closest('[j-controller]');
+				var data = controller.data('j-model');
+				var name = input.attr('name');
+				var value = self.getValue(this);
+				var key = self.getScopedInput(this);
+				self.dotSet(key,data,value);
+				
+				var defer = self.triggerEvent('eventInputChange');
+				defer.then(function(){
+					input.trigger('input:model');
+				});
 			});
 		},
+		defers: {},
 		timeouts: {},
-		triggerEvent: function(methodName,args){
+		resolveEvent: function(methodName){
 			var self = this;
-			args = args || [];
+			var defers = self.defers[methodName];
+			do{
+				defers.pop().resolve();
+			}
+			while(defers.length);
+		},
+		triggerEvent: function(methodName){
+			var self = this;
 			var method = self[methodName];
 			if(self.timeouts[methodName]){
 				clearTimeout(self.timeouts[methodName]);
 			}
-			self.timeouts[methodName] = setTimeout( function() {
-				method.apply(self,args);
+			var defer = $.Deferred();
+			if(typeof(self.defers[methodName])=='undefined'){
+				self.defers[methodName] = [];
+			}
+			self.defers[methodName].push(defer);
+			self.timeouts[methodName] = setTimeout(function(){
+				var defer2 = method.call(self);
+				if(defer2){
+					defer2.then(function(){
+						self.resolveEvent(methodName);
+					});
+				}
+				else{
+					self.resolveEvent(methodName);
+				}
 			}, 100);
+			return defer;
 		},
-		eventDOMChange: function(mutations){
+		eventDOMChange: function(){
 			this.update();
 		},
-		eventInputChange: function(input){
-			var self = this;
-			
-			var controller = $(input).closest('[j-controller]');
-			var data = controller.data('j-model');
-			var name = $(input).attr('name');
-			var value = self.getValue(input);
-			var key = self.getScopedInput(input);
-			self.dotSet(key,data,value);
-			
-			self.update();
+		eventInputChange: function(){
+			this.update();
 		},
 		update: function(){
-			//console.log('update');
+			//console.log('update',(new Date()).toString());
 			this.stopObserver();
 			this.updateRepeat();
 			this.updateIf();
@@ -231,9 +255,10 @@ jstack.dataBinder = (function(){
 					var i = 1;
 					$.each(value,function(k,v){
 						var scope = attrRepeat+'.'+k;
-						var row = $this.find('[j-scope="'+scope+'"]');
+						var row = $this.children('[j-scope="'+scope+'"]');
 						if(!row.length){
 							row = $original.clone();
+							row.removeAttr('j-repeat');
 							row.attr('j-scope',scope);
 							row.appendTo($this);
 						}
