@@ -32,6 +32,7 @@ grunt.initConfig({
 				"src/string-prototyping.js",
 				"src/jquery.serialize-object.js",
 				"src/jquery-extend.js",
+				"src/populate.js",
 				"src/data-if.js",
 				"src/json_encode.js",
 				"src/formToObject.js",
