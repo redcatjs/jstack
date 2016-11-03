@@ -139,7 +139,7 @@ $.fn.populateForm = function( data, config ) {
 	});
 	return this;
 };
-$.fn.populate = function( value, config ) {
+$.fn.populate = function( value, config ){
 	return this.each(function(){
 		if($(this).is('form')){
 			$(this).populateForm(value, config);

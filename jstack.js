@@ -913,7 +913,11 @@ jstack.dataBinder = (function(){
 	};
 	dataBinder.prototype = {
 		dotGet: function(key,data){
-			return key.split('.').reduce(function(obj,i){return obj[i];}, data);
+			return key.split('.').reduce(function(obj,i){
+				if(typeof(obj)=='object'){
+					return obj[i];
+				}
+			}, data);
 		},
 		dotSet: function(key,data,value){
 			key.split('.').reduce(function(obj,k,index,array){ if(array.length==index+1) obj[k] = value; return obj[k];}, data);
@@ -989,7 +993,7 @@ jstack.dataBinder = (function(){
 			controller.find(':input[name]').each(function(){
 				var key = self.getScopedInput(this);
 				var value = self.dotGet(key,data);
-				$(this).populateInput(value);
+				$(this).populateInput(value,{preventValEvent:true});
 			});
 			controller.find('[j-var]').each(function(){
 				var $this = $(this);
@@ -1036,7 +1040,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-controller]').each(function(){
 				var controller = $(this);
-				self.populate(controller,{preventValEvent:true});
+				self.populate(controller);
 			});
 		},
 		updateIf: function(){
@@ -2082,7 +2086,7 @@ $.fn.populateForm = function( data, config ) {
 	});
 	return this;
 };
-$.fn.populate = function( value, config ) {
+$.fn.populate = function( value, config ){
 	return this.each(function(){
 		if($(this).is('form')){
 			$(this).populateForm(value, config);
