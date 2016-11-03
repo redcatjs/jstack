@@ -1083,18 +1083,18 @@ jstack.dataBinder = (function(){
 				var data = $this.closest('[j-controller]').data('j-model');
 				var key = self.getScoped(this,attrIf);
 				var value = self.dotGet(key,data);
-				var children = $this.data('j-if');
-				if(!children){
-					children = $this.children();
-					$this.data('j-if',children);
+				var contents = $this.data('j-if');
+				if(!contents){
+					contents = $this.contents();
+					$this.data('j-if',contents);
 				}
 				
 				if(value){
-					children.appendTo($this);
+					contents.appendTo($this);
 					$this.trigger('j-if:true');
 				}
 				else{
-					children.detach();
+					contents.detach();
 					$this.trigger('j-if:false');
 				}
 			});
