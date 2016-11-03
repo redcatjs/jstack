@@ -945,7 +945,7 @@ jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	return defer;
 };
 jstack.dataBinder = (function(){
-	return {
+	var dataBinder = {
 		dotGet: function(key,data){
 			return key.split('.').reduce(function(obj,i){return obj[i];}, data);
 		},
@@ -1034,6 +1034,8 @@ jstack.dataBinder = (function(){
 			});
 		},
 	};
+	dataBinder.eventListener();
+	return dataBinder;
 })();
 jstack.loadView = ( function() {
 	return function( o ) {
