@@ -53,6 +53,11 @@ $.fn.populateInput = function( value, config ) {
 		}
 		else {
 			switch ( input.attr( "type" ) ){
+				default:
+				case "number":
+				case "range":
+				case "email":
+				case "data":
 				case "text":
 				case "hidden":
 					setValue(input, value);

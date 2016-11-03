@@ -2060,7 +2060,8 @@ $.fn.populateInput = function( value, config ) {
 				for ( var i = 0, l = value.length; i < l; i++ ) {
 					populateSelect( input, value[ i ] );
 				}
-			} else {
+			}
+			else {
 				populateSelect( input, value );
 			}
 		}
@@ -2069,10 +2070,15 @@ $.fn.populateInput = function( value, config ) {
 		}
 		else {
 			switch ( input.attr( "type" ) ){
+				default:
+				case "number":
+				case "range":
+				case "email":
+				case "data":
 				case "text":
 				case "hidden":
 					setValue(input, value);
-					break;
+				break;
 				case "radio":
 					if ( input.length >= 1 ) {
 						$.each( input, function( index ) {
@@ -2080,12 +2086,13 @@ $.fn.populateInput = function( value, config ) {
 							var elemValueInData = singleVal = value;
 							if ( elemValue === value ) {
 								$( this ).prop( "checked", true );
-							} else {
+							}
+							else {
 								$( this ).prop( "checked", false );
 							}
 						} );
 					}
-					break;
+				break;
 				case "checkbox":
 					if ( input.length > 1 ) {
 						$.each( input, function( index ) {
@@ -2094,21 +2101,25 @@ $.fn.populateInput = function( value, config ) {
 							var singleVal;
 							for ( var i = 0; i < value.length; i++ ) {
 								singleVal = value[ i ];
-								if ( singleVal === elemValue ) {elemValueInData = singleVal;};
+								if ( singleVal === elemValue ){
+									elemValueInData = singleVal;
+								};
 							}
 
 							if ( elemValueInData ) {
 								$( this ).prop( "checked", true );
-							} else {
+							}
+							else {
 								$( this ).prop( "checked", false );
 							}
 						} );
-					} else if ( input.length == 1 ) {
+					}
+					else if ( input.length == 1 ) {
 						$ctrl = input;
 						if ( value ) {$ctrl.prop( "checked", true );} else {$ctrl.prop( "checked", false );}
 
 					}
-					break;
+				break;
 			}
 		}
 	});
