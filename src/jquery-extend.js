@@ -94,6 +94,19 @@
 			return false;
 		}
 	});
+	$.extend($.expr[':'], {
+		attrEndsWith: function (el, _, b) {
+			for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
+			  var att = atts[i].nodeName.toLowerCase(),
+				  str = b[3].toLowerCase();
+				if(att.length >= str.length && att.substr(att.length - str.length) === str) {
+					return true; 
+				}
+			}
+			
+			return false;
+		}
+	});
 
 	var findForks = {
 		"nth-level": function( selector, param ) {
