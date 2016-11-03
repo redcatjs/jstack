@@ -1,10 +1,5 @@
 ( function( w, j ) {
 
-	j.directive( "if", function( val, el ) {
-		el.jmlInject( "before", "if(" + val + "){" );
-		el.jmlInject( "after", "}" );
-	} );
-
 	j.directive( "foreach", function( val, el ) {
 		var sp;
 		if ( val.indexOf( " as " ) !== -1 ) {
