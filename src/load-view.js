@@ -41,20 +41,7 @@ jstack.loadView = ( function() {
 					
 					self.html( processedTemplate );
 					
-					self.data('data-model',data);
-					self.on('input',':input[name]',function(){
-						var name = $(this).attr('name');
-						var value = $(this).val();
-						var key = jstack.dataBinder.getScoped(this);
-						jstack.dataBinder.dotSet(key,data,value);
-					});
-					self.find(':input[name]').each(function(){
-						var key = jstack.dataBinder.getScoped(this);
-						var value = jstack.dataBinder.dotGet(key,data);
-						$(this).val(value);
-					});
-					
-					
+					jstack.dataBinder.register(self,data);
 				};
 			} );
 			var controllerRendered = $.Deferred();

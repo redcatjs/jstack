@@ -974,7 +974,39 @@ jstack.dataBinder = (function(){
 			var key = this.getKey(name);
 			scope += key;
 			return scope;
-		}
+		},
+		register: function(controller,data){
+			var self = this;
+			controller.data('data-model',data);
+			controller.on('input',':input[name]',function(){
+				var name = $(this).attr('name');
+				var value = $(this).val();
+				var key = self.getScoped(this);
+				self.dotSet(key,data,value);
+			});
+			this.populate(controller, data);
+		},
+		populate: function(controller, data){
+			var self = this;
+			var data = data || controller.data('data-model');
+			controller.find(':input[name]').each(function(){
+				var key = self.getScoped(this);
+				var value = self.dotGet(key,data);
+				//$(this).val(value);
+				$(this).populateInput(value);
+			});
+		},
+		eventListener: function(){
+			var self = this;
+			var observer = new MutationObserver(self.eventDOMChange);
+			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
+		},
+		eventDOMChange: function(){
+			$('[j-controller]').each(function(){
+				var controller = $(this);
+				this.populate(controller);
+			});
+		},
 	};
 })();
 jstack.loadView = ( function() {
@@ -1020,20 +1052,7 @@ jstack.loadView = ( function() {
 					
 					self.html( processedTemplate );
 					
-					self.data('data-model',data);
-					self.on('input',':input[name]',function(){
-						var name = $(this).attr('name');
-						var value = $(this).val();
-						var key = jstack.dataBinder.getScoped(this);
-						jstack.dataBinder.dotSet(key,data,value);
-					});
-					self.find(':input[name]').each(function(){
-						var key = jstack.dataBinder.getScoped(this);
-						var value = jstack.dataBinder.dotGet(key,data);
-						$(this).val(value);
-					});
-					
-					
+					jstack.dataBinder.register(self,data);
 				};
 			} );
 			var controllerRendered = $.Deferred();
