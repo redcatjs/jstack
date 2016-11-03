@@ -920,7 +920,17 @@ jstack.dataBinder = (function(){
 			}, data);
 		},
 		dotSet: function(key,data,value){
-			key.split('.').reduce(function(obj,k,index,array){ if(array.length==index+1) obj[k] = value; return obj[k];}, data);
+			key.split('.').reduce(function(obj,k,index,array){
+				if(array.length==index+1){
+					obj[k] = value;
+				}
+				else{
+					if(typeof(obj[k])!='object'){
+						obj[k] = {};
+					}					
+					return obj[k];
+				}
+			}, data);
 		},
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
