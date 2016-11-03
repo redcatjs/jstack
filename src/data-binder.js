@@ -122,13 +122,19 @@ jstack.dataBinder = (function(){
 				});
 			});
 		},
+		observer: null,
+		startObserver: function(){
+			this.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
+		},
+		stopObserver: function(){
+			this.observer.disconnect();
+		},
 		eventListener: function(){
 			var self = this;
-			var observer = new MutationObserver(function(mutations){
+			self.observer = new MutationObserver(function(mutations){
 				self.triggerEvent('eventDOMChange',[mutations]);
 			});
-			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
-			
+			self.startObserver();
 			$(document.body).on('input val', ':input[name]', function(){
 				self.triggerEvent('eventInputChange',[this]);
 			});
@@ -142,10 +148,13 @@ jstack.dataBinder = (function(){
 				clearTimeout(self.timeouts[methodName]);
 			}
 			self.timeouts[methodName] = setTimeout( function() {
+				self.stopObserver();
 				method.apply(self,args);
+				self.startObserver();
 			}, 100);
 		},
 		eventDOMChange: function(mutations){
+			console.log('eventDOMChange');
 			this.update();
 		},
 		eventInputChange: function(mutations){
