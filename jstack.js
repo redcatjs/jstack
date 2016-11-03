@@ -610,11 +610,6 @@ jstack.route = ( function( w, url ) {
 
 ( function( w, j ) {
 
-	j.directive( "if", function( val, el ) {
-		el.jmlInject( "before", "if(" + val + "){" );
-		el.jmlInject( "after", "}" );
-	} );
-
 	j.directive( "foreach", function( val, el ) {
 		var sp;
 		if ( val.indexOf( " as " ) !== -1 ) {
@@ -1012,6 +1007,24 @@ jstack.dataBinder = (function(){
 				var value = self.dotGet(key,data);
 				$this.html(value);
 			});
+			controller.find(':attrStartsWith("j-var-")').each(function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-var-');
+				$.each(attrs,function(k,varAttr){					
+					var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
+					if(match){
+						$.each(match,function(i,x){
+							var v = x.match(/[\w\.]+/)[0];
+							var value = self.dotGet(v,data);
+							if(typeof(value)=='undefined'||value===null||!value){
+								value = '';
+							}
+							varAttr = varAttr.replace(new RegExp("\\$\\{"+v+"\\}",'g'),value);
+						});
+					}
+					$this.attr(k.substr(6),varAttr);
+				});
+			});
 		},
 		eventListener: function(){
 			var self = this;
@@ -1020,7 +1033,7 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			$(document.body).on('input val', ':input[name]',function(){
+			$(document.body).on('input val', ':input[name]', function(){
 				self.triggerEvent('eventInputChange',[this]);
 			});
 		},
@@ -1059,12 +1072,11 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var attrIf = $this.attr('j-if');
 				
-				var data = $this.closest.data('j-controller');
+				var data = $this.closest('[j-controller]').data('j-model');
 				var key = self.getScoped(this,attrIf);
 				var value = self.dotGet(key,data);
-				
 				var children = $this.data('j-if');
-				if(children){
+				if(!children){
 					children = $this.children();
 					$this.data('j-if',children);
 				}
@@ -1816,6 +1828,30 @@ String.prototype.ucfirst = function() {
 			return $( a ).parents( m[ 3 ] ).length < 1;
 		}
 	} );
+	
+	$.extend($.expr[':'], {
+		attrStartsWith: function (el, _, b) {
+			for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
+				if(atts[i].nodeName.toLowerCase().indexOf(b[3].toLowerCase()) === 0) {
+					return true; 
+				}
+			}
+			return false;
+		}
+	});
+	$.extend($.expr[':'], {
+		attrEndsWith: function (el, _, b) {
+			for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
+			  var att = atts[i].nodeName.toLowerCase(),
+				  str = b[3].toLowerCase();
+				if(att.length >= str.length && att.substr(att.length - str.length) === str) {
+					return true; 
+				}
+			}
+			
+			return false;
+		}
+	});
 
 	var findForks = {
 		"nth-level": function( selector, param ) {
@@ -1953,7 +1989,23 @@ String.prototype.ucfirst = function() {
 	$.fn.reverse = function(){
 		return $(this.get().reverse());
 	};
-
+	
+	 $.fn.attrStartsWith = function(s) {
+        var attrs = {};
+        this.each(function(index){
+            $.each(this.attributes, function(index, attr){
+                if(attr.name.indexOf(s)===0){
+                   attrs[attr.name] = attr.value;
+                }
+            });
+        });
+        return attrs;
+    };
+	
+	$.escapeRegExp = function(str){
+		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+	};
+	
 } )( jQuery );
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({

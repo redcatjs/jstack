@@ -105,27 +105,21 @@ jstack.dataBinder = (function(){
 			});
 			controller.find(':attrStartsWith("j-var-")').each(function(){
 				var $this = $(this);
-				var varAttr = $this.attr('j-var');
-				var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
-				if(match){
-					$.each(match,function(i,x){
-						var v = x.match(/[\w\.]+/)[0];
-						var input = $this.closest(options.closestSelector).find('[name="'+v+'"]:eq(0)');
-						if(!input.data(uid)){
-							input.data(uid,true);
-							input.on('input change val',function(e){
-								if(options.onChange){
-									options.onChange.call(self);
-								}
-								$this.trigger('data-if:change');
-							});
-						}
-						input.on('input change val',function(){
-							showOrHide();
+				var attrs = $this.attrStartsWith('j-var-');
+				$.each(attrs,function(k,varAttr){					
+					var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
+					if(match){
+						$.each(match,function(i,x){
+							var v = x.match(/[\w\.]+/)[0];
+							var value = self.dotGet(v,data);
+							if(typeof(value)=='undefined'||value===null||!value){
+								value = '';
+							}
+							varAttr = varAttr.replace(new RegExp("\\$\\{"+v+"\\}",'g'),value);
 						});
-					});
-				}
-				
+					}
+					$this.attr(k.substr(6),varAttr);
+				});
 			});
 		},
 		eventListener: function(){
