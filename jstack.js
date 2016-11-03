@@ -1006,7 +1006,7 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			$(document.body).on('input', ':input[name]',function(){
+			$(document.body).on('input val', ':input[name]',function(){
 				self.triggerEvent('eventInputChange',[this]);
 			});
 		},
@@ -1036,7 +1036,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-controller]').each(function(){
 				var controller = $(this);
-				self.populate(controller);
+				self.populate(controller,{preventValEvent:true});
 			});
 		},
 		updateIf: function(){
@@ -1953,7 +1953,7 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	else{
-		setValue = function(){
+		setValue = function(input,val){
 			input.val(val);
 		};
 	}
