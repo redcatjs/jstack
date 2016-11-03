@@ -1944,11 +1944,24 @@ String.prototype.ucfirst = function() {
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
 		addMissing: false,
+		preventValEvent: false,
 	},config);
+	var setValue;
+	if(config.preventValEvent){
+		setValue = function(input,val){
+			input.setVal(val);
+		};
+	}
+	else{
+		setValue = function(){
+			input.val(val);
+		};
+	}
 	var populateSelect = function( input, value ) {
 		var found = false;
 		if(input.hasClass('select2-hidden-accessible')){
-			input.val(value).trigger('change');
+			setValue(input,value);
+			input.trigger('change');
 			return;
 		}
 		if(input[0].hasAttribute('data-preselect')){
@@ -1978,13 +1991,13 @@ $.fn.populateInput = function( value, config ) {
 			}
 		}
 		else if ( input.is( "textarea" ) ) {
-			input.val( value );
+			setValue(input, value);
 		}
 		else {
 			switch ( input.attr( "type" ) ){
 				case "text":
 				case "hidden":
-					input.val( value );
+					setValue(input, value);
 					break;
 				case "radio":
 					if ( input.length >= 1 ) {
