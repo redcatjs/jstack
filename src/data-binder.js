@@ -13,9 +13,9 @@ jstack.dataBinder = (function(){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
 		},
 		getScope: function(input){
-			return $(input).parents('[data-j-model]')
+			return $(input).parents('[j-model]')
 				.map(function() {
-					return $(this).attr('data-j-model');
+					return $(this).attr('j-model');
 				})
 				.get()
 				.reverse()

@@ -26,10 +26,6 @@
 		el.attr( "j-loaded-src", val );
 	} );
 
-	j.directive( "model", function( val, el ) {
-		el.attr( "data-j-model", val );
-	} );
-
 	j.directive( "include", function( val, el, templatesPath ) {
 		var ext = val.split( "." ).pop();
 		var include = templatesPath + val;
@@ -75,39 +71,6 @@
 			} );
 		} );
 		return deferred;
-	} );
-
-	j.directive( "open", function( val, el ) {
-		el.jmlInject( "prepend", val );
-		var jclose = el.attr( "j-close" );
-		if ( jclose ) {
-			el.jmlInject( "append", jclose );
-			el.removeAttr( "j-close" );
-		}
-	} );
-	j.directive( "close", function( val, el ) {
-		var jopen = el.attr( "j-open" );
-		if ( jopen ) {
-			el.jmlInject( "prepend", jopen );
-			el.removeAttr( "j-open" );
-		}
-		el.jmlInject( "append", val );
-	} );
-	j.directive( "before", function( val, el ) {
-		var jafter = el.attr( "j-after" );
-		if ( jafter ) {
-			el.jmlInject( "after", jafter );
-			el.removeAttr( "j-after" );
-		}
-		el.jmlInject( "before", val );
-	} );
-	j.directive( "after", function( val, el ) {
-		var jbefore = el.attr( "j-before" );
-		if ( jbefore ) {
-			el.jmlInject( "before", jbefore );
-			el.removeAttr( "j-before" );
-		}
-		el.jmlInject( "after", val );
 	} );
 
 } )( window, jstack );
