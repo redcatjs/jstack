@@ -1062,7 +1062,9 @@ jstack.dataBinder = (function(){
 			this.update();
 		},
 		update: function(){
+			//console.log('update');
 			this.stopObserver();
+			this.updateRepeat();
 			this.updateIf();
 			this.updateController();
 			this.startObserver();
@@ -1097,6 +1099,59 @@ jstack.dataBinder = (function(){
 					contents.detach();
 					$this.trigger('j-if:false');
 				}
+			});
+		},
+		updateRepeat: function(){
+			var self = this;
+			$('[j-repeat]').each(function(){
+				var $this = $(this);
+				
+				var parent = $this.parent();
+				parent.attr('j-repeat-list','true');
+				var list = parent.data('j-repeat-list') || [];
+				list.push(this);
+				parent.data('j-repeat-list',list);
+				
+				$this.detach();
+			});
+			
+			$('[j-repeat-list]').each(function(){
+				var $this = $(this);
+				var data = $this.closest('[j-controller]').data('j-model');
+				var list = $this.data('j-repeat-list') || [];
+				var scopes = [];
+				
+				//add
+				$.each(list,function(i,original){
+					var $original = $(original);
+										
+					var attrRepeat = $original.attr('j-repeat');
+					var key = self.getScoped($this.get(0),attrRepeat);
+					var value = self.dotGet(key,data);
+					
+					var i = 1;
+					$.each(value,function(k,v){
+						var scope = attrRepeat+'.'+k;
+						var row = $this.find('[j-scope="'+scope+'"]');
+						if(!row.length){
+							row = $original.clone();
+							row.attr('j-scope',scope);
+							row.appendTo($this);
+						}
+						row.find('[j-index]').text(i);
+						i++;
+						scopes.push(scope);
+					});
+					
+				});
+				
+				//remove
+				$this.children('[j-scope]').each(function(){
+					var scope = $(this).attr('j-scope');
+					if(scopes.indexOf(scope)===-1){
+						$(this).remove();
+					}
+				});
 			});
 		},
 	};
