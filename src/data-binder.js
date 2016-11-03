@@ -103,6 +103,30 @@ jstack.dataBinder = (function(){
 				var value = self.dotGet(key,data);
 				$this.html(value);
 			});
+			controller.find(':attrStartsWith("j-var-")').each(function(){
+				var $this = $(this);
+				var varAttr = $this.attr('j-var');
+				var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
+				if(match){
+					$.each(match,function(i,x){
+						var v = x.match(/[\w\.]+/)[0];
+						var input = $this.closest(options.closestSelector).find('[name="'+v+'"]:eq(0)');
+						if(!input.data(uid)){
+							input.data(uid,true);
+							input.on('input change val',function(e){
+								if(options.onChange){
+									options.onChange.call(self);
+								}
+								$this.trigger('data-if:change');
+							});
+						}
+						input.on('input change val',function(){
+							showOrHide();
+						});
+					});
+				}
+				
+			});
 		},
 		eventListener: function(){
 			var self = this;
@@ -111,7 +135,7 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			$(document.body).on('input val', ':input[name]',function(){
+			$(document.body).on('input val', ':input[name]', function(){
 				self.triggerEvent('eventInputChange',[this]);
 			});
 		},
@@ -150,12 +174,11 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var attrIf = $this.attr('j-if');
 				
-				var data = $this.closest.data('j-controller');
+				var data = $this.closest('[j-controller]').data('j-model');
 				var key = self.getScoped(this,attrIf);
 				var value = self.dotGet(key,data);
-				
 				var children = $this.data('j-if');
-				if(children){
+				if(!children){
 					children = $this.children();
 					$this.data('j-if',children);
 				}
