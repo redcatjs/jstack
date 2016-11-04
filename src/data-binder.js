@@ -202,9 +202,11 @@ jstack.dataBinder = (function(){
 			return defer;
 		},
 		eventDOMChange: function(){
+			//console.log('eventDOMChange');
 			this.update();
 		},
 		eventInputChange: function(){
+			//console.log('eventInputChange');
 			this.update();
 		},
 		update: function(){
@@ -212,8 +214,8 @@ jstack.dataBinder = (function(){
 			
 			var tmpStateObserver = this.stateObserver;
 			this.stateObserver = false;
-			
 			this.stopObserver();
+			
 			this.updateRepeat();
 			this.updateIf();
 			this.updateController();
@@ -310,7 +312,6 @@ jstack.dataBinder = (function(){
 					$.each(value,function(k,v){
 						var scope = attrRepeat+'.'+k;
 						var row = $this.children('[j-scope="'+scope+'"]');
-						//console.log(scope,row);return;
 						if(!row.length){
 							row = $original.clone();
 							row.removeAttr('j-repeat');
@@ -319,8 +320,8 @@ jstack.dataBinder = (function(){
 							row.appendTo($this);
 						}
 						row.find('[j-index]').text(i);
-						i++;
 						scopes.push(scope);
+						i++;
 					});
 					
 				});
