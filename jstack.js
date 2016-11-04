@@ -1272,7 +1272,6 @@ jstack.loadView = ( function() {
 			var self = $( this );
 			var controllerPath = self.attr( "j-controller" );
 			var controllerName = controllerPath.replace( "/", "." );
-			//self.attr( "way-scope", controllerName );
 
 			var cacheId = o.templatePath + "#" + controllerPath;
 
