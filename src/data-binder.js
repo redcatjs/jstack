@@ -137,6 +137,7 @@ jstack.dataBinder = (function(){
 			});
 		},
 		observer: null,
+		stateObserver: : null,
 		startObserver: function(){
 			this.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 		},
@@ -149,6 +150,7 @@ jstack.dataBinder = (function(){
 				self.triggerEvent('eventDOMChange');
 			});
 			self.startObserver();
+			this.stateObserver = true;
 			
 			$(document.body).on('input val', ':input[name]', function(){
 				var input = $(this);
@@ -207,12 +209,20 @@ jstack.dataBinder = (function(){
 		},
 		update: function(){
 			//console.log('update',(new Date()).toString());
+			
+			var tmpStateObserver = this.stateObserver;
+			this.stateObserver = false;
+			
 			this.stopObserver();
 			this.updateRepeat();
 			this.updateIf();
 			this.updateController();
 			this.updateOn();
-			this.startObserver();
+			
+			this.stateObserver = tmpStateObserver;
+			if(this.stateObserver){
+				this.startObserver();
+			}
 		},
 		updateOn: function(){
 			var self = this;
@@ -300,6 +310,7 @@ jstack.dataBinder = (function(){
 					$.each(value,function(k,v){
 						var scope = attrRepeat+'.'+k;
 						var row = $this.children('[j-scope="'+scope+'"]');
+						//console.log(scope,row);return;
 						if(!row.length){
 							row = $original.clone();
 							row.removeAttr('j-repeat');
