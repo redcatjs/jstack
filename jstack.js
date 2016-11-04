@@ -927,6 +927,21 @@ jstack.dataBinder = (function(){
 				}
 			}, data);
 		},
+		dotDel: function(key,data,value){
+			key.split('.').reduce(function(obj,k,index,array){
+				if(typeof(obj)!='object'){
+					return;
+				}
+				if(array.length==index+1){
+					if(typeof(obj[k])!='undefined'){
+						delete obj[k];
+					}
+				}
+				else{
+					return obj[k];
+				}
+			}, data);
+		},
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
 		},
