@@ -221,29 +221,23 @@ jstack.dataBinder = (function(){
 			$(':attrStartsWith("j-on-")').each(function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-on-');
-				$.each(attrs,function(k,onAttr){					
-					var match = onAttr.match(/\${\s*[\w\.]+\s*}/g);
-					if(match){
-						$.each(match,function(i,x){
-							var v = x.match(/[\w\.]+/)[0]; 
-							$this.on(v,function(){
-								var value = self.dotGet(v,data);
-								if(typeof(value)!='function'){
-									return;
-								}
-								var r = value.apply(this,arguments);
-								if(r===false){
-									return false;
-								}
-								if(r){
-									$.when(r).then(function(){
-										self.update();
-									});
-								}
+				$.each(attrs,function(k,v){
+					var event = k.substr(5);
+					$this.on(event,function(){
+						var method = self.getValue($this,v);
+						if(typeof(method)!='function'){
+							return;
+						}
+						var r = method.apply(this,arguments);
+						if(r===false){
+							return false;
+						}
+						if(r){
+							$.when(r).then(function(){
+								self.update();
 							});
-							
-						});
-					}
+						}
+					});
 				});
 			});
 		},
@@ -311,6 +305,7 @@ jstack.dataBinder = (function(){
 							row = $original.clone();
 							row.removeAttr('j-repeat');
 							row.attr('j-scope',scope);
+							row.attr('j-scope-id',k);
 							row.appendTo($this);
 						}
 						row.find('[j-index]').text(i);
