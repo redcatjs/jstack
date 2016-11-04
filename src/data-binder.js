@@ -52,6 +52,9 @@ jstack.dataBinder = (function(){
 			return this.getScoped(input,key);
 		},
 		getScoped: function(input,suffix){
+			if(suffix.substr(0,1)==='.'){
+				return suffix.substr(1);
+			}
 			var scope = this.getScope(input);
 			if(scope){
 				scope += '.';
