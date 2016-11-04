@@ -137,7 +137,7 @@ jstack.dataBinder = (function(){
 			});
 		},
 		observer: null,
-		stateObserver: : null,
+		stateObserver: null,
 		startObserver: function(){
 			this.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 		},
