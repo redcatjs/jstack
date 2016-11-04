@@ -1125,6 +1125,7 @@ jstack.dataBinder = (function(){
 				var attrs = $this.attrStartsWith('j-on-');
 				$.each(attrs,function(k,v){
 					var event = k.substr(5);
+					$this.removeAttr(k);
 					$this.on(event,function(){
 						var method = self.getValue($this,v);
 						if(typeof(method)!='function'){
