@@ -149,23 +149,6 @@ jstack.dataBinder = (function(){
 					input.trigger('input:model');
 				});
 			});
-			
-			/*
-			$(document.body).on('click', '[j-push]', function(){
-				
-			});
-			
-			$(document.body).on('click', '[j-remove]', function(){
-				var scope = $(this).closest('[j-scope]');
-				var list = scope.closest('[j-repeat-list]');
-				
-				
-				
-				self.updateRepeat();
-				
-				list.trigger('remove:model');
-			});
-			*/
 		},
 		defers: {},
 		timeouts: {},
