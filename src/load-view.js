@@ -39,9 +39,8 @@ jstack.loadView = ( function() {
 				processors[ controllerPath ] = function( data ) {
 					var processedTemplate = templateProcessor( data );
 					
+					self.data('j-model',data);
 					self.html( processedTemplate );
-					
-					jstack.dataBinder.register(self,data);
 				};
 			} );
 			var controllerRendered = $.Deferred();

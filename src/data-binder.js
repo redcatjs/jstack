@@ -26,6 +26,16 @@ jstack.dataBinder = (function(){
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
 		},
+		getValue: function(el,varKey){
+			var self = this;
+			var data = $(el).closest('[j-controller]').data('j-model');
+			var key = self.getScoped(el,varKey);
+			return self.dotGet(key,data);
+		},
+		getAttrValue: function(el,attr){
+			var attrKey = $(el).attr(attr);
+			return this.getValue(el,attrKey);
+		},
 		getScope: function(input){
 			return $(input).parents('[j-scope]')
 				.map(function() {
@@ -72,30 +82,22 @@ jstack.dataBinder = (function(){
 		defaultGetter: function(element){
 			return $( element ).html();
 		},
-		getValue: function(element){
+		getInputVal: function(element){
 			var elementType = element.tagName;
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		register: function(controller,data){
+		populate: function(controller){
 			var self = this;
-			controller.data('j-model',data);
-			this.populate(controller, data);
-		},
-		populate: function(controller, data){
-			var self = this;
-			var data = data || controller.data('j-model');
+			controller = $(controller);
 			controller.find(':input[name]').each(function(){
-				var key = self.getScopedInput(this);
-				var value = self.dotGet(key,data);
+				var value = self.getAttrValue(this,'name');
 				$(this).populateInput(value,{preventValEvent:true});
+				$(this).trigger('val:model');
 			});
 			controller.find('[j-var]').each(function(){
-				var $this = $(this);
-				var varAttr = $this.attr('j-var');
-				var key = self.getScoped(this,varAttr);
-				var value = self.dotGet(key,data);
-				$this.html(value);
+				var value = self.getAttrValue(this,'j-var');
+				$(this).html(value);
 			});
 			controller.find(':attrStartsWith("j-var-")').each(function(){
 				var $this = $(this);
@@ -105,7 +107,7 @@ jstack.dataBinder = (function(){
 					if(match){
 						$.each(match,function(i,x){
 							var v = x.match(/[\w\.]+/)[0];
-							var value = self.dotGet(v,data);
+							var value = self.getValue($this.get(0),v);
 							if(typeof(value)=='undefined'||value===null||!value){
 								value = '';
 							}
@@ -129,12 +131,13 @@ jstack.dataBinder = (function(){
 				self.triggerEvent('eventDOMChange');
 			});
 			self.startObserver();
+			
 			$(document.body).on('input val', ':input[name]', function(){
 				var input = $(this);
 				var controller = input.closest('[j-controller]');
 				var data = controller.data('j-model');
 				var name = input.attr('name');
-				var value = self.getValue(this);
+				var value = self.getInputVal(this);
 				var key = self.getScopedInput(this);
 				self.dotSet(key,data,value);
 				
@@ -143,6 +146,23 @@ jstack.dataBinder = (function(){
 					input.trigger('input:model');
 				});
 			});
+			
+			/*
+			$(document.body).on('click', '[j-push]', function(){
+				
+			});
+			
+			$(document.body).on('click', '[j-remove]', function(){
+				var scope = $(this).closest('[j-scope]');
+				var list = scope.closest('[j-repeat-list]');
+				
+				
+				
+				self.updateRepeat();
+				
+				list.trigger('remove:model');
+			});
+			*/
 		},
 		defers: {},
 		timeouts: {},
@@ -190,24 +210,52 @@ jstack.dataBinder = (function(){
 			this.updateRepeat();
 			this.updateIf();
 			this.updateController();
+			this.updateOn();
 			this.startObserver();
+		},
+		updateOn: function(){
+			var self = this;
+			$(':attrStartsWith("j-on-")').each(function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-on-');
+				$.each(attrs,function(k,onAttr){					
+					var match = onAttr.match(/\${\s*[\w\.]+\s*}/g);
+					if(match){
+						$.each(match,function(i,x){
+							var v = x.match(/[\w\.]+/)[0]; 
+							$this.on(v,function(){
+								var value = self.dotGet(v,data);
+								if(typeof(value)!='function'){
+									return;
+								}
+								var r = value.apply(this,arguments);
+								if(r===false){
+									return false;
+								}
+								if(r){
+									$.when(r).then(function(){
+										self.update();
+									});
+								}
+							});
+							
+						});
+					}
+				});
+			});
 		},
 		updateController: function(){
 			var self = this;
 			$('[j-controller]').each(function(){
-				var controller = $(this);
-				self.populate(controller);
+				self.populate(this);
 			});
 		},
 		updateIf: function(){
 			var self = this;
 			$('[j-if]').each(function(){
 				var $this = $(this);
-				var attrIf = $this.attr('j-if');
+				var value = self.getAttrValue(this,'j-if');
 				
-				var data = $this.closest('[j-controller]').data('j-model');
-				var key = self.getScoped(this,attrIf);
-				var value = self.dotGet(key,data);
 				var contents = $this.data('j-if');
 				if(!contents){
 					contents = $this.contents();
