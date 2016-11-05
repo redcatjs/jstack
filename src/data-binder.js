@@ -142,12 +142,33 @@ jstack.dataBinder = (function(){
 			var self = this;
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
+				var events = $._data(document,'events');
+				var eventsLoad = events['j:load'] || [];
+				var eventsUnload = events['j:unload'] || [];
+				$.each(mutations,function(i,mutation){
+					$.each(mutation.addedNodes,function(ii,node){
+						//$(node).trigger('j:load'); //doesn't support for removed node
+						$.each(eventsLoad,function(type,e){
+							if(e.selector&&$(node).is(e.selector)){
+								e.handler.call(node,$.Event('j:load'));
+							}
+						});
+					});
+					$.each(mutation.removedNodes,function(ii,node){
+						//$(node).trigger('j:unload'); //doesn't support for removed node
+						$.each(eventsUnload,function(type,e){
+							if(e.selector&&$(node).is(e.selector)){
+								e.handler.call(node,$.Event('j:unload'));
+							}
+						});
+					});
+				});
 				
 				if(!self.stateObserver) return;
 				
 				self.triggerUpdate();
 			});
-			self.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
+			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$(document.body).on('input val', ':input[name]', function(){
 				var input = $(this);
