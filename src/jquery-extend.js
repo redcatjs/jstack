@@ -287,11 +287,15 @@
 		} );
 		return r;
 	};
-	$.fn.dataAttrConfig = function(){
-		var attrData = this.attrStartsWith('j-data-');
+	$.fn.dataAttrConfig = function(prefix){
+		if(!prefix){
+			prefix = 'data-';
+		}
+		var substr = prefix.length;
+		var attrData = this.attrStartsWith(prefix);
 		var data = {};
 		$.each(attrData,function(k,v){
-			$.attrsToObject( k.substr(7), v, data );
+			$.attrsToObject( k.substr(substr), v, data );
 		});
 		return data;
 	};
