@@ -1041,20 +1041,17 @@ jstack.dataBinder = (function(){
 			});
 		},
 		observer: null,
-		stateObserver: null,
-		startObserver: function(){
-			this.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
-		},
-		stopObserver: function(){
-			this.observer.disconnect();
-		},
+		stateObserver: true,
 		eventListener: function(){
 			var self = this;
 			self.observer = new MutationObserver(function(mutations){
-				self.triggerEvent('eventDOMChange');
+				//console.log(mutations);
+				
+				if(!self.stateObserver) return;
+				
+				self.triggerUpdate();
 			});
-			self.startObserver();
-			this.stateObserver = true;
+			self.observer.observe(document.body, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$(document.body).on('input val', ':input[name]', function(){
 				var input = $(this);
@@ -1065,70 +1062,39 @@ jstack.dataBinder = (function(){
 				var key = self.getScopedInput(this);
 				self.dotSet(key,data,value);
 				
-				var defer = self.triggerEvent('eventInputChange');
+				var defer = $.Deferred();
+				self.triggerUpdate(defer);
 				defer.then(function(){
 					input.trigger('input:model');
 				});
 			});
 		},
-		defers: {},
-		timeouts: {},
-		resolveEvent: function(methodName){
+		updateDefers: [],
+		updateTimeout: null,
+		triggerUpdate: function(defer){
 			var self = this;
-			var defers = self.defers[methodName];
-			do{
-				defers.pop().resolve();
+			if(self.updateTimeout){
+				clearTimeout(self.updateTimeout);
 			}
-			while(defers.length);
-		},
-		triggerEvent: function(methodName){
-			var self = this;
-			var method = self[methodName];
-			if(self.timeouts[methodName]){
-				clearTimeout(self.timeouts[methodName]);
+			if(defer){
+				self.updateDefers.push(defer);
 			}
-			var defer = $.Deferred();
-			if(typeof(self.defers[methodName])=='undefined'){
-				self.defers[methodName] = [];
-			}
-			self.defers[methodName].push(defer);
-			self.timeouts[methodName] = setTimeout(function(){
-				var defer2 = method.call(self);
-				if(defer2){
-					defer2.then(function(){
-						self.resolveEvent(methodName);
-					});
-				}
-				else{
-					self.resolveEvent(methodName);
+			self.updateTimeout = setTimeout(function(){
+				self.update();
+				while(self.updateDefers.length){
+					self.updateDefers.pop().resolve();
 				}
 			}, 100);
-			return defer;
-		},
-		eventDOMChange: function(){
-			//console.log('eventDOMChange');
-			this.update();
-		},
-		eventInputChange: function(){
-			//console.log('eventInputChange');
-			this.update();
 		},
 		update: function(){
-			//console.log('update',(new Date()).toString());
-			
-			var tmpStateObserver = this.stateObserver;
 			this.stateObserver = false;
-			this.stopObserver();
 			
 			this.updateRepeat();
 			this.updateIf();
 			this.updateController();
 			this.updateOn();
 			
-			this.stateObserver = tmpStateObserver;
-			if(this.stateObserver){
-				this.startObserver();
-			}
+			this.stateObserver = true;
 		},
 		updateOn: function(){
 			var self = this;
@@ -1149,7 +1115,7 @@ jstack.dataBinder = (function(){
 						}
 						if(r){
 							$.when(r).then(function(){
-								self.update();
+								self.triggerUpdate();
 							});
 						}
 					});
