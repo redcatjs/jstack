@@ -26,7 +26,6 @@ grunt.initConfig({
 				"src/load-view.js",
 				"src/ajax.js",
 				"src/params-reflection.js",
-				"src/module-dom.js",
 				"src/helpers.js",
 				"src/jml.js",
 				"src/jsonml.js",
