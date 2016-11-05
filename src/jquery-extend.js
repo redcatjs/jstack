@@ -265,4 +265,8 @@
 		return $(document).on.apply(this,arguments);
 	};
 	
+	$.off = function(){
+		return $(document).off.apply(this,arguments);
+	};
+	
 } )( jQuery );
