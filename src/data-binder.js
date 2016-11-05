@@ -141,6 +141,8 @@ jstack.dataBinder = (function(){
 		eventListener: function(){
 			var self = this;
 			self.observer = new MutationObserver(function(mutations){
+				//console.log(mutations);
+				
 				if(!self.stateObserver) return;
 				
 				self.triggerUpdate();
@@ -165,14 +167,6 @@ jstack.dataBinder = (function(){
 		},
 		updateDefers: [],
 		updateTimeout: null,
-		resolveUpdate: function(){
-			var self = this;
-			var defers = self.updateDefers;
-			do{
-				defers.pop().resolve();
-			}
-			while(defers.length);
-		},
 		triggerUpdate: function(defer){
 			var self = this;
 			if(self.updateTimeout){
@@ -182,9 +176,11 @@ jstack.dataBinder = (function(){
 				self.updateDefers.push(defer);
 			}
 			self.updateTimeout = setTimeout(function(){
-				self.resolveUpdate();
+				self.update();
+				while(self.updateDefers.length){
+					self.updateDefers.pop().resolve();
+				}
 			}, 100);
-			return defer;
 		},
 		update: function(){
 			this.stateObserver = false;
