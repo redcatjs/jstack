@@ -35,7 +35,7 @@
 					}
 					$.extend( j.templateVarSubstitutions, substitutions );
 					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( templates[ templatePath ] );
+					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
 				}
 			} );
 		}
