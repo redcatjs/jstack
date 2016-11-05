@@ -7,6 +7,7 @@ grunt.initConfig({
 	concat: {
 		dist: {
 			src: [
+				"src/jquery-extend.js",
 				"src/core.js",
 				"src/hasOwnProperty2.js",
 				"src/url.js",
@@ -31,7 +32,6 @@ grunt.initConfig({
 				"src/jsonml.js",
 				"src/string-prototyping.js",
 				"src/jquery.serialize-object.js",
-				"src/jquery-extend.js",
 				"src/populate.js",
 				"src/data-if.js",
 				"src/json_encode.js",
