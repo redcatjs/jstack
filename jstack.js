@@ -2195,6 +2195,9 @@ $.fn.populateInput = function( value, config ) {
 		}
 		else {
 			switch ( input.attr( "type" ) ){
+				case "file":
+				
+				return;
 				default:
 				case "number":
 				case "range":
