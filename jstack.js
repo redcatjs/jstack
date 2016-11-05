@@ -1,3 +1,5 @@
+jstackClass = function(){};
+jstack = new jstackClass();
 ( function( $ ) {
 
 	$.fn.changeVal = function( v ) {
@@ -269,17 +271,61 @@
 		return $(document).off(event,selector,callback);
 	};
 	
+	
+	$.attrsToObject = function( k, v, r ) {
+		var s = k.split('--');
+		if ( typeof( r ) == "undefined" ) r = {};
+		var ref = r;
+		var l = s.length - 1;
+		$.each( s, function( i, key ) {
+		key = $.camelCase(key);
+			if ( i == l ) {
+				ref[ key ] = v;
+			}
+			else {
+				if ( !ref[ key ] ) ref[ key ] = {};
+				ref = ref[ key ];
+			}
+		} );
+		return r;
+	};
+	$.fn.dataAttrConfig = function(prefix){
+		if(!prefix){
+			prefix = 'data-';
+		}
+		var substr = prefix.length;
+		var attrData = this.attrStartsWith(prefix);
+		var data = {};
+		$.each(attrData,function(k,v){
+			$.attrsToObject( k.substr(substr), v, data );
+		});
+		return data;
+	};
+	
 } )( jQuery );
-( function( w, $js, $ ) {
-	w.jstack = ( function() {
-		var j = function() {
-
-		};
-
-		return j;
-	} )();
-} )( window, $js, jQuery );
-
+jstack.component = {};
+$.on('j:load','[j-component]',function(e){
+	var el = this;
+	var component = $(el).attr('j-component');
+	var config = $(el).dataAttrConfig('j-data-');
+	var load = function(){
+		var o = new jstack.component[component](el,config,e);
+		$(el).data('j:component',o);
+		
+	};
+	if(jstack.component[component]){
+		load();
+	}
+	else{					
+		$js('jstack.'+component,load);
+	}
+});
+$.on('j:unload','[j-component]',function(e){
+	var o = $(el).data('j:component');
+	if(o&&typeof(o.unload)=='function'){
+		o.unload();
+	}
+});
 jstack.hasOwnProperty2 = function(o,k){
 	var v = o[k];
 	return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
@@ -1154,7 +1200,7 @@ function rtrim ( str, charlist ) {
 					}
 					$.extend( j.templateVarSubstitutions, substitutions );
 					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( templates[ templatePath ] );
+					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
 				}
 			} );
 		}
@@ -1162,7 +1208,6 @@ function rtrim ( str, charlist ) {
 	};
 
 } )( window, jstack );
-
 jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
 	if ( typeof( debug ) == "undefined" ) debug = $js.dev;
 	var defer = $.Deferred();
@@ -1503,101 +1548,99 @@ jstack.dataBinder = (function(){
 	o.eventListener();
 	return o;
 })();
-jstack.loadView = ( function() {
-	return function( o ) {
-		var html = $( "<tmpl>" + o.templateHtml + "</tmpl>" );
-		if ( !html.find( "> *" ).length ) {
-			html.wrapInner( "<div />" );
-		}
-		var controllers = html.find( "[j-controller]" );
-		var processors = {};
-		if ( !controllers.length ) {
-			html.children( 0 ).attr( "j-controller", o.path || "" );
-			controllers = html.find( "[j-controller]" );
-		}
-		var readyControllers = 0;
-		var totalControllers = controllers.length;
-		var renderCallbacksParams = [];
+jstack.loadView = function( o ) {
+	var html = $( "<tmpl>" + o.templateHtml + "</tmpl>" );
+	if ( !html.find( "> *" ).length ) {
+		html.wrapInner( "<div />" );
+	}
+	var controllers = html.find( "[j-controller]" );
+	var processors = {};
+	if ( !controllers.length ) {
+		html.children( 0 ).attr( "j-controller", o.path || "" );
+		controllers = html.find( "[j-controller]" );
+	}
+	var readyControllers = 0;
+	var totalControllers = controllers.length;
+	var renderCallbacksParams = [];
 
-		if ( !o.defaultController ) {
-			o.defaultController = function( controllerPath ) {
-				jstack.controller( controllerPath, function() {
-					this.jstack.render();
-				} );
-			};
-		}
-
-		controllers.each( function() {
-			var self = $( this );
-			var controllerPath = self.attr( "j-controller" );
-			var controllerName = controllerPath.replace( "/", "." );
-
-			var cacheId = o.templatePath + "#" + controllerPath;
-
-			var templatesPath = o.templatePath.split( "/" );
-			templatesPath.pop();
-			templatesPath = templatesPath.join( "/" );
-			if ( templatesPath ) templatesPath += "/";
-
-			var compileView = jstack.processTemplate( self, cacheId, templatesPath ).then( function( templateProcessor ) {
-				processors[ controllerPath ] = function( data ) {
-					var processedTemplate = templateProcessor( data );
-					
-					self.data('j-model',data);
-					self.html( processedTemplate );
-				};
+	if ( !o.defaultController ) {
+		o.defaultController = function( controllerPath ) {
+			jstack.controller( controllerPath, function() {
+				this.jstack.render();
 			} );
-			var controllerRendered = $.Deferred();
-			var loadController = function() {
-				var ctrl = jstack.controller( controllerPath );
-				if ( !ctrl ){
-					console.log( 'jstack controller "' + controllerPath + '" not found as expected (or parse error) in "' + o.controllersPath + controllerPath + '"' );
-				}
+		};
+	}
+
+	controllers.each( function() {
+		var self = $( this );
+		var controllerPath = self.attr( "j-controller" );
+		var controllerName = controllerPath.replace( "/", "." );
+
+		var cacheId = o.templatePath + "#" + controllerPath;
+
+		var templatesPath = o.templatePath.split( "/" );
+		templatesPath.pop();
+		templatesPath = templatesPath.join( "/" );
+		if ( templatesPath ) templatesPath += "/";
+
+		var compileView = jstack.processTemplate( self, cacheId, templatesPath ).then( function( templateProcessor ) {
+			processors[ controllerPath ] = function( data ) {
+				var processedTemplate = templateProcessor( data );
 				
-				ctrl.jstack.render = function( data ) {
-					if ( !data ) data = {};
-					ctrl.jstack.data = data;
-					var processedTemplate = processors[ controllerPath ]( ctrl.jstack.data );
-					renderCallbacksParams.push( [ self, ctrl ] );
-					controllerRendered.resolve();
-					return data;
-				};
-				ctrl.jstack.element = self;
-				return ctrl;
+				self.data('j-model',data);
+				self.html( processedTemplate );
 			};
-			var controllerReady = $.Deferred();
-			var viewReady = $.Deferred();
-			$.when( controllerReady, viewReady ).then( function() {
-				var ctrl = loadController();
-				readyControllers++;
-				if ( readyControllers == totalControllers ) {
-					$.when( controllerRendered ).then( function() {
-						$( "[j-view]" ).html( html.contents() );
-						if ( o.renderCallback ) {
-							$.each( renderCallbacksParams, function( i, params ) {
-								o.renderCallback.apply( o, params );
-							} );
-						}
-					} );
-				}
-				ctrl();
-			} );
-			compileView.then( function() {
-				viewReady.resolve();
-			} );
-			$js.onExists( o.controllersPath + controllerPath,
-				function() {
-					controllerReady.resolve();
-				},
-				function() {
-					o.defaultController( controllerPath );
-					controllerReady.resolve();
-				}
-			);
-
 		} );
-	};
-} )();
+		var controllerRendered = $.Deferred();
+		var loadController = function() {
+			var ctrl = jstack.controller( controllerPath );
+			if ( !ctrl ){
+				console.log( 'jstack controller "' + controllerPath + '" not found as expected (or parse error) in "' + o.controllersPath + controllerPath + '"' );
+			}
+			
+			ctrl.jstack.render = function( data ) {
+				if ( !data ) data = {};
+				ctrl.jstack.data = data;
+				var processedTemplate = processors[ controllerPath ]( ctrl.jstack.data );
+				renderCallbacksParams.push( [ self, ctrl ] );
+				controllerRendered.resolve();
+				return data;
+			};
+			ctrl.jstack.element = self;
+			return ctrl;
+		};
+		var controllerReady = $.Deferred();
+		var viewReady = $.Deferred();
+		$.when( controllerReady, viewReady ).then( function() {
+			var ctrl = loadController();
+			readyControllers++;
+			if ( readyControllers == totalControllers ) {
+				$.when( controllerRendered ).then( function() {
+					$( "[j-view]" ).html( html.contents() );
+					if ( o.renderCallback ) {
+						$.each( renderCallbacksParams, function( i, params ) {
+							o.renderCallback.apply( o, params );
+						} );
+					}
+				} );
+			}
+			ctrl();
+		} );
+		compileView.then( function() {
+			viewReady.resolve();
+		} );
+		$js.onExists( o.controllersPath + controllerPath,
+			function() {
+				controllerReady.resolve();
+			},
+			function() {
+				o.defaultController( controllerPath );
+				controllerReady.resolve();
+			}
+		);
+
+	} );
+};
 ( function( $, j ) {
 	var toParamsPair = function( data ) {
 		var pair = [];
@@ -1730,82 +1773,6 @@ jstack.paramsReflection = function( f ) {
 	}
 	return r;
 };
-
-( function( jstack ) {
-
-	var moduleDomElement = function( module, el, attrNs ) {
-		var o = {};
-		var attributes = el.attributes;
-		var prefixNs = attrNs + "-";
-		var prefixNsL = prefixNs.length;
-		for ( var k in attributes ) {
-			if ( attributes.hasOwnProperty( k ) ) {
-				var attribute = attributes[ k ];
-				if ( attribute.name && attribute.name.substr( 0, prefixNsL ) == prefixNs ) {
-					o[ attribute.name.substr( prefixNsL ).toCamelCase() ] = attribute.value;
-				}
-			}
-		}
-		el.$js = o;
-		var loadModuleDomElement = function() {
-			var
-				func = $js.module( module ),
-				apply = [],
-				params
-			;
-			if ( func instanceof Array ) {
-				var tmpParams = func;
-				func = tmpParams.pop();
-				params = {};
-				for ( var k in tmpParams ) {
-					if ( tmpParams.hasOwnProperty( k ) ) {
-						params[ tmpParams[ k ] ] = null;
-					}
-				}
-			} else {
-				params = jstack.paramsReflection( func );
-			}
-			for ( var k in params ) {
-				if ( params.hasOwnProperty( k ) ) {
-					if ( k == "$di" ) {
-						apply.push( o );
-					} else if ( typeof( o[ k ] ) != "undefined" ) {
-						apply.push( o[ k ] );
-					} else {
-						apply.push( params[ k ] );
-					}
-				}
-			}
-			func.apply( el, apply );
-		};
-		if ( $js.module( module ) ) {
-			loadModuleDomElement();
-		} else if ( $js.waitingModule[ module ] ) {
-			$js.waitingModule[ module ]( loadModuleDomElement );
-		} else {
-			$js( module, loadModuleDomElement );
-		}
-	};
-
-	jstack.moduleDomNs = "js";
-	jstack.moduleDomPath = "js/js-module-dom/";
-	jstack.moduleDom = function( prefixPath, attrNs ) {
-		if ( !prefixPath )
-			prefixPath = jstack.moduleDomPath;
-		if ( !attrNs )
-			attrNs = jstack.moduleDomNs;
-		var all = document.getElementsByTagName( "*" );
-		for ( var i = 0; i < all.length; i++ ) {
-			if ( !all[ i ].$js ) {
-				var js = all[ i ].getAttribute( attrNs );
-				if ( js ) {
-					moduleDomElement( prefixPath + js, all[ i ], attrNs );
-				}
-			}
-		}
-	};
-
-} )( jstack );
 
 jstack.replaceAllRegExp = function( str, find, replace ) {
   return str.replace( new RegExp( find, "g" ), replace );

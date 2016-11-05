@@ -7,8 +7,9 @@ grunt.initConfig({
 	concat: {
 		dist: {
 			src: [
-				"src/jquery-extend.js",
 				"src/core.js",
+				"src/jquery-extend.js",
+				"src/component.js",
 				"src/hasOwnProperty2.js",
 				"src/url.js",
 				"src/route.js",
@@ -49,7 +50,7 @@ grunt.initConfig({
 	
 	watch: {
 		scripts: {
-			files: 'src/*.js',
+			files: ['src/*.js','Gruntfile.js'],
 			tasks: ['concat','uglify'],
 			options: {
 				debounceDelay: 250,

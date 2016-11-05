@@ -1,4 +1,2 @@
-jstackClass = function(){
-	
-};
+jstackClass = function(){};
 jstack = new jstackClass();
