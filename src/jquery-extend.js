@@ -261,12 +261,12 @@
 		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 	};
 	
-	$.on = function(){
-		return $(document).on.apply(this,arguments);
+	$.on = function(event,selector,callback){
+		return $(document).on(event,selector,callback);
 	};
 	
-	$.off = function(){
-		return $(document).off.apply(this,arguments);
+	$.off = function(event,selector,callback){
+		return $(document).off(event,selector,callback);
 	};
 	
 } )( jQuery );
