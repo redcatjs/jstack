@@ -269,4 +269,31 @@
 		return $(document).off(event,selector,callback);
 	};
 	
+	
+	$.attrsToObject = function( k, v, r ) {
+		var s = k.split('--');
+		if ( typeof( r ) == "undefined" ) r = {};
+		var ref = r;
+		var l = s.length - 1;
+		$.each( s, function( i, key ) {
+		key = $.camelCase(key);
+			if ( i == l ) {
+				ref[ key ] = v;
+			}
+			else {
+				if ( !ref[ key ] ) ref[ key ] = {};
+				ref = ref[ key ];
+			}
+		} );
+		return r;
+	};
+	$.fn.dataAttrConfig = function(){
+		var attrData = this.attrStartsWith('j-data-');
+		var data = {};
+		$.each(attrData,function(k,v){
+			$.attrsToObject( k.substr(7), v, data );
+		});
+		return data;
+	};
+	
 } )( jQuery );
