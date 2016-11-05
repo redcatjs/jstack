@@ -261,4 +261,8 @@
 		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 	};
 	
+	$.on = function(){
+		return $(document).on.apply(this,arguments);
+	};
+	
 } )( jQuery );
