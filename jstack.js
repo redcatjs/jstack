@@ -329,7 +329,7 @@ $.on('j:load','[j-component]',function(e){
 	}
 });
 $.on('j:unload','[j-component]',function(e){
-	var o = $(el).data('j:component');
+	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
 		o.unload();
 	}
@@ -1374,22 +1374,39 @@ jstack.dataBinder = (function(){
 				var events = $._data(document,'events');
 				var eventsLoad = events['j:load'] || [];
 				var eventsUnload = events['j:unload'] || [];
+				
+				var eventLoad = $.Event('j:load');
+				var eventUnload = $.Event('j:unload');
 				$.each(mutations,function(i,mutation){
 					$.each(mutation.addedNodes,function(ii,node){
-						//$(node).trigger('j:load'); //doesn't support for removed node
-						$.each(eventsLoad,function(type,e){
-							if(e.selector&&$(node).is(e.selector)){
-								e.handler.call(node,$.Event('j:load'));
-							}
+						var nodes = $(node).add($(node).find('*'));
+						//nodes.trigger('j:load'); //doesn't support for removed node
+						
+						nodes.each(function(iii,n){
+						
+							$.each(eventsLoad,function(type,e){
+								if(e.selector&&$(n).is(e.selector)){
+									e.handler.call(n,eventLoad);
+								}
+							});
+							
 						});
+						
 					});
 					$.each(mutation.removedNodes,function(ii,node){
-						//$(node).trigger('j:unload'); //doesn't support for removed node
-						$.each(eventsUnload,function(type,e){
-							if(e.selector&&$(node).is(e.selector)){
-								e.handler.call(node,$.Event('j:unload'));
-							}
+						var nodes = $(node).add($(node).find('*'));
+						//nodes.trigger('j:unload'); //doesn't support for removed node
+							
+						nodes.each(function(iii,n){
+							
+							$.each(eventsUnload,function(type,e){
+								if(e.selector&&$(n).is(e.selector)){
+									e.handler.call(n,eventUnload);
+								}
+							});
+							
 						});
+							
 					});
 				});
 				
