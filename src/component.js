@@ -24,7 +24,7 @@ $.on('j:load','[j-component]',function(e){
 	}
 });
 $.on('j:unload','[j-component]',function(e){
-	var o = $(el).data('j:component');
+	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
 		o.unload();
 	}
