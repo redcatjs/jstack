@@ -43,7 +43,7 @@ jstack.dataBinder = (function(){
 		},
 		getValue: function(el,varKey){
 			var self = this;
-			var data = $(el).closest('[j-controller]').data('j-model');
+			var data = $(el).closest('[j-controller]').data('jModel');
 			var key = self.getScoped(el,varKey);
 			return self.dotGet(key,data);
 		},
@@ -190,7 +190,7 @@ jstack.dataBinder = (function(){
 			$(document.body).on('input val', ':input[name]', function(){
 				var input = $(this);
 				var controller = input.closest('[j-controller]');
-				var data = controller.data('j-model');
+				var data = controller.data('jModel');
 				var name = input.attr('name');
 				var value = self.getInputVal(this);
 				var key = self.getScopedInput(this);
@@ -268,10 +268,10 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var value = self.getAttrValue(this,'j-if');
 				
-				var contents = $this.data('j-if');
+				var contents = $this.data('jIf');
 				if(!contents){
 					contents = $this.contents();
-					$this.data('j-if',contents);
+					$this.data('jIf',contents);
 				}
 				
 				if(value){
@@ -291,17 +291,17 @@ jstack.dataBinder = (function(){
 				
 				var parent = $this.parent();
 				parent.attr('j-repeat-list','true');
-				var list = parent.data('j-repeat-list') || [];
+				var list = parent.data('jRepeatList') || [];
 				list.push(this);
-				parent.data('j-repeat-list',list);
+				parent.data('jRepeatList',list);
 				
 				$this.detach();
 			});
 			
 			$('[j-repeat-list]').each(function(){
 				var $this = $(this);
-				var data = $this.closest('[j-controller]').data('j-model');
-				var list = $this.data('j-repeat-list') || [];
+				var data = $this.closest('[j-controller]').data('jModel');
+				var list = $this.data('jRepeatList') || [];
 				var scopes = [];
 				
 				//add
