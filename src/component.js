@@ -22,6 +22,9 @@ var loadJqueryComponent = function(){
 	var el = this;
 	var component = $(el).attr('jquery-component');
 	var config = $(el).dataAttrConfig('j-data-');
+	if($.isEmptyObject(config)){
+		config = undefined;
+	}
 	var load = function(){
 		var jq = $(el)[component](config);
 		$(el).data('j:component',jq);
