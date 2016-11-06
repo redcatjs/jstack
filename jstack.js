@@ -314,8 +314,18 @@ var loadComponent = function(){
 	var el = this;
 	var component = $(el).attr('j-component');
 	var config = $(el).dataAttrConfig('j-data-');
+	var paramsData = $(el).attr('j-params-data');
 	var load = function(){
-		var o = new jstack.component[component](el,config);
+		var o;
+		var c = jstack.component[component];
+		if(paramsData){
+			var params = [];
+			params.push(el);
+			 o = new (Function.prototype.bind.apply(c, params));
+		}
+		else{
+			o = new c(el,config);
+		}
 		$(el).data('j:component',o);			
 	};
 	if(jstack.component[component]){
@@ -330,9 +340,25 @@ var loadJqueryComponent = function(){
 	var el = this;
 	var component = $(el).attr('jquery-component');
 	var config = $(el).dataAttrConfig('j-data-');
+	var paramsData = $(el).attr('j-params-data');
+	var params = [];
+	if(paramsData){
+		var keys = [];
+		for (var k in config) {
+			if (config.hasOwnProperty(k)) {
+				keys.push(k);
+			}
+		}
+		keys.sort();
+		for(var i=0,l=keys.length;i<l;i++){
+			params.push(config[keys[i]]);
+		}
+	}
+	else if(!$.isEmptyObject(config)){
+		params.push(config);
+	}
 	var load = function(){
-		var jq = $(el)[component](config);
-		$(el).data('j:component',jq);
+		$(el).data('j:component',$.fn[component].apply($(el), params));
 	};
 	if($.fn[component]){
 		load();
