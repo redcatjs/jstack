@@ -306,9 +306,11 @@ jstack = new jstackClass();
 	};
 	
 } )( jQuery );
+(function(){
+
 jstack.component = {};
-$()
-$.on('j:load','[j-component]',function(){
+
+var loadComponent = function(){
 	var el = this;
 	var component = $(el).attr('j-component');
 	var config = $(el).dataAttrConfig('j-data-');
@@ -322,13 +324,15 @@ $.on('j:load','[j-component]',function(){
 	else{					
 		$js('jstack.'+component,load);
 	}
-});
-$.on('j:load','[jquery-component]',function(){
+};
+
+var loadJqueryComponent = function(){
 	var el = this;
 	var component = $(el).attr('jquery-component');
 	var config = $(el).dataAttrConfig('j-data-');
 	var load = function(){
-		$(el)[component](config);
+		var jq = $(el)[component](config);
+		$(el).data('j:component',jq);
 	};
 	if($.fn[component]){
 		load();
@@ -336,13 +340,29 @@ $.on('j:load','[jquery-component]',function(){
 	else{					
 		$js('jstack.jquery.'+component,load);
 	}
-});
+};
+
+$.on('j:load','[j-component]',loadComponent);
+$.on('j:load','[jquery-component]',loadJqueryComponent);
 $.on('j:unload','[j-component]',function(){
 	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
 		o.unload();
 	}
 });
+
+$('[j-component]').each(function(){
+	if( !$(this).data('j:component') ){
+		loadComponent.call(this);
+	}
+});
+$('[jquery-component]').each(function(){
+	if( !$(this).data('j:component') ){
+		loadJqueryComponent.call(this);
+	}
+});
+
+})();
 jstack.hasOwnProperty2 = function(o,k){
 	var v = o[k];
 	return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
