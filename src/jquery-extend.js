@@ -212,31 +212,6 @@
 		return returnValue;
 	};
 	
-	
-	var getNamespaceSuspend = function(event,namespace){
-		if(typeof(namespace)=='undefined'){
-			namespace = 'suspend';
-		}
-		if(namespace){
-			event = event.split(' ');
-			$.each(event,function(i,v){
-				event[i] = v+'.'+namespace;
-			});
-			event = event.join(' ');
-		}
-		return event;
-	};
-	$.fn.suspendEvent = function(event,namespace){
-		event = getNamespaceSuspend(event,namespace);
-		return this.on(event,function(e){
-			e.stopPropagation();
-		});
-	};
-	$.fn.resumeEvent = function(event,namespace){
-		event = getNamespaceSuspend(event,namespace);
-		return this.off(event);
-	};
-	
 	$.arrayCompare = function (a, b) {
 		return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
 	};
