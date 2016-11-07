@@ -363,6 +363,15 @@ $('[jquery-component]').each(function(){
 	}
 });
 
+jstack.loader = function(selector,handler){
+	$.on('j:load',selector,function(){
+		handler.call(this);
+	});
+	$(selector).each(function(){
+		handler.call(this);
+	});
+};
+
 })();
 jstack.hasOwnProperty2 = function(o,k){
 	var v = o[k];
