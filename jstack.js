@@ -1625,7 +1625,6 @@ jstack.loadView = function( o ) {
 	}
 	var readyControllers = 0;
 	var totalControllers = controllers.length;
-	var renderCallbacksParams = [];
 
 	if ( !o.defaultController ) {
 		o.defaultController = function( controllerPath ) {
@@ -1666,7 +1665,6 @@ jstack.loadView = function( o ) {
 				if ( !data ) data = {};
 				ctrl.jstack.data = data;
 				var processedTemplate = processors[ controllerPath ]( ctrl.jstack.data );
-				renderCallbacksParams.push( [ self, ctrl ] );
 				controllerRendered.resolve();
 				return data;
 			};
@@ -1681,11 +1679,7 @@ jstack.loadView = function( o ) {
 			if ( readyControllers == totalControllers ) {
 				$.when( controllerRendered ).then( function() {
 					$( "[j-view]" ).html( html.contents() );
-					if ( o.renderCallback ) {
-						$.each( renderCallbacksParams, function( i, params ) {
-							o.renderCallback.apply( o, params );
-						} );
-					}
+					$(document).trigger('j:view:load');
 				} );
 			}
 			ctrl();
