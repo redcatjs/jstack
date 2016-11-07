@@ -18,7 +18,9 @@ $.fn.populateInput = function( value, config ) {
 		var found = false;
 		if(input.hasClass('select2-hidden-accessible')){
 			setValue(input,value);
-			input.trigger('change');
+			if(!config.preventValEvent){
+				input.trigger('change');
+			}
 			return;
 		}
 		if(input[0].hasAttribute('data-preselect')){

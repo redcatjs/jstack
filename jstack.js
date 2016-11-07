@@ -1367,7 +1367,7 @@ jstack.dataBinder = (function(){
 		populate: function(controller){
 			var self = this;
 			controller = $(controller);
-			controller.find(':input[name]:not(.select2-hidden-accessible)').each(function(){
+			controller.find(':input[name]').each(function(){
 				var value = self.getAttrValue(this,'name');
 				$(this).populateInput(value,{preventValEvent:true});
 				$(this).trigger('val:model');
@@ -2190,7 +2190,9 @@ $.fn.populateInput = function( value, config ) {
 		var found = false;
 		if(input.hasClass('select2-hidden-accessible')){
 			setValue(input,value);
-			input.trigger('change');
+			if(!config.preventValEvent){
+				input.trigger('change');
+			}
 			return;
 		}
 		if(input[0].hasAttribute('data-preselect')){
