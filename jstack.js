@@ -1471,10 +1471,15 @@ jstack.dataBinder = (function(){
 				self.inputToModel(this);
 			});
 			$(document.body).on('input val', ':input[name]', function(){
+				var input = $(this);
+				var defer = $.Deferred();
 				self.inputToModel(this);
+				defer.then(function(){
+					input.trigger('input:model');
+				});
 			});
 		},
-		inputToModel: function(el){
+		inputToModel: function(el,defer){
 			var self = this;
 			var input = $(el);
 			var controller = input.closest('[j-controller]');
@@ -1484,11 +1489,7 @@ jstack.dataBinder = (function(){
 			var key = self.getScopedInput(el);
 			self.dotSet(key,data,value);
 			
-			var defer = $.Deferred();
 			self.triggerUpdate(defer);
-			defer.then(function(){
-				input.trigger('input:model');
-			});
 		},
 		updateDefers: [],
 		updateTimeout: null,
