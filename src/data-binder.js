@@ -159,13 +159,16 @@ jstack.dataBinder = (function(){
 				
 				var eventLoad = $.Event('j:load');
 				var eventUnload = $.Event('j:unload');
+				var update = false;
 				$.each(mutations,function(i,mutation){
 					$.each(mutation.addedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
-						//nodes.trigger('j:load'); //doesn't support for removed node
 						
 						nodes.each(function(iii,n){
-						
+							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+								return;
+							}
+							update = true;
 							$.each(eventsLoad,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
 									e.handler.call(n,eventLoad);
@@ -177,10 +180,12 @@ jstack.dataBinder = (function(){
 					});
 					$.each(mutation.removedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
-						//nodes.trigger('j:unload'); //doesn't support for removed node
 							
 						nodes.each(function(iii,n){
-							
+							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+								return;
+							}
+							update = true;
 							$.each(eventsUnload,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
 									e.handler.call(n,eventUnload);
@@ -192,7 +197,7 @@ jstack.dataBinder = (function(){
 					});
 				});
 				
-				if(!self.stateObserver) return;
+				if(!self.stateObserver||!update) return;
 				
 				self.triggerUpdate();
 			});
@@ -245,24 +250,29 @@ jstack.dataBinder = (function(){
 					self.updateDeferStateObserver = $.Deferred();
 				}
 				
+				self.stateObserver = false;
+				
 				self.update();
+				
 				while(self.updateDefers.length){
 					self.updateDefers.pop().resolve();
 				}
 				
+				
 				self.updateDeferStateObserver.resolve();
+				self.updateDeferStateObserver = false;
+				
+				self.stateObserver = true;
 				
 			}, 100);
 		},
 		update: function(){
-			this.stateObserver = false;
+			var self = this;
+			self.updateRepeat();
+			self.updateIf();
+			self.updateController();
+			self.updateOn();
 			
-			this.updateRepeat();
-			this.updateIf();
-			this.updateController();
-			this.updateOn();
-			
-			this.stateObserver = true;
 		},
 		updateOn: function(){
 			var self = this;
