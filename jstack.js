@@ -1283,10 +1283,12 @@ jstack.dataBinder = (function(){
 				}
 			}, data);
 		},
-		dotSet: function(key,data,value){
+		dotSet: function(key,data,value,isDefault){
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
-					obj[k] = value;
+					if(!isDefault||!obj[k]){
+						obj[k] = value;
+					}
 				}
 				else{
 					if(typeof(obj[k])!='object'){
@@ -1468,13 +1470,13 @@ jstack.dataBinder = (function(){
 			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$.on('j:load',':input[name]',function(){
-				self.inputToModel(this,'load:model');
+				self.inputToModel(this,'load:model',true);
 			});
 			$(document.body).on('input val', ':input[name]', function(){
 				self.inputToModel(this,'input:model');
 			});
 		},
-		inputToModel: function(el,eventName){
+		inputToModel: function(el,eventName,isDefault){
 			var self = this;
 			var input = $(el);
 			var controller = input.closest('[j-controller]');
@@ -1482,7 +1484,7 @@ jstack.dataBinder = (function(){
 			var name = input.attr('name');
 			var value = self.getInputVal(el);
 			var key = self.getScopedInput(el);
-			self.dotSet(key,data,value);
+			self.dotSet(key,data,value,isDefault);
 			
 			var defer = $.Deferred();
 			self.triggerUpdate(defer);
