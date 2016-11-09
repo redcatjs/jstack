@@ -187,20 +187,27 @@ jstack.dataBinder = (function(){
 			});
 			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
+			$.on('j:load',':input[name]',function(){
+				self.inputToModel(this);
+			});
 			$(document.body).on('input val', ':input[name]', function(){
-				var input = $(this);
-				var controller = input.closest('[j-controller]');
-				var data = controller.data('jModel');
-				var name = input.attr('name');
-				var value = self.getInputVal(this);
-				var key = self.getScopedInput(this);
-				self.dotSet(key,data,value);
-				
-				var defer = $.Deferred();
-				self.triggerUpdate(defer);
-				defer.then(function(){
-					input.trigger('input:model');
-				});
+				self.inputToModel(this);
+			});
+		},
+		inputToModel: function(el){
+			var self = this;
+			var input = $(el);
+			var controller = input.closest('[j-controller]');
+			var data = controller.data('jModel');
+			var name = input.attr('name');
+			var value = self.getInputVal(el);
+			var key = self.getScopedInput(el);
+			self.dotSet(key,data,value);
+			
+			var defer = $.Deferred();
+			self.triggerUpdate(defer);
+			defer.then(function(){
+				input.trigger('input:model');
 			});
 		},
 		updateDefers: [],
