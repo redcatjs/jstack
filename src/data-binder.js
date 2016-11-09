@@ -151,6 +151,8 @@ jstack.dataBinder = (function(){
 			var self = this;
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
+				//console.log('mutations');
+			
 				var events = $._data(document,'events');
 				var eventsLoad = events['j:load'] || [];
 				var eventsUnload = events['j:unload'] || [];
@@ -221,6 +223,7 @@ jstack.dataBinder = (function(){
 			});
 		},
 		updateDefers: [],
+		updateDeferStateObserver: null,
 		updateTimeout: null,
 		triggerUpdate: function(defer){
 			var self = this;
@@ -231,10 +234,24 @@ jstack.dataBinder = (function(){
 				self.updateDefers.push(defer);
 			}
 			self.updateTimeout = setTimeout(function(){
+				
+				if(self.updateDeferStateObserver){
+					self.updateDeferStateObserver.then(function(){
+						self.triggerUpdate();
+					});
+					return;
+				}
+				else{
+					self.updateDeferStateObserver = $.Deferred();
+				}
+				
 				self.update();
 				while(self.updateDefers.length){
 					self.updateDefers.pop().resolve();
 				}
+				
+				self.updateDeferStateObserver.resolve();
+				
 			}, 100);
 		},
 		update: function(){
