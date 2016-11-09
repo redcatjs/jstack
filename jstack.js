@@ -1276,10 +1276,13 @@ jstack.dataBinder = (function(){
 		
 	};
 	dataBinder.prototype = {
-		dotGet: function(key,data){
+		dotGet: function(key,data,defaultValue){
 			return key.split('.').reduce(function(obj,i){
 				if(typeof(obj)=='object'){
-					return obj[i];
+					return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
+				}
+				else{
+					return defaultValue;
 				}
 			}, data);
 		},
@@ -1319,15 +1322,15 @@ jstack.dataBinder = (function(){
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
 		},
-		getValue: function(el,varKey){
+		getValue: function(el,varKey,defaultValue){
 			var self = this;
 			var data = $(el).closest('[j-controller]').data('jModel');
 			var key = self.getScoped(el,varKey);
-			return self.dotGet(key,data);
+			return self.dotGet(key,data,defaultValue);
 		},
-		getAttrValue: function(el,attr){
+		getAttrValue: function(el,attr,defaultValue){
 			var attrKey = $(el).attr(attr);
-			return this.getValue(el,attrKey);
+			return this.getValue(el,attrKey,defaultValue);
 		},
 		getScopeValue: function(el){
 			var scope = $(el).closest('[j-scope]');
@@ -1394,7 +1397,8 @@ jstack.dataBinder = (function(){
 			var self = this;
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
-				var value = self.getAttrValue(this,'name');
+				var defaultValue = self.getInputVal(this);
+				var value = self.getAttrValue(this,'name',defaultValue);
 				$(this).populateInput(value,{preventValEvent:true});
 				$(this).trigger('val:model');
 			});
