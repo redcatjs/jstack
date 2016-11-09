@@ -1324,6 +1324,13 @@ jstack.dataBinder = (function(){
 			var attrKey = $(el).attr(attr);
 			return this.getValue(el,attrKey);
 		},
+		getScopeValue: function(el){
+			var scope = $(el).closest('[j-scope]');
+			if(!scope.length){
+				return $(el).closest('[j-controller]').data('jModel');
+			}
+			return this.getAttrValue(scope,'j-scope');
+		},
 		getScope: function(input){
 			return $(input).parents('[j-scope]')
 				.map(function() {
