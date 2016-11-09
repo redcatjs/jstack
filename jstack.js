@@ -1479,8 +1479,9 @@ jstack.dataBinder = (function(){
 			$.on('j:load',':input[name]',function(){
 				self.inputToModel(this,'load:model',true);
 			});
-			$(document.body).on('input val', ':input[name]', function(){
-				if($(this).data('jPreventVal')) return;
+			$(document.body).on('input val', ':input[name]', function(e){
+				if(e.type=='val'&&$(this).data('jPreventVal'))	
+					return;
 				self.inputToModel(this,'input:model');
 			});
 		},
