@@ -11,6 +11,9 @@ jstack.dataBinder = (function(){
 			}, data);
 		},
 		dotSet: function(key,data,value,isDefault){
+			if(typeof(data)!='object'){
+				return;
+			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
 					if(!isDefault||!obj[k]){
