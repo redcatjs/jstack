@@ -80,10 +80,15 @@ $('[jquery-component]').each(function(){
 	}
 });
 
-jstack.loader = function(selector,handler){
+jstack.loader = function(selector,handler,unloader){
 	$.on('j:load',selector,function(){
 		handler.call(this);
 	});
+	if(typeof(unloader)=='function'){
+		$.on('j:unload',selector,function(){
+			unloader.call(this);
+		});
+	}
 	$(selector).each(function(){
 		handler.call(this);
 	});
