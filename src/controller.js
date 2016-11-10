@@ -1,6 +1,5 @@
 ( function( w, j ) {
-	var registry = {};
-	j.controller = function( id ) {
+	j.controller = function(id){
 		var fn, sync, deps = true;
 		for ( var i = 0; i < arguments.length; i++ ) {
 			switch ( typeof( arguments[ i ] ) ){
@@ -24,9 +23,9 @@
 				return fn.apply( ctrl, arguments );
 			};
 			ctrl.jstack = {};
-			registry[ id ] = ctrl;
+			jstack.controllers[ id ] = ctrl;
 		}
-		return registry[ id ];
+		return jstack.controllers[ id ];
 	};
 
 } )( window, jstack );
