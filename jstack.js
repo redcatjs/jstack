@@ -1429,6 +1429,16 @@ jstack.dataBinder = (function(){
 		stateObserver: true,
 		eventListener: function(){
 			var self = this;
+			var validNodeEvent = function(n){
+				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+					return false;
+				}
+				var jn = $(n);
+				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
+					return false;
+				}
+				return true;
+			};
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
@@ -1445,12 +1455,7 @@ jstack.dataBinder = (function(){
 						var nodes = $(node).add($(node).find('*'));
 						
 						nodes.each(function(iii,n){
-							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-								return;
-							}
-							if($(n).attr('j-repeat')){
-								return;
-							}
+							if(!validNodeEvent(n)) return;
 							update = true;
 							$.each(eventsLoad,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
@@ -1465,12 +1470,7 @@ jstack.dataBinder = (function(){
 						var nodes = $(node).add($(node).find('*'));
 							
 						nodes.each(function(iii,n){
-							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-								return;
-							}
-							if($(n).attr('j-repeat')){
-								return;
-							}
+							if(!validNodeEvent(n)) return;
 							update = true;
 							$.each(eventsUnload,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
