@@ -175,6 +175,9 @@ jstack.dataBinder = (function(){
 							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 								return;
 							}
+							if($(n).attr('j-repeat')){
+								return;
+							}
 							update = true;
 							$.each(eventsLoad,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
@@ -190,6 +193,9 @@ jstack.dataBinder = (function(){
 							
 						nodes.each(function(iii,n){
 							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+								return;
+							}
+							if($(n).attr('j-repeat')){
 								return;
 							}
 							update = true;
