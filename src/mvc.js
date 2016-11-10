@@ -1,4 +1,8 @@
-jstack.mvc = function(view,controller){
+jstack.mvc = function(view,controller,mergeData){
+	if(typeof(controller)=='object'&&controller!==null){
+		mergeData = controller;
+		controller = false;
+	}
 	if(!controller){
 		controller = view;
 	}
@@ -45,6 +49,9 @@ jstack.mvc = function(view,controller){
 		}
 		ctrl.jstack.render = function(data){
 			if (!data) data = {};
+			if(typeof(mergeData)=='object'&&mergeData!==null){
+				data = $.extend({},mergeData,data);
+			}
 			ctrl.jstack.data = data;
 			var processedTemplate = processor(ctrl.jstack.data);
 			rendered.resolve(element);
