@@ -1278,7 +1278,7 @@ jstack.dataBinder = (function(){
 	dataBinder.prototype = {
 		dotGet: function(key,data,defaultValue){
 			return key.split('.').reduce(function(obj,i){
-				if(typeof(obj)=='object'){
+				if(typeof(obj)=='object'&&obj!==null){
 					return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
 				}
 				else{
