@@ -2970,6 +2970,9 @@ jstack.mvc = function(view,controller){
 	var rendered = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		var ctrl = jstack.controllers[controller];
+		if(!ctrl){
+			ctrl = jstack.config.defaultController;
+		}
 		ctrl.jstack.render = function(data){
 			if (!data) data = {};
 			ctrl.jstack.data = data;
