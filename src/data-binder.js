@@ -213,9 +213,10 @@ jstack.dataBinder = (function(){
 			$.on('j:load',':input[name]',function(){
 				self.inputToModel(this,'load:model',true);
 			});
-			$(document.body).on('input val', ':input[name]', function(e){
-				if(e.type=='val'&&$(this).data('jPreventVal'))	
-					return;
+			$(document.body).on('val', ':input[name][j-val-event]', function(e){
+				self.inputToModel(this,'input:model');
+			});
+			$(document.body).on('input', ':input[name]', function(e){
 				self.inputToModel(this,'input:model');
 			});
 		},
