@@ -2971,7 +2971,7 @@ jstack.mvc = function(view,controller,mergeData){
 	});
 
 	
-	var rendered = $.Deferred();
+	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		var ctrl = jstack.controller(controller);
 		if(!ctrl){
@@ -2984,12 +2984,15 @@ jstack.mvc = function(view,controller,mergeData){
 			}
 			ctrl.jstack.data = data;
 			var processedTemplate = processor(ctrl.jstack.data);
-			rendered.resolve(element);
 			return data;
 		};
-		ctrl.jstack.element = element;		
-		ctrl();
+		ctrl.jstack.element = element;
+		element.data('jController',ctrl);
+		ready.resolve(element);
 	} );
 
-	return rendered;
+	return ready;
 };
+$.on('j:load','[j-controller]',function(){
+	$(this).data('jController')();
+});
