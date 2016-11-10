@@ -5,6 +5,9 @@ jstack.jml = function( url, data ) {
 	templatesPath.pop();
 	templatesPath = templatesPath.join('/')+'/';
 	
+	templatesPath = jstack.config.templatesPath+templatesPath;
+	url = jstack.config.templatesPath+url;
+	
 	if ( !data ) data = {};
 	jstack.getTemplate( url ).then( function( html ) {
 		var el = $('<tmpl>'+html+'</tmpl>');
