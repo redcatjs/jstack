@@ -3010,3 +3010,13 @@ jstack.mvc = function(config){
 
 	return ready;
 };
+$.on('j:load','[j-view]',function(){
+	var el = $(this);
+	var view = el.attr('j-view');
+	var controller = el.attr('j-controller') || view;
+	jstacl.mvc({
+		view:view,
+		controller:controller,
+		target:this,
+	});
+});
