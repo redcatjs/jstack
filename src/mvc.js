@@ -79,13 +79,39 @@ jstack.mvc = function(config){
 
 	return ready;
 };
+jstack.viewReady = function(el){
+	if(typeof(arguments[0])=='string'){
+		var selector = '[j-view="'+arguments[0]+'"]';
+		if(typeof(arguments[1]=='object')){
+			el = $(arguments[1]).find(selector);
+		}
+		else{
+			el = $(selector);
+		}
+	}
+	
+	el = $(el);
+	var ready = el.data('jViewReady');
+	if(!ready){
+		ready = $.Deferred();
+		el.data('jViewReady',ready);
+	}
+	return ready;
+};
 $.on('j:load','[j-view]',function(){
 	var el = $(this);
 	var view = el.attr('j-view');
 	var controller = el.attr('j-controller') || view;
-	jstacl.mvc({
+	var parent = el.parent().closest('[j-controller]');
+	var data = parent.length ? parent.data('jModel') : false;
+	var ready = jstack.viewReady(this);
+	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
 		target:this,
+		data:data,
+	});
+	mvc.then(function(){
+		ready.resolve();
 	});
 });
