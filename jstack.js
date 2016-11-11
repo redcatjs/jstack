@@ -7,6 +7,7 @@ jstackClass = function(){
 				this.jstack.render();
 			} );
 		},
+		defaultTarget: '[j-app]',
 	};
 	this.controllers = {};
 };
@@ -2928,24 +2929,31 @@ from https://github.com/serbanghita/formToObject.js with some modifications:
   };
 
 })(window, document);
-jstack.mvc = function(view,controller,mergeData){
-	if(typeof(controller)=='object'&&controller!==null){
-		mergeData = controller;
-		controller = false;
+jstack.mvc = function(config){
+	if(typeof(arguments[0])=='string'){
+		config = {
+			view: arguments[0],
+			controller: typeof(arguments[1])=='string'?arguments[1]:arguments[0]
+		};
 	}
-	if(!controller){
-		controller = view;
+	
+	if(!config.controller){
+		config.controller = config.view;
 	}
+	if(!config.target){
+		config.target = jstack.config.defaultTarget;
+	}
+	
 	var templatesPath = jstack.config.templatesPath;
-	var templatePath = templatesPath+view+'.jml';
-	var controllerPath = jstack.config.controllersPath+controller;
+	var templatePath = templatesPath+config.view+'.jml';
+	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
 	var viewReady = $.Deferred();
 	var processor;
 	var element;
 	
-	if(jstack.controllers[controller]){
+	if(jstack.controllers[config.controller]){
 		controllerReady.resolve();
 	}
 	else{
@@ -2958,8 +2966,8 @@ jstack.mvc = function(view,controller,mergeData){
 			html.wrapInner('<div />');
 		}
 		element = html.children(0);
-		element.attr('j-controller',controller);
-		var cacheId = view + "#" + controller;
+		element.attr('j-controller',config.controller);
+		var cacheId = config.view + "#" + config.controller;
 		jstack.processTemplate(element,cacheId,templatesPath).then(function(templateProcessor){
 			processor = function(data){
 				var processedTemplate = templateProcessor( data );
@@ -2973,26 +2981,32 @@ jstack.mvc = function(view,controller,mergeData){
 	
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
-		var ctrl = jstack.controller(controller);
+		var ctrl = jstack.controller(config.controller);
 		if(!ctrl){
-			ctrl = jstack.controller(controller,jstack.config.defaultController);
+			ctrl = jstack.controller(config.controller,jstack.config.defaultController);
 		}
-		ctrl.jstack.render = function(data){
-			if (!data) data = {};
+		ctrl.jstack.render = function(data,target){
+			if(!target){
+				target = config.target;
+			}
+			if (!data){
+				data = {};
+			}
 			if(typeof(mergeData)=='object'&&mergeData!==null){
 				data = $.extend({},mergeData,data);
 			}
 			ctrl.jstack.data = data;
 			var processedTemplate = processor(ctrl.jstack.data);
+			
+			$(target).html(element);
+			
+			ready.resolve(element,ctrl);
+			
 			return data;
 		};
 		ctrl.jstack.element = element;
-		element.data('jController',ctrl);
-		ready.resolve(element);
+		ctrl();
 	} );
 
 	return ready;
 };
-$.on('j:load','[j-controller]',function(){
-	$(this).data('jController')();
-});

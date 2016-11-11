@@ -7,6 +7,7 @@ jstackClass = function(){
 				this.jstack.render();
 			} );
 		},
+		defaultTarget: '[j-app]',
 	};
 	this.controllers = {};
 };
