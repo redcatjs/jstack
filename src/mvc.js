@@ -61,8 +61,8 @@ jstack.mvc = function(config){
 			if (!data){
 				data = {};
 			}
-			if(typeof(mergeData)=='object'&&mergeData!==null){
-				data = $.extend({},mergeData,data);
+			if(typeof(config.data)=='object'&&config.data!==null){
+				data = $.extend({},config.data,data);
 			}
 			ctrl.jstack.data = data;
 			var processedTemplate = processor(ctrl.jstack.data);
