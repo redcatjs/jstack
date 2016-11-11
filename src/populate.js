@@ -162,11 +162,30 @@ $.fn.populateForm = function( data, config ) {
 };
 $.fn.populate = function( value, config ){
 	return this.each(function(){
-		if($(this).is('form')){
-			$(this).populateForm(value, config);
+		var el = $(this);
+		if(el.is('form')){
+			el.populateForm(value, config);
 		}
 		else{
-			$(this).populateInput(value, config);
+			el.populateInput(value, config);
+		}
+	});
+};
+$.fn.populateReset = function(){
+	return this.each(function(){
+		var el = $(this);
+		if(el.is('form')){
+			el.find(':input[name]').populateReset();
+		}
+		else{
+			var type = el.prop('type');
+			if(type=="checkbox"||type=="radio"){
+				el.prop('checked',this.defaultChecked);
+			}
+			else{
+				el.populateInput(this.defaultValue,{preventValEvent:true});
+			}
+			el.trigger('input');
 		}
 	});
 };

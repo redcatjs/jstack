@@ -1517,8 +1517,7 @@ jstack.dataBinder = (function(){
 			var name = input.attr('name');
 			var value = self.getInputVal(el);
 			var key = self.getScopedInput(el);
-			self.dotSet(key,data,value,isDefault);
-			
+			self.dotSet(key,data,value,isDefault);			
 			var defer = $.Deferred();
 			self.triggerUpdate(defer);
 			defer.then(function(){
@@ -1686,6 +1685,9 @@ jstack.dataBinder = (function(){
 	o.eventListener();
 	return o;
 })();
+$.on('reset','form[j-scope]',function(){
+	$(this).populateReset();
+});
 ( function( $, j ) {
 	var toParamsPair = function( data ) {
 		var pair = [];
@@ -2327,11 +2329,30 @@ $.fn.populateForm = function( data, config ) {
 };
 $.fn.populate = function( value, config ){
 	return this.each(function(){
-		if($(this).is('form')){
-			$(this).populateForm(value, config);
+		var el = $(this);
+		if(el.is('form')){
+			el.populateForm(value, config);
 		}
 		else{
-			$(this).populateInput(value, config);
+			el.populateInput(value, config);
+		}
+	});
+};
+$.fn.populateReset = function(){
+	return this.each(function(){
+		var el = $(this);
+		if(el.is('form')){
+			el.find(':input[name]').populateReset();
+		}
+		else{
+			var type = el.prop('type');
+			if(type=="checkbox"||type=="radio"){
+				el.prop('checked',this.defaultChecked);
+			}
+			else{
+				el.populateInput(this.defaultValue,{preventValEvent:true});
+			}
+			el.trigger('input');
 		}
 	});
 };

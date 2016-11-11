@@ -234,8 +234,7 @@ jstack.dataBinder = (function(){
 			var name = input.attr('name');
 			var value = self.getInputVal(el);
 			var key = self.getScopedInput(el);
-			self.dotSet(key,data,value,isDefault);
-			
+			self.dotSet(key,data,value,isDefault);			
 			var defer = $.Deferred();
 			self.triggerUpdate(defer);
 			defer.then(function(){
@@ -403,3 +402,6 @@ jstack.dataBinder = (function(){
 	o.eventListener();
 	return o;
 })();
+$.on('reset','form[j-scope]',function(){
+	$(this).populateReset();
+});
