@@ -23,7 +23,6 @@ grunt.initConfig({
 				"src/data-binder.js",
 				"src/ajax.js",
 				"src/params-reflection.js",
-				"src/helpers.js",
 				"src/jml.js",
 				"src/string-prototyping.js",
 				"src/populate.js",
