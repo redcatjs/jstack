@@ -30,7 +30,6 @@ grunt.initConfig({
 				"src/jml.js",
 				"src/jsonml.js",
 				"src/string-prototyping.js",
-				"src/jquery.serialize-object.js",
 				"src/populate.js",
 				"src/data-if.js",
 				"src/mvc.js",
