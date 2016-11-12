@@ -33,7 +33,6 @@ grunt.initConfig({
 				"src/jquery.serialize-object.js",
 				"src/populate.js",
 				"src/data-if.js",
-				"src/formToObject.js",
 				"src/mvc.js",
 			],
 			dest: 'jstack.js'
