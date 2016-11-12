@@ -97,12 +97,10 @@ jstack.route = ( function( w, url ) {
 	var routie = function( path, fn, extendParams ) {
 		if ( typeof fn == "function" ) {
 			addHandler( path, fn );
-			routie.reload();
 		} else if ( typeof path == "object" ) {
 			for ( var p in path ) {
 				addHandler( p, path[ p ] );
 			}
-			routie.reload();
 		} else if ( typeof fn === "undefined" ) {
 			routie.navigate( path );
 		} else if ( typeof fn === "object" ) {
@@ -240,6 +238,7 @@ jstack.route = ( function( w, url ) {
 			w.attachEvent( "onhashchange", hashChanged );
 		}
 		$( document ).on( "click", "a", rootClick );
+		routie.reload();
 	};
 
 	var removeListener = function() {
