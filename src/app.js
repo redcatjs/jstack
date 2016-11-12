@@ -4,8 +4,8 @@
 		if(!app){
 			app = el.attr('j-app');
 		}
-		jstack.config.templatesPath = 'view-js/'+app+'/';
-		jstack.config.controllersPath = 'controller-js/'+app+'/';
+		jstack.config.templatesPath += app+'/';
+		jstack.config.controllersPath += app+'/';
 		
 		jstack.route('*', function(path){
 			path = jstack.url.getPath(path);

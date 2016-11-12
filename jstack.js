@@ -1,7 +1,7 @@
 jstackClass = function(){
 	this.config = {
-		templatesPath: '',
-		controllersPath: '',
+		templatesPath: 'view-js/',
+		controllersPath: 'controller-js/',
 		defaultController: function( controllerPath ) {
 			jstack.controller( controllerPath, function() {
 				this.jstack.render();
@@ -2559,8 +2559,8 @@ $.on('j:load','[j-view]',function(){
 		if(!app){
 			app = el.attr('j-app');
 		}
-		jstack.config.templatesPath = 'view-js/'+app+'/';
-		jstack.config.controllersPath = 'controller-js/'+app+'/';
+		jstack.config.templatesPath += app+'/';
+		jstack.config.controllersPath += app+'/';
 		
 		jstack.route('*', function(path){
 			path = jstack.url.getPath(path);
