@@ -1,4 +1,4 @@
-jstack.paramsReflection = function( f ) {
+jstack.reflection.arguments = function( f ) {
 	var args = f.toString().match( /^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/ );
 	var r = {};
 	if ( args && args[ 1 ] ) {

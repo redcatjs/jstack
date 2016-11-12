@@ -15,375 +15,34 @@ jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
-( function( $ ) {
-
-	$.fn.changeVal = function( v ) {
-		return $( this ).val( v ).trigger( "change" );
-	};
-
-	$.fn.requiredId = function(){
-		var id = this.attr('id');
-		if(this.length>1){
-			return this.each(function(){
-				$(this).requiredId();
-			});
+jstack.controller = function(id){
+	var fn, sync, deps = true;
+	for ( var i = 0; i < arguments.length; i++ ) {
+		switch ( typeof( arguments[ i ] ) ){
+			case "boolean":
+				sync = arguments[ i ];
+			break;
+			case "function":
+				fn = arguments[ i ];
+			break;
+			case "object":
+				deps = arguments[ i ];
+			break;
 		}
-		if(!id){
-			id = jstack.uniqid('uid-');
-			this.attr('id', id);
-		}
-		return id;
-	};
-
-	$.fn.serializeAssoc = function() {
-		var data = {};
-		this.each( function() {
-			$.each( $( this ).serializeArray(), function( i, o ) {
-				data[ o.name ] = o.value;
-			} );
-		} );
-		return data;
-	};
-
-	$.fn.hasVerticalScrollBar = function() {
-		return this.get( 0 ) ? this.get( 0 ).scrollHeight > this.innerHeight() : false;
-	};
-
-	$.fn.hasHorizontalScrollBar = function() {
-		return this.get( 0 ) ? this.get( 0 ).scrollWidth > this.innerWidth() : false;
-	};
-
-	$.fn.attrParams = function( attr ) {
-		if ( !attr ) attr = "data";
-		var data = {},
-			l = attr.length;
-		this.each( function() {
-			$.each( this.attributes, function() {
-				var key = this.name, value = this.value;
-				if ( key.substr( 0, l ) == attr ) {
-					key = key.substr( l + 1 );
-					key = key.camelCaseDash();
-					key = key.lcfirst();
-
-					if ( value == "true" )
-						value = true;
-					else if ( value == "false" )
-						value = false;
-					else if ( $.isNumeric( value ) )
-						value = parseInt( value, 10 );
-
-					data[ key ] = value;
-				}
-			} );
-		} );
-		return data;
-	};
-
-	$.extend( $.expr[ ":" ], {
-		scrollable: function( element ) {
-			var vertically_scrollable, horizontally_scrollable;
-			if ( $( element ).css( "overflow" ) == "scroll" || $( element ).css( "overflowX" ) == "scroll" || $( element ).css( "overflowY" ) == "scroll" ) return true;
-
-			vertically_scrollable = ( element.clientHeight < element.scrollHeight ) && (
-			$.inArray( $( element ).css( "overflowY" ), [ "scroll", "auto" ] ) != -1 || $.inArray( $( element ).css( "overflow" ), [ "scroll", "auto" ] ) != -1 );
-
-			if ( vertically_scrollable ) return true;
-
-			horizontally_scrollable = ( element.clientWidth < element.scrollWidth ) && (
-			$.inArray( $( element ).css( "overflowX" ), [ "scroll", "auto" ] ) != -1 || $.inArray( $( element ).css( "overflow" ), [ "scroll", "auto" ] ) != -1 );
-			return horizontally_scrollable;
-		},
-		parents: function( a, i, m ) {
-			return $( a ).parents( m[ 3 ] ).length < 1;
-		}
-	} );
-	
-	$.extend($.expr[':'], {
-		attrStartsWith: function (el, _, b) {
-			for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
-				if(atts[i].nodeName.toLowerCase().indexOf(b[3].toLowerCase()) === 0) {
-					return true; 
-				}
-			}
-			return false;
-		}
-	});
-	$.extend($.expr[':'], {
-		attrEndsWith: function (el, _, b) {
-			for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
-			  var att = atts[i].nodeName.toLowerCase(),
-				  str = b[3].toLowerCase();
-				if(att.length >= str.length && att.substr(att.length - str.length) === str) {
-					return true; 
-				}
-			}
-			
-			return false;
-		}
-	});
-
-	var findForks = {
-		"nth-level": function( selector, param ) {
-			param = parseInt( param, 10 );
-			var a = [];
-			var $this = this;
-			this.each( function() {
-				var level = param + $( this ).parents( selector ).length;
-				$this.find( selector ).each( function() {
-					if ( $( this ).parents( selector ).length == param - 1 ) {
-						a.push( this );
-					}
-				} );
-			} );
-			return $( a );
-		}
-	};
-
-	$.fn.findOrig = $.fn.find;
-	$.fn.find = function( selector ) {
-
-		if ( typeof( selector ) == "string" ) {
-			var fork, THIS = this;
-			$.each( findForks, function( k, v ) {
-				var i = selector.indexOf( ":" + k );
-				if ( i !== -1 ) {
-					var l = k.length;
-					var selectorPart = selector.substr( 0, i );
-					var param = selector.substr( i + l + 2, selector.length - i - l - 3 );
-					fork = findForks[ k ].call( THIS, selectorPart, param );
-					return false;
-				}
-			} );
-			if ( fork ) return fork;
-		}
-
-		return this.findOrig( selector );
-	};
-	$.fn.childrenHeight = function( outer, marginOuter, filterVisible ) {
-		var topOffset = bottomOffset = 0;
-		if ( typeof( outer ) == "undefined" ) outer = true;
-		if ( typeof( marginOuter ) == "undefined" ) marginOuter = true;
-		if ( typeof( filterVisible ) == "undefined" ) filterVisible = true;
-		var children = this.children();
-		if(filterVisible){
-			children = children.filter(':visible');
-		}
-		children.each( function( i, e ) {
-			var $e = $( e );
-			var eTopOffset = $e.offset().top;
-			var eBottomOffset = eTopOffset + ( outer ? $e.outerHeight(marginOuter) : $e.height() );
-			
-			if ( eTopOffset < topOffset )
-				topOffset = eTopOffset;
-			if ( eBottomOffset > bottomOffset )
-				bottomOffset = eBottomOffset;
-		} );
-		return bottomOffset - topOffset - this.offset().top;
-	};
-	
-	$.fn.findExclude = function (Selector, Mask, Parent) {
-		var result = $([]);
-		$(this).each(function (Idx, Elem) {
-			$(Elem).find(Selector).each(function (Idx2, Elem2) {
-				var el = $(Elem2);
-				if(Parent)
-					el = el.parent();
-				var closest = el.closest(Mask);
-				if (closest[0] == Elem || !closest.length) {
-					result =  result.add(Elem2);
-				}
-			});
-		});
-		return result;
-	};
-	
-	$.fn.removeCss = function(style){
-        var search = new RegExp(style + '[^;]+;?', 'g');
-        return this.each(function(){
-			var style = $(this).attr('style');
-			if(style){
-				$(this).attr('style', style.replace(search, ''));
-			}
-        });
-    };
-    
-    $.fn.removeClassPrefix = function(prefix) {
-		this.each(function(i, el) {
-			var classes = el.className.split(" ").filter(function(c) {
-				return c.lastIndexOf(prefix, 0) !== 0;
-			});
-			el.className = $.trim(classes.join(" "));
-		});
-		return this;
-	};
-	
-	$.fn.setVal = $.fn.val;
-	$.fn.val = function() {
-		var returnValue = $.fn.setVal.apply( this, arguments );
-		if ( arguments.length ) {
-			this.trigger( "val" );
-		}
-		return returnValue;
-	};
-	
-	$.arrayCompare = function (a, b) {
-		return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
-	};
-	
-	$.fn.reverse = function(){
-		return $(this.get().reverse());
-	};
-	
-	 $.fn.attrStartsWith = function(s) {
-        var attrs = {};
-        this.each(function(index){
-            $.each(this.attributes, function(index, attr){
-                if(attr.name.indexOf(s)===0){
-                   attrs[attr.name] = attr.value;
-                }
-            });
-        });
-        return attrs;
-    };
-	
-	$.on = function(event,selector,callback){
-		return $(document).on(event,selector,callback);
-	};
-	
-	$.off = function(event,selector,callback){
-		return $(document).off(event,selector,callback);
-	};
-	
-	
-	$.attrsToObject = function( k, v, r ) {
-		if(!r) r = {};
-		var s = k.split('--');
-		if ( typeof( r ) == "undefined" ) r = {};
-		var ref = r;
-		var l = s.length - 1;
-		$.each( s, function( i, key ) {
-		key = $.camelCase(key);
-			if ( i == l ) {
-				ref[ key ] = v;
-			}
-			else {
-				if ( !ref[ key ] ) ref[ key ] = {};
-				ref = ref[ key ];
-			}
-		} );
-		return r;
-	};
-	$.fn.dataAttrConfig = function(prefix){
-		if(!prefix){
-			prefix = 'data-';
-		}
-		var substr = prefix.length;
-		var attrData = this.attrStartsWith(prefix);
-		var data = {};
-		$.each(attrData,function(k,v){
-			$.attrsToObject( k.substr(substr), v, data );
-		});
-		return data;
-	};
-	
-} )( jQuery );
-(function(){
-
-jstack.component = {};
-
-var loadComponent = function(){
-	var el = this;
-	var component = $(el).attr('j-component');
-	var config = $(el).dataAttrConfig('j-data-');
-	var paramsData = $(el).attr('j-params-data');
-	var load = function(){
-		var o;
-		var c = jstack.component[component];
-		if(paramsData){
-			var params = [];
-			params.push(el);
-			 o = new (Function.prototype.bind.apply(c, params));
-		}
-		else{
-			o = new c(el,config);
-		}
-		$(el).data('j:component',o);			
-	};
-	if(jstack.component[component]){
-		load();
 	}
-	else{					
-		$js('jstack.'+component,load);
+	if ( deps instanceof Array ) {
+		$js.require( deps, sync );
 	}
+
+	if ( fn ) {
+		var ctrl = function() {
+			return fn.apply( ctrl, arguments );
+		};
+		ctrl.jstack = {};
+		jstack.controllers[ id ] = ctrl;
+	}
+	return jstack.controllers[ id ];
 };
-
-var loadJqueryComponent = function(){
-	var el = this;
-	var component = $(el).attr('jquery-component');
-	var config = $(el).dataAttrConfig('j-data-');
-	var paramsData = $(el).attr('j-params-data');
-	var params = [];
-	if(paramsData){
-		var keys = [];
-		for (var k in config) {
-			if (config.hasOwnProperty(k)) {
-				keys.push(k);
-			}
-		}
-		keys.sort();
-		for(var i=0,l=keys.length;i<l;i++){
-			params.push(config[keys[i]]);
-		}
-	}
-	else if(!$.isEmptyObject(config)){
-		params.push(config);
-	}
-	var load = function(){
-		$(el).data('j:component',$.fn[component].apply($(el), params));
-	};
-	if($.fn[component]){
-		load();
-	}
-	else{					
-		$js('jstack.jquery.'+component,load);
-	}
-};
-
-$.on('j:load','[j-component]',loadComponent);
-$.on('j:load','[jquery-component]',loadJqueryComponent);
-$.on('j:unload','[j-component]',function(){
-	var o = $(this).data('j:component');
-	if(o&&typeof(o.unload)=='function'){
-		o.unload();
-	}
-});
-
-$('[j-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadComponent.call(this);
-	}
-});
-$('[jquery-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadJqueryComponent.call(this);
-	}
-});
-
-jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',selector,function(){
-		handler.call(this);
-	});
-	if(typeof(unloader)=='function'){
-		$.on('j:unload',selector,function(){
-			unloader.call(this);
-		});
-	}
-	$(selector).each(function(){
-		handler.call(this);
-	});
-};
-
-})();
 jstack.url = (function(){
 	var Url = function(){};
 	var recursiveArrayToObject = function(o){
@@ -502,6 +161,791 @@ jstack.url = (function(){
 		return this.getParams(document.location.hash);
 	};
 	return new Url();
+})();
+jstack.uniqid = function( prefix, more_entropy ) {
+  //  discuss at: http://phpjs.org/functions/uniqid/
+  // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  //  revised by: Kankrelune (http://www.webfaktory.info/)
+  //        note: Uses an internal counter (in php_js global) to avoid collision
+  //        test: skip
+  //   example 1: uniqid();
+  //   returns 1: 'a30285b160c14'
+  //   example 2: uniqid('foo');
+  //   returns 2: 'fooa30285b1cd361'
+  //   example 3: uniqid('bar', true);
+  //   returns 3: 'bara20285b23dfd1.31879087'
+
+  if ( typeof prefix === "undefined" ) {
+    prefix = "";
+  }
+
+  var retId;
+  var formatSeed = function( seed, reqWidth ) {
+    seed = parseInt( seed, 10 )
+      .toString( 16 ); // To hex str
+    if ( reqWidth < seed.length ) {
+      // So long we split
+      return seed.slice( seed.length - reqWidth );
+    }
+    if ( reqWidth > seed.length ) {
+      // So short we pad
+      return Array( 1 + ( reqWidth - seed.length ) )
+        .join( "0" ) + seed;
+    }
+    return seed;
+  };
+
+  // BEGIN REDUNDANT
+  if ( !this.php_js ) {
+    this.php_js = {};
+  }
+  // END REDUNDANT
+  if ( !this.php_js.uniqidSeed ) {
+    // Init seed with big random int
+    this.php_js.uniqidSeed = Math.floor( Math.random() * 0x75bcd15 );
+  }
+  this.php_js.uniqidSeed++;
+
+  // Start with prefix, add current milliseconds hex string
+  retId = prefix;
+  retId += formatSeed( parseInt( new Date()
+    .getTime() / 1000, 10 ), 8 );
+  // Add seed hex string
+  retId += formatSeed( this.php_js.uniqidSeed, 5 );
+  if ( more_entropy ) {
+    // For more entropy we add a float lower to 10
+    retId += ( Math.random() * 10 )
+      .toFixed( 8 )
+      .toString();
+  }
+
+  return retId;
+};
+String.prototype.camelCase = function() {
+	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
+};
+String.prototype.camelCaseDash = function() {
+	return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
+};
+String.prototype.lcfirst = function() {
+	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+};
+String.prototype.escapeRegExp = function() {
+	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+};
+String.prototype.replaceAllRegExp = function(find, replace){
+  return this.replace( new RegExp( find, "g" ), replace );
+};
+String.prototype.replaceAll = function(find, replace){
+	find = find.escapeRegExp();
+	return this.replaceAllRegExp(find, replace);
+};
+String.prototype.snakeCase = function() {
+	return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
+};
+String.prototype.snakeCaseDash = function() {
+	return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
+};
+(function(){
+
+function trim ( str, charlist ) {
+  //  discuss at: http://locutusjs.io/php/trim/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: mdsjack (http://www.mdsjack.bo.it)
+  // improved by: Alexander Ermolaev (http://snippets.dzone.com/user/AlexanderErmolaev)
+  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Steven Levithan (http://blog.stevenlevithan.com)
+  // improved by: Jack
+  //    input by: Erkekjetter
+  //    input by: DxGx
+  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
+  //   example 1: trim('    Kevin van Zonneveld    ')
+  //   returns 1: 'Kevin van Zonneveld'
+  //   example 2: trim('Hello World', 'Hdle')
+  //   returns 2: 'o Wor'
+  //   example 3: trim(16, 1)
+  //   returns 3: '6'
+
+  var whitespace = [
+    " ",
+    "\n",
+    "\r",
+    "\t",
+    "\f",
+    "\x0b",
+    "\xa0",
+    "\u2000",
+    "\u2001",
+    "\u2002",
+    "\u2003",
+    "\u2004",
+    "\u2005",
+    "\u2006",
+    "\u2007",
+    "\u2008",
+    "\u2009",
+    "\u200a",
+    "\u200b",
+    "\u2028",
+    "\u2029",
+    "\u3000"
+  ].join( "" );
+  var l = 0;
+  var i = 0;
+  str += "";
+
+  if ( charlist ) {
+    whitespace = ( charlist + "" ).replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "$1" );
+  }
+
+  l = str.length;
+  for ( i = 0; i < l; i++ ) {
+    if ( whitespace.indexOf( str.charAt( i ) ) === -1 ) {
+      str = str.substring( i );
+      break;
+    }
+  }
+
+  l = str.length;
+  for ( i = l - 1; i >= 0; i-- ) {
+    if ( whitespace.indexOf( str.charAt( i ) ) === -1 ) {
+      str = str.substring( 0, i + 1 );
+      break;
+    }
+  }
+
+  return whitespace.indexOf( str.charAt( 0 ) ) === -1 ? str : "";
+}
+
+
+function ltrim ( str, charlist ) {
+  //  discuss at: http://locutusjs.io/php/ltrim/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  //    input by: Erkekjetter
+  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
+  //   example 1: ltrim('    Kevin van Zonneveld    ')
+  //   returns 1: 'Kevin van Zonneveld    '
+
+  charlist = !charlist ? " \\s\u00A0" : ( charlist + "" )
+    .replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "$1" );
+
+  var re = new RegExp( "^[" + charlist + "]+", "g" );
+
+  return ( str + "" )
+    .replace( re, "" );
+}
+
+function rtrim ( str, charlist ) {
+  //  discuss at: http://locutusjs.io/php/rtrim/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  //    input by: Erkekjetter
+  //    input by: rem
+  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
+  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //   example 1: rtrim('    Kevin van Zonneveld    ')
+  //   returns 1: '    Kevin van Zonneveld'
+
+  charlist = !charlist ? " \\s\u00A0" : ( charlist + "" )
+    .replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "\\$1" );
+
+  var re = new RegExp( "[" + charlist + "]+$", "g" );
+
+  return ( str + "" ).replace( re, "" );
+}
+
+
+String.prototype.trim = function( charlist ) {
+	return trim( this, charlist );
+};
+String.prototype.ltrim = function( charlist ) {
+	return ltrim( this, charlist );
+};
+String.prototype.rtrim = function( charlist ) {
+	return rtrim( this, charlist );
+};
+
+})();
+String.prototype.ucfirst = function() {
+	return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
+};
+jstack.reflection = {};
+jstack.reflection.arguments = function( f ) {
+	var args = f.toString().match( /^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/ );
+	var r = {};
+	if ( args && args[ 1 ] ) {
+		args = args[ 1 ];
+		args = args.replace( /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, "" );
+		args = args.trim().split( /\s*,\s*/ );
+		for ( var i = 0; i < args.length; i++ ) {
+			var arg = args[ i ];
+			var idf = arg.indexOf( "=" );
+			if ( idf === -1 ) {
+				r[ arg ] = undefined;
+			} else {
+				r[ arg.substr( 0, idf ) ] = eval( arg.substr( idf + 1 ).trim() );
+			}
+		}
+	}
+	return r;
+};
+$.arrayCompare = function (a, b) {
+	return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
+};
+$.fn.attrStartsWith = function(s) {
+	var attrs = {};
+	this.each(function(index){
+		$.each(this.attributes, function(index, attr){
+			if(attr.name.indexOf(s)===0){
+			   attrs[attr.name] = attr.value;
+			}
+		});
+	});
+	return attrs;
+};
+$.attrsToObject = function( k, v, r ) {
+	if(!r) r = {};
+	var s = k.split('--');
+	if ( typeof( r ) == "undefined" ) r = {};
+	var ref = r;
+	var l = s.length - 1;
+	$.each( s, function( i, key ) {
+	key = $.camelCase(key);
+		if ( i == l ) {
+			ref[ key ] = v;
+		}
+		else {
+			if ( !ref[ key ] ) ref[ key ] = {};
+			ref = ref[ key ];
+		}
+	} );
+	return r;
+};
+$.fn.changeVal = function( v ) {
+	return $( this ).val( v ).trigger( "change" );
+};
+$.fn.childrenHeight = function( outer, marginOuter, filterVisible ) {
+	var topOffset = bottomOffset = 0;
+	if ( typeof( outer ) == "undefined" ) outer = true;
+	if ( typeof( marginOuter ) == "undefined" ) marginOuter = true;
+	if ( typeof( filterVisible ) == "undefined" ) filterVisible = true;
+	var children = this.children();
+	if(filterVisible){
+		children = children.filter(':visible');
+	}
+	children.each( function( i, e ) {
+		var $e = $( e );
+		var eTopOffset = $e.offset().top;
+		var eBottomOffset = eTopOffset + ( outer ? $e.outerHeight(marginOuter) : $e.height() );
+		
+		if ( eTopOffset < topOffset )
+			topOffset = eTopOffset;
+		if ( eBottomOffset > bottomOffset )
+			bottomOffset = eBottomOffset;
+	} );
+	return bottomOffset - topOffset - this.offset().top;
+};
+$.fn.dataAttrConfig = function(prefix){
+	if(!prefix){
+		prefix = 'data-';
+	}
+	var substr = prefix.length;
+	var attrData = this.attrStartsWith(prefix);
+	var data = {};
+	$.each(attrData,function(k,v){
+		$.attrsToObject( k.substr(substr), v, data );
+	});
+	return data;
+};
+$.fn.findExclude = function (Selector, Mask, Parent) {
+	var result = $([]);
+	$(this).each(function (Idx, Elem) {
+		$(Elem).find(Selector).each(function (Idx2, Elem2) {
+			var el = $(Elem2);
+			if(Parent)
+				el = el.parent();
+			var closest = el.closest(Mask);
+			if (closest[0] == Elem || !closest.length) {
+				result =  result.add(Elem2);
+			}
+		});
+	});
+	return result;
+};
+$.fn.hasHorizontalScrollBar = function() {
+	return this.get( 0 ) ? this.get( 0 ).scrollWidth > this.innerWidth() : false;
+};
+$.fn.hasVerticalScrollBar = function() {
+	return this.get( 0 ) ? this.get( 0 ).scrollHeight > this.innerHeight() : false;
+};
+(function(){
+
+var findForks = {
+	"nth-level": function( selector, param ) {
+		param = parseInt( param, 10 );
+		var a = [];
+		var $this = this;
+		this.each( function() {
+			var level = param + $( this ).parents( selector ).length;
+			$this.find( selector ).each( function() {
+				if ( $( this ).parents( selector ).length == param - 1 ) {
+					a.push( this );
+				}
+			} );
+		} );
+		return $( a );
+	}
+};
+
+$.fn.findOrig = $.fn.find;
+$.fn.find = function( selector ) {
+
+	if ( typeof( selector ) == "string" ) {
+		var fork, THIS = this;
+		$.each( findForks, function( k, v ) {
+			var i = selector.indexOf( ":" + k );
+			if ( i !== -1 ) {
+				var l = k.length;
+				var selectorPart = selector.substr( 0, i );
+				var param = selector.substr( i + l + 2, selector.length - i - l - 3 );
+				fork = findForks[ k ].call( THIS, selectorPart, param );
+				return false;
+			}
+		} );
+		if ( fork ) return fork;
+	}
+
+	return this.findOrig( selector );
+};
+
+})();
+$.on = function(event,selector,callback){
+	return $(document).on(event,selector,callback);
+};
+
+$.off = function(event,selector,callback){
+	return $(document).off(event,selector,callback);
+};
+$.extend( $.expr[ ":" ], {
+	scrollable: function( element ) {
+		var vertically_scrollable, horizontally_scrollable;
+		if ( $( element ).css( "overflow" ) == "scroll" || $( element ).css( "overflowX" ) == "scroll" || $( element ).css( "overflowY" ) == "scroll" ) return true;
+
+		vertically_scrollable = ( element.clientHeight < element.scrollHeight ) && (
+		$.inArray( $( element ).css( "overflowY" ), [ "scroll", "auto" ] ) != -1 || $.inArray( $( element ).css( "overflow" ), [ "scroll", "auto" ] ) != -1 );
+
+		if ( vertically_scrollable ) return true;
+
+		horizontally_scrollable = ( element.clientWidth < element.scrollWidth ) && (
+		$.inArray( $( element ).css( "overflowX" ), [ "scroll", "auto" ] ) != -1 || $.inArray( $( element ).css( "overflow" ), [ "scroll", "auto" ] ) != -1 );
+		return horizontally_scrollable;
+	},
+	parents: function( a, i, m ) {
+		return $( a ).parents( m[ 3 ] ).length < 1;
+	},
+	
+	attrStartsWith: function (el, _, b) {
+		for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
+			if(atts[i].nodeName.toLowerCase().indexOf(b[3].toLowerCase()) === 0) {
+				return true; 
+			}
+		}
+		return false;
+	},
+	attrEndsWith: function (el, _, b) {
+		for (var i = 0, atts = el.attributes, n = atts.length; i < n; i++) {
+		  var att = atts[i].nodeName.toLowerCase(),
+			  str = b[3].toLowerCase();
+			if(att.length >= str.length && att.substr(att.length - str.length) === str) {
+				return true; 
+			}
+		}
+		
+		return false;
+	},
+	
+} );
+$.fn.removeClassPrefix = function(prefix) {
+	this.each(function(i, el) {
+		var classes = el.className.split(" ").filter(function(c) {
+			return c.lastIndexOf(prefix, 0) !== 0;
+		});
+		el.className = $.trim(classes.join(" "));
+	});
+	return this;
+};
+$.fn.requiredId = function(){
+	var id = this.attr('id');
+	if(this.length>1){
+		return this.each(function(){
+			$(this).requiredId();
+		});
+	}
+	if(!id){
+		id = jstack.uniqid('uid-');
+		this.attr('id', id);
+	}
+	return id;
+};
+$.fn.reverse = function(){
+	return $(this.get().reverse());
+};
+$.fn.setVal = $.fn.val;
+$.fn.val = function() {
+	var returnValue = $.fn.setVal.apply( this, arguments );
+	if ( arguments.length ) {
+		this.trigger( "val" );
+	}
+	return returnValue;
+};
+jstack.template = {};
+jstack.template.templateVarSubstitutions = {};
+( function( w, j ) {
+
+	var separatorStart = "<%";
+	var separatorEnd = "%>";
+	var separatorStartE = "<\%";
+	var separatorEndE = "\%>";
+
+	var cache = {};
+	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
+	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
+	
+	j.template.parse = function( html, data, id, debug ) {
+		var fn;
+		if ( id && cache[ id ] ) {
+			fn = cache[ id ];
+		} else {
+			var substitutions = j.template.templateVarSubstitutions;
+			html = html.html();
+			for ( var k in substitutions ) {
+				if ( substitutions.hasOwnProperty( k ) ) {
+					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
+				}
+			}
+			var logUndefined = debug?'console.log(tmplException.message);':'';
+			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
+				.replace( /[\r\t\n]/g, " " )
+				.replace( reg1, "\t" )
+				.split( "'" ).join( "\\'" )
+				.split( "\t" ).join( "'" )
+				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ "+logUndefined+" }; tmplString += '" )
+				.split( separatorStart ).join( "';" )
+				.split( separatorEnd ).join( "tmplString += '" ) +
+				"';} return tmplString;";
+			try {
+				fn = new Function( "tmplObj", compile );
+				if ( id ) cache[ id ] = fn;
+			}
+			catch ( e ) {
+				if ( debug ) {
+					console.log( e );
+					console.log( compile );
+					console.log( html );
+				}
+			}
+		}
+		return data ? fn( data ) : fn;
+	};
+
+} )( window, jstack );
+jstack.template.compile = function( el, cacheId, templatesPath, debug ) {
+	if ( typeof( debug ) == "undefined" ) debug = $js.dev;
+	var defer = $.Deferred();
+	$.when.apply( $, jstack.template.directiveCompile( el, templatesPath ) ).then( function() {
+		var templateProcessor = function( data ) {
+			return jstack.template.directiveCompileLoaded( $( "<tmpl>" + jstack.template.parse( el, data, cacheId, debug ) + "</tmpl>" ) ).contents();
+		};
+		defer.resolve( templateProcessor );
+	} );
+	return defer;
+};
+jstack.template.directives = {};
+jstack.template.directive = function( id, fn ) {
+	if ( fn ) {
+		jstack.template.directives[ id ] = fn;
+	}
+	return jstack.template.directives[ id ];
+};
+jstack.template.directiveCompileLoaded = function( el ) {
+	el.find( "*" ).each( function() {
+		var self = $( this );
+		$.each( this.attributes, function() {
+			var key = this.name;
+			if ( key.substr( 0, 9 ) == "j-loaded-" ) {
+				self.attr( key.substr( 9 ), this.value );
+				self.removeAttr( key );
+			}
+		} );
+	} );
+	return el;
+};
+jstack.template.directiveCompile = function( el, templatesPath ) {
+	var deferreds = [];
+	$.each( jstack.template.directives, function( k, d ) {
+		el.find( "[j-" + k + "]," + k + "[j]" ).each( function() {
+			var ctag = this.tagName == k.toUpperCase();
+			var self = $( this );
+			var val = ctag ? self.attr( "j" ) : self.attr( "j-" + k );
+			var deferred = d( val, self, templatesPath );
+			if ( deferred ) {
+				deferreds.push( deferred );
+			}
+			if ( ctag ) {
+				self.removeAttr( "j" );
+				if ( deferred ) {
+					deferred.then( function() {
+						self.replaceWith( self.html() );
+					} );
+				} else {
+					self.replaceWith( self.html() );
+				}
+			} else {
+				self.removeAttr( "j-" + k );
+			}
+		} );
+	} );
+	return deferreds;
+};
+
+jstack.template.jmlInject = function( el, jq, snippet ) {
+	return el.each( function() {
+		var $this = $( this );
+		var uid = jstack.uniqid( "tmpl" );
+		jstack.template.templateVarSubstitutions[ uid ] = snippet;
+		$this[ jq ]( uid );
+	} );
+};
+jstack.template.directive( "foreach", function( val, el ) {
+	var sp;
+	if ( val.indexOf( " as " ) !== -1 ) {
+		sp = val.split( " as " );
+		jstack.template.jmlInject( el, "before", "$.each(" + sp[ 0 ] + ", function(i," + sp[ 1 ] + "){" );
+	} else {
+		sp = val.split( " in " );
+		jstack.template.jmlInject( el, "before", "$.each(" + sp[ 1 ] + ", function(" + sp[ 0 ] + "){" );
+	}
+	jstack.template.jmlInject( el, "after", "});" );
+} );
+
+jstack.template.directive( "href", function( val, el ) {
+	href = jstack.route.baseLocation + "#" + val;
+	el.attr( "href", href );
+} );
+
+jstack.template.directive( "src", function( val, el ) {
+	el.attr( "j-loaded-src", val );
+} );
+
+jstack.template.directive( "include", function( val, el, templatesPath ) {
+	var ext = val.split( "." ).pop();
+	var include = templatesPath + val;
+	if ( ext != "jml" ) {
+		include += ".jml";
+	}
+	var deferred = $.Deferred();
+	jstack.template.get( include ).then( function( html ) {
+		var inc = $( "<tmpl>" + html + "</tmpl>" );
+		$.when.apply( $, jstack.template.directiveCompile( inc, templatesPath ) ).then( function() {
+			el.html( inc.contents() );
+			deferred.resolve();
+		} );
+	} );
+	return deferred;
+} );
+
+jstack.template.directive( "extend", function( val, el, templatesPath ) {
+	var extend = templatesPath + val;
+	var ext = val.split( "." ).pop();
+	if ( ext != "jml" && ext != "xjml" ) {
+		extend += ".xjml";
+	}
+	var deferred = $.Deferred();
+	jstack.template.get( extend ).then( function( html ) {
+		var inc = $( "<tmpl>" + html + "</tmpl>" );
+		$.when.apply( $, jstack.template.directiveCompile( inc, templatesPath ) ).then( function() {
+			el.find( ">*" ).each( function() {
+				var $this = $( this );
+				var selector = $this.attr( "selector" );
+				if ( !selector ) selector = $this.attr( "j" );
+				var method = this.tagName.toLowerCase();
+				var contents = $this.contents();
+				var target = inc.find( selector );
+				if ( contents.length ) {
+					target[ method ]( $this.contents() );
+				} else {
+					target[ method ]();
+				}
+			} );
+			el.replaceWith( inc.contents() );
+			deferred.resolve();
+		} );
+	} );
+	return deferred;
+} );
+(function(){
+	var templates = {};
+	var requests = {};
+	jstack.template.get = function( templatePath ) {
+		if ( !requests[ templatePath ] ) {
+			if ( $js.dev ) {
+				var ts = ( new Date().getTime() ).toString();
+				var url = templatePath;
+				if ( url.indexOf( "_t=" ) === -1 )
+					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
+			}
+			requests[ templatePath ] = $.Deferred();
+			$.ajax( {
+				url:url,
+				cache:true,
+				success:function( tpl ) {
+					var substitutions = {};
+					var html = "";
+					var sp = tpl.split( "<%" );
+					for ( var i = 0, l = sp.length; i < l; i++ ) {
+						if ( i ) {
+							var sp2 = sp[ i ].split( "%>" );
+							for ( var i2 = 0, l2 = sp2.length; i2 < l2; i2++ ) {
+								if ( i2 % 2 ) {
+									html += sp2[ i2 ];
+								} else {
+									var uid = jstack.uniqid( "tmpl" );
+									html += uid;
+									substitutions[ uid ] = sp2[ i2 ];
+								}
+							}
+						} else {
+							html += sp[ i ];
+						}
+					}
+					$.extend( jstack.template.templateVarSubstitutions, substitutions );
+					templates[ templatePath ] = html;
+					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
+				}
+			} );
+		}
+		return requests[ templatePath ];
+	};
+
+})();
+jstack.jml = function( url, data ) {
+	var cacheId = url;
+	var defer = $.Deferred();
+	var templatesPath = url.split('/');
+	templatesPath.pop();
+	templatesPath = templatesPath.join('/')+'/';
+	
+	templatesPath = jstack.config.templatesPath+templatesPath;
+	url = jstack.config.templatesPath+url;
+	
+	if ( !data ) data = {};
+	jstack.template.get( url ).then( function( html ) {
+		var el = $('<tmpl>'+html+'</tmpl>');
+		jstack.template.compile( el, cacheId, templatesPath ).then( function( templateProcessor ) {
+			defer.resolve( templateProcessor( data ) );
+		} );
+	} );
+	
+	return defer;
+};
+(function(){
+
+jstack.component = {};
+
+var loadComponent = function(){
+	var el = this;
+	var component = $(el).attr('j-component');
+	var config = $(el).dataAttrConfig('j-data-');
+	var paramsData = $(el).attr('j-params-data');
+	var load = function(){
+		var o;
+		var c = jstack.component[component];
+		if(paramsData){
+			var params = [];
+			params.push(el);
+			 o = new (Function.prototype.bind.apply(c, params));
+		}
+		else{
+			o = new c(el,config);
+		}
+		$(el).data('j:component',o);			
+	};
+	if(jstack.component[component]){
+		load();
+	}
+	else{					
+		$js('jstack.'+component,load);
+	}
+};
+
+var loadJqueryComponent = function(){
+	var el = this;
+	var component = $(el).attr('jquery-component');
+	var config = $(el).dataAttrConfig('j-data-');
+	var paramsData = $(el).attr('j-params-data');
+	var params = [];
+	if(paramsData){
+		var keys = [];
+		for (var k in config) {
+			if (config.hasOwnProperty(k)) {
+				keys.push(k);
+			}
+		}
+		keys.sort();
+		for(var i=0,l=keys.length;i<l;i++){
+			params.push(config[keys[i]]);
+		}
+	}
+	else if(!$.isEmptyObject(config)){
+		params.push(config);
+	}
+	var load = function(){
+		$(el).data('j:component',$.fn[component].apply($(el), params));
+	};
+	if($.fn[component]){
+		load();
+	}
+	else{					
+		$js('jstack.jquery.'+component,load);
+	}
+};
+
+$.on('j:load','[j-component]',loadComponent);
+$.on('j:load','[jquery-component]',loadJqueryComponent);
+$.on('j:unload','[j-component]',function(){
+	var o = $(this).data('j:component');
+	if(o&&typeof(o.unload)=='function'){
+		o.unload();
+	}
+});
+
+$('[j-component]').each(function(){
+	if( !$(this).data('j:component') ){
+		loadComponent.call(this);
+	}
+});
+$('[jquery-component]').each(function(){
+	if( !$(this).data('j:component') ){
+		loadJqueryComponent.call(this);
+	}
+});
+
+jstack.loader = function(selector,handler,unloader){
+	$.on('j:load',selector,function(){
+		handler.call(this);
+	});
+	if(typeof(unloader)=='function'){
+		$.on('j:unload',selector,function(){
+			unloader.call(this);
+		});
+	}
+	$(selector).each(function(){
+		handler.call(this);
+	});
+};
+
 })();
 jstack.route = ( function( w, url ) {
 
@@ -828,333 +1272,6 @@ jstack.route = ( function( w, url ) {
 	return routie;
 
 } )( window, jstack.url );
-( function( w, j ) {
-
-	j.templateVarSubstitutions = {};
-
-	var separatorStart = "<%";
-	var separatorEnd = "%>";
-	var separatorStartE = "<\%";
-	var separatorEndE = "\%>";
-
-	var cache = {};
-	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
-	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
-	
-	j.template = function( html, data, id, debug ) {
-		var fn;
-		if ( id && cache[ id ] ) {
-			fn = cache[ id ];
-		} else {
-			var substitutions = j.templateVarSubstitutions;
-			html = html.html();
-			for ( var k in substitutions ) {
-				if ( substitutions.hasOwnProperty( k ) ) {
-					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
-				}
-			}
-			var logUndefined = debug?'console.log(tmplException.message);':'';
-			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
-				.replace( /[\r\t\n]/g, " " )
-				.replace( reg1, "\t" )
-				.split( "'" ).join( "\\'" )
-				.split( "\t" ).join( "'" )
-				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ "+logUndefined+" }; tmplString += '" )
-				.split( separatorStart ).join( "';" )
-				.split( separatorEnd ).join( "tmplString += '" ) +
-				"';} return tmplString;";
-			try {
-				fn = new Function( "tmplObj", compile );
-				if ( id ) cache[ id ] = fn;
-			}
-			catch ( e ) {
-				if ( debug ) {
-					console.log( e );
-					console.log( compile );
-					console.log( html );
-				}
-			}
-		}
-		return data ? fn( data ) : fn;
-	};
-
-} )( window, jstack );
-( function( w, j ) {
-	j.controller = function(id){
-		var fn, sync, deps = true;
-		for ( var i = 0; i < arguments.length; i++ ) {
-			switch ( typeof( arguments[ i ] ) ){
-				case "boolean":
-					sync = arguments[ i ];
-				break;
-				case "function":
-					fn = arguments[ i ];
-				break;
-				case "object":
-					deps = arguments[ i ];
-				break;
-			}
-		}
-		if ( deps instanceof Array ) {
-			$js.require( deps, sync );
-		}
-
-		if ( fn ) {
-			var ctrl = function() {
-				return fn.apply( ctrl, arguments );
-			};
-			ctrl.jstack = {};
-			jstack.controllers[ id ] = ctrl;
-		}
-		return jstack.controllers[ id ];
-	};
-
-} )( window, jstack );
-( function( w, j, $ ) {
-	var directives = {};
-	j.directive = function( id, fn ) {
-		if ( fn ) {
-			directives[ id ] = fn;
-		}
-		return directives[ id ];
-	};
-	j.directiveCompileLoaded = function( el ) {
-		el.find( "*" ).each( function() {
-			var self = $( this );
-			$.each( this.attributes, function() {
-				var key = this.name;
-				if ( key.substr( 0, 9 ) == "j-loaded-" ) {
-					self.attr( key.substr( 9 ), this.value );
-					self.removeAttr( key );
-				}
-			} );
-		} );
-		return el;
-	};
-	j.directiveCompile = function( el, templatesPath ) {
-		var deferreds = [];
-		$.each( directives, function( k, d ) {
-			el.find( "[j-" + k + "]," + k + "[j]" ).each( function() {
-				var ctag = this.tagName == k.toUpperCase();
-				var self = $( this );
-				var val = ctag ? self.attr( "j" ) : self.attr( "j-" + k );
-				var deferred = d( val, self, templatesPath );
-				if ( deferred ) {
-					deferreds.push( deferred );
-				}
-				if ( ctag ) {
-					self.removeAttr( "j" );
-					if ( deferred ) {
-						deferred.then( function() {
-							self.replaceWith( self.html() );
-						} );
-					} else {
-						self.replaceWith( self.html() );
-					}
-				} else {
-					self.removeAttr( "j-" + k );
-				}
-			} );
-		} );
-		return deferreds;
-	};
-
-	$.fn.jmlInject = function( jq, snippet ) {
-		return this.each( function() {
-			var $this = $( this );
-			var uid = jstack.uniqid( "tmpl" );
-			j.templateVarSubstitutions[ uid ] = snippet;
-			$this[ jq ]( uid );
-		} );
-	};
-
-} )( window, jstack, jQuery );
-( function( w, j ) {
-
-	j.directive( "foreach", function( val, el ) {
-		var sp;
-		if ( val.indexOf( " as " ) !== -1 ) {
-			sp = val.split( " as " );
-			el.jmlInject( "before", "$.each(" + sp[ 0 ] + ", function(i," + sp[ 1 ] + "){" );
-		} else {
-			sp = val.split( " in " );
-			el.jmlInject( "before", "$.each(" + sp[ 1 ] + ", function(" + sp[ 0 ] + "){" );
-		}
-		el.jmlInject( "after", "});" );
-	} );
-
-	j.directive( "href", function( val, el ) {
-		href = j.route.baseLocation + "#" + val;
-		el.attr( "href", href );
-	} );
-
-	j.directive( "src", function( val, el ) {
-		el.attr( "j-loaded-src", val );
-	} );
-
-	j.directive( "include", function( val, el, templatesPath ) {
-		var ext = val.split( "." ).pop();
-		var include = templatesPath + val;
-		if ( ext != "jml" ) {
-			include += ".jml";
-		}
-		var deferred = $.Deferred();
-		jstack.getTemplate( include ).then( function( html ) {
-			var inc = $( "<tmpl>" + html + "</tmpl>" );
-			$.when.apply( $, jstack.directiveCompile( inc, templatesPath ) ).then( function() {
-				el.html( inc.contents() );
-				deferred.resolve();
-			} );
-		} );
-		return deferred;
-	} );
-
-	j.directive( "extend", function( val, el, templatesPath ) {
-		var extend = templatesPath + val;
-		var ext = val.split( "." ).pop();
-		if ( ext != "jml" && ext != "xjml" ) {
-			extend += ".xjml";
-		}
-		var deferred = $.Deferred();
-		jstack.getTemplate( extend ).then( function( html ) {
-			var inc = $( "<tmpl>" + html + "</tmpl>" );
-			$.when.apply( $, jstack.directiveCompile( inc, templatesPath ) ).then( function() {
-				el.find( ">*" ).each( function() {
-					var $this = $( this );
-					var selector = $this.attr( "selector" );
-					if ( !selector ) selector = $this.attr( "j" );
-					var method = this.tagName.toLowerCase();
-					var contents = $this.contents();
-					var target = inc.find( selector );
-					if ( contents.length ) {
-						target[ method ]( $this.contents() );
-					} else {
-						target[ method ]();
-					}
-				} );
-				el.replaceWith( inc.contents() );
-				deferred.resolve();
-			} );
-		} );
-		return deferred;
-	} );
-
-} )( window, jstack );
-jstack.uniqid = function( prefix, more_entropy ) {
-  //  discuss at: http://phpjs.org/functions/uniqid/
-  // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-  //  revised by: Kankrelune (http://www.webfaktory.info/)
-  //        note: Uses an internal counter (in php_js global) to avoid collision
-  //        test: skip
-  //   example 1: uniqid();
-  //   returns 1: 'a30285b160c14'
-  //   example 2: uniqid('foo');
-  //   returns 2: 'fooa30285b1cd361'
-  //   example 3: uniqid('bar', true);
-  //   returns 3: 'bara20285b23dfd1.31879087'
-
-  if ( typeof prefix === "undefined" ) {
-    prefix = "";
-  }
-
-  var retId;
-  var formatSeed = function( seed, reqWidth ) {
-    seed = parseInt( seed, 10 )
-      .toString( 16 ); // To hex str
-    if ( reqWidth < seed.length ) {
-      // So long we split
-      return seed.slice( seed.length - reqWidth );
-    }
-    if ( reqWidth > seed.length ) {
-      // So short we pad
-      return Array( 1 + ( reqWidth - seed.length ) )
-        .join( "0" ) + seed;
-    }
-    return seed;
-  };
-
-  // BEGIN REDUNDANT
-  if ( !this.php_js ) {
-    this.php_js = {};
-  }
-  // END REDUNDANT
-  if ( !this.php_js.uniqidSeed ) {
-    // Init seed with big random int
-    this.php_js.uniqidSeed = Math.floor( Math.random() * 0x75bcd15 );
-  }
-  this.php_js.uniqidSeed++;
-
-  // Start with prefix, add current milliseconds hex string
-  retId = prefix;
-  retId += formatSeed( parseInt( new Date()
-    .getTime() / 1000, 10 ), 8 );
-  // Add seed hex string
-  retId += formatSeed( this.php_js.uniqidSeed, 5 );
-  if ( more_entropy ) {
-    // For more entropy we add a float lower to 10
-    retId += ( Math.random() * 10 )
-      .toFixed( 8 )
-      .toString();
-  }
-
-  return retId;
-};
-( function( w, j ) {
-	var templates = {};
-	var requests = {};
-	j.getTemplate = function( templatePath ) {
-		if ( !requests[ templatePath ] ) {
-			if ( $js.dev ) {
-				var ts = ( new Date().getTime() ).toString();
-				var url = templatePath;
-				if ( url.indexOf( "_t=" ) === -1 )
-					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
-			}
-			requests[ templatePath ] = $.Deferred();
-			$.ajax( {
-				url:url,
-				cache:true,
-				success:function( tpl ) {
-					var substitutions = {};
-					var html = "";
-					var sp = tpl.split( "<%" );
-					for ( var i = 0, l = sp.length; i < l; i++ ) {
-						if ( i ) {
-							var sp2 = sp[ i ].split( "%>" );
-							for ( var i2 = 0, l2 = sp2.length; i2 < l2; i2++ ) {
-								if ( i2 % 2 ) {
-									html += sp2[ i2 ];
-								} else {
-									var uid = jstack.uniqid( "tmpl" );
-									html += uid;
-									substitutions[ uid ] = sp2[ i2 ];
-								}
-							}
-						} else {
-							html += sp[ i ];
-						}
-					}
-					$.extend( j.templateVarSubstitutions, substitutions );
-					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
-				}
-			} );
-		}
-		return requests[ templatePath ];
-	};
-
-} )( window, jstack );
-jstack.processTemplate = function( el, cacheId, templatesPath, debug ) {
-	if ( typeof( debug ) == "undefined" ) debug = $js.dev;
-	var defer = $.Deferred();
-	$.when.apply( $, jstack.directiveCompile( el, templatesPath ) ).then( function() {
-		var templateProcessor = function( data ) {
-			return jstack.directiveCompileLoaded( $( "<tmpl>" + jstack.template( el, data, cacheId, debug ) + "</tmpl>" ) ).contents();
-		};
-		defer.resolve( templateProcessor );
-	} );
-	return defer;
-};
 jstack.dataBinder = (function(){
 	var dataBinder = function(){
 		
@@ -1691,202 +1808,6 @@ $.on('reset','form[j-scope]',function(){
 	};
 
 } )( jQuery, jstack );
-jstack.paramsReflection = function( f ) {
-	var args = f.toString().match( /^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/ );
-	var r = {};
-	if ( args && args[ 1 ] ) {
-		args = args[ 1 ];
-		args = args.replace( /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, "" );
-		args = args.trim().split( /\s*,\s*/ );
-		for ( var i = 0; i < args.length; i++ ) {
-			var arg = args[ i ];
-			var idf = arg.indexOf( "=" );
-			if ( idf === -1 ) {
-				r[ arg ] = undefined;
-			} else {
-				r[ arg.substr( 0, idf ) ] = eval( arg.substr( idf + 1 ).trim() );
-			}
-		}
-	}
-	return r;
-};
-
-jstack.jml = function( url, data ) {
-	var cacheId = url;
-	var defer = $.Deferred();
-	var templatesPath = url.split('/');
-	templatesPath.pop();
-	templatesPath = templatesPath.join('/')+'/';
-	
-	templatesPath = jstack.config.templatesPath+templatesPath;
-	url = jstack.config.templatesPath+url;
-	
-	if ( !data ) data = {};
-	jstack.getTemplate( url ).then( function( html ) {
-		var el = $('<tmpl>'+html+'</tmpl>');
-		jstack.processTemplate( el, cacheId, templatesPath ).then( function( templateProcessor ) {
-			defer.resolve( templateProcessor( data ) );
-		} );
-	} );
-	
-	return defer;
-};
-(function(){
-
-function trim ( str, charlist ) {
-  //  discuss at: http://locutusjs.io/php/trim/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: mdsjack (http://www.mdsjack.bo.it)
-  // improved by: Alexander Ermolaev (http://snippets.dzone.com/user/AlexanderErmolaev)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Steven Levithan (http://blog.stevenlevithan.com)
-  // improved by: Jack
-  //    input by: Erkekjetter
-  //    input by: DxGx
-  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  //   example 1: trim('    Kevin van Zonneveld    ')
-  //   returns 1: 'Kevin van Zonneveld'
-  //   example 2: trim('Hello World', 'Hdle')
-  //   returns 2: 'o Wor'
-  //   example 3: trim(16, 1)
-  //   returns 3: '6'
-
-  var whitespace = [
-    " ",
-    "\n",
-    "\r",
-    "\t",
-    "\f",
-    "\x0b",
-    "\xa0",
-    "\u2000",
-    "\u2001",
-    "\u2002",
-    "\u2003",
-    "\u2004",
-    "\u2005",
-    "\u2006",
-    "\u2007",
-    "\u2008",
-    "\u2009",
-    "\u200a",
-    "\u200b",
-    "\u2028",
-    "\u2029",
-    "\u3000"
-  ].join( "" );
-  var l = 0;
-  var i = 0;
-  str += "";
-
-  if ( charlist ) {
-    whitespace = ( charlist + "" ).replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "$1" );
-  }
-
-  l = str.length;
-  for ( i = 0; i < l; i++ ) {
-    if ( whitespace.indexOf( str.charAt( i ) ) === -1 ) {
-      str = str.substring( i );
-      break;
-    }
-  }
-
-  l = str.length;
-  for ( i = l - 1; i >= 0; i-- ) {
-    if ( whitespace.indexOf( str.charAt( i ) ) === -1 ) {
-      str = str.substring( 0, i + 1 );
-      break;
-    }
-  }
-
-  return whitespace.indexOf( str.charAt( 0 ) ) === -1 ? str : "";
-}
-
-
-function ltrim ( str, charlist ) {
-  //  discuss at: http://locutusjs.io/php/ltrim/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  //    input by: Erkekjetter
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  //   example 1: ltrim('    Kevin van Zonneveld    ')
-  //   returns 1: 'Kevin van Zonneveld    '
-
-  charlist = !charlist ? " \\s\u00A0" : ( charlist + "" )
-    .replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "$1" );
-
-  var re = new RegExp( "^[" + charlist + "]+", "g" );
-
-  return ( str + "" )
-    .replace( re, "" );
-}
-
-function rtrim ( str, charlist ) {
-  //  discuss at: http://locutusjs.io/php/rtrim/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  //    input by: Erkekjetter
-  //    input by: rem
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
-  //   example 1: rtrim('    Kevin van Zonneveld    ')
-  //   returns 1: '    Kevin van Zonneveld'
-
-  charlist = !charlist ? " \\s\u00A0" : ( charlist + "" )
-    .replace( /([\[\]\(\)\.\?\/\*\{\}\+\$\^:])/g, "\\$1" );
-
-  var re = new RegExp( "[" + charlist + "]+$", "g" );
-
-  return ( str + "" ).replace( re, "" );
-}
-
-
-String.prototype.trim = function( charlist ) {
-	return trim( this, charlist );
-};
-String.prototype.ltrim = function( charlist ) {
-	return ltrim( this, charlist );
-};
-String.prototype.rtrim = function( charlist ) {
-	return rtrim( this, charlist );
-};
-
-String.prototype.camelCase = function() {
-	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
-};
-
-String.prototype.snakeCase = function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
-};
-
-String.prototype.camelCaseDash = function() {
-	return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
-};
-
-String.prototype.snakeCaseDash = function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
-};
-
-String.prototype.lcfirst = function() {
-	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
-};
-String.prototype.ucfirst = function() {
-	return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
-};
-
-String.prototype.replaceAllRegExp = function(find, replace){
-  return this.replace( new RegExp( find, "g" ), replace );
-};
-String.prototype.escapeRegExp = function() {
-	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
-	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-};
-String.prototype.replaceAll = function(find, replace){
-	find = find.escapeRegExp();
-	return this.replaceAllRegExp(find, replace);
-};
-
-})();
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
 		addMissing: false,
@@ -2176,7 +2097,7 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.getTemplate(templatePath).then(function(html){
+	jstack.template.get(templatePath).then(function(html){
 		var html = $('<tmpl>' + html + '</tmpl>');
 		if(!html.find('> *').length){
 			html.wrapInner('<div />');
@@ -2184,7 +2105,7 @@ jstack.mvc = function(config){
 		element = html.children(0);
 		element.attr('j-controller',config.controller);
 		var cacheId = config.view + "#" + config.controller;
-		jstack.processTemplate(element,cacheId,templatesPath).then(function(templateProcessor){
+		jstack.template.compile(element,cacheId,templatesPath).then(function(templateProcessor){
 			processor = function(data){
 				var processedTemplate = templateProcessor( data );
 				element.data('jModel',data);

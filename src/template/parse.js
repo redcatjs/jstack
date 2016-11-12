@@ -1,7 +1,5 @@
 ( function( w, j ) {
 
-	j.templateVarSubstitutions = {};
-
 	var separatorStart = "<%";
 	var separatorEnd = "%>";
 	var separatorStartE = "<\%";
@@ -11,12 +9,12 @@
 	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
 	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
 	
-	j.template = function( html, data, id, debug ) {
+	j.template.parse = function( html, data, id, debug ) {
 		var fn;
 		if ( id && cache[ id ] ) {
 			fn = cache[ id ];
 		} else {
-			var substitutions = j.templateVarSubstitutions;
+			var substitutions = j.template.templateVarSubstitutions;
 			html = html.html();
 			for ( var k in substitutions ) {
 				if ( substitutions.hasOwnProperty( k ) ) {

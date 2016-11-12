@@ -1,7 +1,7 @@
-( function( w, j ) {
+(function(){
 	var templates = {};
 	var requests = {};
-	j.getTemplate = function( templatePath ) {
+	jstack.template.get = function( templatePath ) {
 		if ( !requests[ templatePath ] ) {
 			if ( $js.dev ) {
 				var ts = ( new Date().getTime() ).toString();
@@ -33,7 +33,7 @@
 							html += sp[ i ];
 						}
 					}
-					$.extend( j.templateVarSubstitutions, substitutions );
+					$.extend( jstack.template.templateVarSubstitutions, substitutions );
 					templates[ templatePath ] = html;
 					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
 				}
@@ -42,4 +42,4 @@
 		return requests[ templatePath ];
 	};
 
-} )( window, jstack );
+})();

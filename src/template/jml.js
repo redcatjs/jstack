@@ -9,9 +9,9 @@ jstack.jml = function( url, data ) {
 	url = jstack.config.templatesPath+url;
 	
 	if ( !data ) data = {};
-	jstack.getTemplate( url ).then( function( html ) {
+	jstack.template.get( url ).then( function( html ) {
 		var el = $('<tmpl>'+html+'</tmpl>');
-		jstack.processTemplate( el, cacheId, templatesPath ).then( function( templateProcessor ) {
+		jstack.template.compile( el, cacheId, templatesPath ).then( function( templateProcessor ) {
 			defer.resolve( templateProcessor( data ) );
 		} );
 	} );

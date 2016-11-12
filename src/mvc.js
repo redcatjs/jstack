@@ -29,7 +29,7 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.getTemplate(templatePath).then(function(html){
+	jstack.template.get(templatePath).then(function(html){
 		var html = $('<tmpl>' + html + '</tmpl>');
 		if(!html.find('> *').length){
 			html.wrapInner('<div />');
@@ -37,7 +37,7 @@ jstack.mvc = function(config){
 		element = html.children(0);
 		element.attr('j-controller',config.controller);
 		var cacheId = config.view + "#" + config.controller;
-		jstack.processTemplate(element,cacheId,templatesPath).then(function(templateProcessor){
+		jstack.template.compile(element,cacheId,templatesPath).then(function(templateProcessor){
 			processor = function(data){
 				var processedTemplate = templateProcessor( data );
 				element.data('jModel',data);
