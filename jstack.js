@@ -246,10 +246,6 @@ jstack = new jstackClass();
         return attrs;
     };
 	
-	$.escapeRegExp = function(str){
-		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-	};
-	
 	$.on = function(event,selector,callback){
 		return $(document).on(event,selector,callback);
 	};
@@ -838,14 +834,6 @@ jstack.route = ( function( w, url ) {
 ( function( w, j ) {
 
 	j.templateVarSubstitutions = {};
-
-	//Var separatorStart = '<%';
-	//var separatorEnd = '%>';
-	//var escapeRegExp = function(str) {
-		//return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|\%]/g, "\\$&");
-	//}
-	//var separatorEndE = escapeRegExp(separatorEnd);
-	//var separatorStartE = escapeRegExp(separatorStart);
 
 	var separatorStart = "<%";
 	var separatorEnd = "%>";
@@ -1722,16 +1710,6 @@ jstack.paramsReflection = function( f ) {
 	return r;
 };
 
-jstack.replaceAllRegExp = function( str, find, replace ) {
-  return str.replace( new RegExp( find, "g" ), replace );
-};
-jstack.escapeRegExp = function( find ) {
-	return find.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
-};
-jstack.replaceAll = function( str, find, replace ) {
-	find = jstack.escapeRegExp( find );
-	return jstack.replaceAllRegExp( str, find, replace );
-};
 jstack.camelCaseDataToObject = function( k, v, r ) {
 	var s = k.replace( /([A-Z])/g, " $1" ).toLowerCase().split( " " );
 	if ( typeof( r ) == "undefined" ) r = {};
@@ -1747,7 +1725,6 @@ jstack.camelCaseDataToObject = function( k, v, r ) {
 	} );
 	return r;
 };
-
 jstack.jml = function( url, data ) {
 	var cacheId = url;
 	var defer = $.Deferred();
@@ -2029,6 +2006,18 @@ String.prototype.lcfirst = function() {
 };
 String.prototype.ucfirst = function() {
 	return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
+};
+
+String.prototype.replaceAllRegExp = function(find, replace){
+  return this.replace( new RegExp( find, "g" ), replace );
+};
+String.prototype.escapeRegExp = function() {
+	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+};
+String.prototype.replaceAll = function(find, replace){
+	find = find.escapeRegExp();
+	return this.replaceAllRegExp(find, replace);
 };
 
 })();

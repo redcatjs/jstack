@@ -229,10 +229,6 @@
         return attrs;
     };
 	
-	$.escapeRegExp = function(str){
-		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-	};
-	
 	$.on = function(event,selector,callback){
 		return $(document).on(event,selector,callback);
 	};
