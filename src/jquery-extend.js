@@ -239,6 +239,7 @@
 	
 	
 	$.attrsToObject = function( k, v, r ) {
+		if(!r) r = {};
 		var s = k.split('--');
 		if ( typeof( r ) == "undefined" ) r = {};
 		var ref = r;
