@@ -51,7 +51,7 @@ jstack.dataBinder = (function(){
 		},
 		getValue: function(el,varKey,defaultValue){
 			var self = this;
-			var data = $(el).closest('[j-controller]').data('jModel');
+			var data = self.getControllerData(el);
 			var key = self.getScoped(el,varKey);
 			return self.dotGet(key,data,defaultValue);
 		},
@@ -62,7 +62,7 @@ jstack.dataBinder = (function(){
 		getScopeValue: function(el){
 			var scope = $(el).closest('[j-scope]');
 			if(!scope.length){
-				return $(el).closest('[j-controller]').data('jModel');
+				return self.getControllerData(el);
 			}
 			return this.getAttrValue(scope,'j-scope');
 		},
@@ -226,11 +226,24 @@ jstack.dataBinder = (function(){
 				self.inputToModel(this,'input:model');
 			});
 		},
+		getControllerData:function(input){
+			return this.getController(input).data('jModel');
+		},
+		getController:function(input){
+			var controller = $(input).closest('[j-controller]');
+			if(!controller.length){
+				controller = $(document.body);
+				controller.attr('j-controller','');
+				if(!controller.data('jModel')){
+					controller.data('jModel',{});
+				}
+			}
+			return controller;
+		},
 		inputToModel: function(el,eventName,isDefault){
 			var self = this;
 			var input = $(el);
-			var controller = input.closest('[j-controller]');
-			var data = controller.data('jModel');
+			var data = self.getControllerData(el);
 			var name = input.attr('name');
 			var value = self.getInputVal(el);
 			var key = self.getScopedInput(el);
@@ -358,7 +371,7 @@ jstack.dataBinder = (function(){
 			
 			$('[j-repeat-list]').each(function(){
 				var $this = $(this);
-				var data = $this.closest('[j-controller]').data('jModel');
+				var data = self.getControllerData(this);
 				var list = $this.data('jRepeatList') || [];
 				var scopes = [];
 				
