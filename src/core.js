@@ -8,6 +8,7 @@ jstackClass = function(){
 			} );
 		},
 		defaultTarget: '[j-app]',
+		debug: $js.dev,
 	};
 	this.controllers = {};
 };

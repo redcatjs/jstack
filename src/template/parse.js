@@ -9,7 +9,7 @@
 	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
 	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
 	
-	j.template.parse = function( html, data, id, debug ) {
+	j.template.parse = function( html, data, id ) {
 		var fn;
 		if ( id && cache[ id ] ) {
 			fn = cache[ id ];
@@ -21,7 +21,7 @@
 					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
-			var logUndefined = debug?'console.log(tmplException.message);':'';
+			var logUndefined = jstack.config.debug?'console.log(tmplException.message);':'';
 			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )
@@ -36,7 +36,7 @@
 				if ( id ) cache[ id ] = fn;
 			}
 			catch ( e ) {
-				if ( debug ) {
+				if ( jstack.config.debug ) {
 					console.log( e );
 					console.log( compile );
 					console.log( html );
