@@ -384,10 +384,6 @@ jstack.loader = function(selector,handler,unloader){
 };
 
 })();
-jstack.hasOwnProperty2 = function(o,k){
-	var v = o[k];
-	return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
-};
 jstack.url = (function(){
 	var Url = function(){};
 	var recursiveArrayToObject = function(o){
@@ -1580,6 +1576,10 @@ $.on('reset','form[j-scope]',function(){
 	$(this).populateReset();
 });
 ( function( $, j ) {
+	var hasOwnProperty2 = function(o,k){
+		var v = o[k];
+		return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
+	};
 	var toParamsPair = function( data ) {
 		var pair = [];
 		var params = $.param( data ).split( "&" );
@@ -1620,7 +1620,7 @@ $.on('reset','form[j-scope]',function(){
 	
 	var recurseCleanNull = function(o){
 		for(var k in o){
-			if(jstack.hasOwnProperty2(o,k)){
+			if(hasOwnProperty2(o,k)){
 				if(typeof(o[k])=='undefined'||o[k]===null){
 					o[k] = '';
 				}

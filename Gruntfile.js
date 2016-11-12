@@ -10,7 +10,6 @@ grunt.initConfig({
 				"src/core.js",
 				"src/jquery-extend.js",
 				"src/component.js",
-				"src/hasOwnProperty2.js",
 				"src/url.js",
 				"src/route.js",
 				"src/template.js",
