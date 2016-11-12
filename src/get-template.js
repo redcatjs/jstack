@@ -24,7 +24,7 @@
 								if ( i2 % 2 ) {
 									html += sp2[ i2 ];
 								} else {
-									var uid = uniqid( "tmpl" );
+									var uid = jstack.uniqid( "tmpl" );
 									html += uid;
 									substitutions[ uid ] = sp2[ i2 ];
 								}

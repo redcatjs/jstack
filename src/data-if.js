@@ -12,7 +12,7 @@
 		options = $.extend({
 			closestSelector: 'form'
 		},options||{});
-		var uid = uniqid('data-if');
+		var uid = jstack.uniqid('data-if');
 		return this.each(function(){
 			var self = $(this);
 			self.find('[data-if]').each(function(){

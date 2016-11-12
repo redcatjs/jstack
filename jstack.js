@@ -21,19 +21,16 @@ jstack = new jstackClass();
 		return $( this ).val( v ).trigger( "change" );
 	};
 
-	$.uniqid = function() {
-		var id;
-		do {
-			id = uniqid( "uid-" );
+	$.fn.requiredId = function(){
+		var id = this.attr('id');
+		if(this.length>1){
+			return this.each(function(){
+				$(this).requiredId();
+			});
 		}
-		while ( $( "#" + id ).length );
-		return id;
-	};
-	$.fn.getId = function( force ) {
-		var id = this.attr( "id" );
-		if ( !id || force ) {
-			id = $.uniqid();
-			this.attr( "id", id );
+		if(!id){
+			id = jstack.uniqid('uid-');
+			this.attr('id', id);
 		}
 		return id;
 	};
@@ -980,14 +977,13 @@ jstack.route = ( function( w, url ) {
 	$.fn.jmlInject = function( jq, snippet ) {
 		return this.each( function() {
 			var $this = $( this );
-			var uid = uniqid( "tmpl" );
+			var uid = jstack.uniqid( "tmpl" );
 			j.templateVarSubstitutions[ uid ] = snippet;
 			$this[ jq ]( uid );
 		} );
 	};
 
 } )( window, jstack, jQuery );
-
 ( function( w, j ) {
 
 	j.directive( "foreach", function( val, el ) {
@@ -1059,7 +1055,7 @@ jstack.route = ( function( w, url ) {
 	} );
 
 } )( window, jstack );
-function uniqid( prefix, more_entropy ) {
+jstack.uniqid = function( prefix, more_entropy ) {
   //  discuss at: http://phpjs.org/functions/uniqid/
   // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
   //  revised by: Kankrelune (http://www.webfaktory.info/)
@@ -1117,8 +1113,7 @@ function uniqid( prefix, more_entropy ) {
   }
 
   return retId;
-}
-
+};
 ( function( w, j ) {
 	var templates = {};
 	var requests = {};
@@ -1145,7 +1140,7 @@ function uniqid( prefix, more_entropy ) {
 								if ( i2 % 2 ) {
 									html += sp2[ i2 ];
 								} else {
-									var uid = uniqid( "tmpl" );
+									var uid = jstack.uniqid( "tmpl" );
 									html += uid;
 									substitutions[ uid ] = sp2[ i2 ];
 								}
@@ -2242,7 +2237,7 @@ $.fn.populateReset = function(){
 		options = $.extend({
 			closestSelector: 'form'
 		},options||{});
-		var uid = uniqid('data-if');
+		var uid = jstack.uniqid('data-if');
 		return this.each(function(){
 			var self = $(this);
 			self.find('[data-if]').each(function(){

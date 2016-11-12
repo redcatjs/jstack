@@ -50,7 +50,7 @@
 	$.fn.jmlInject = function( jq, snippet ) {
 		return this.each( function() {
 			var $this = $( this );
-			var uid = uniqid( "tmpl" );
+			var uid = jstack.uniqid( "tmpl" );
 			j.templateVarSubstitutions[ uid ] = snippet;
 			$this[ jq ]( uid );
 		} );

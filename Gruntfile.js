@@ -17,7 +17,7 @@ grunt.initConfig({
 				"src/controller.js",
 				"src/directive.js",
 				"src/directive-native.js",
-				"src/phpjs.uniqid.js",
+				"src/uniqid.js",
 				"src/get-template.js",
 				"src/process-template.js",
 				"src/data-binder.js",

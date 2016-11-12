@@ -4,19 +4,16 @@
 		return $( this ).val( v ).trigger( "change" );
 	};
 
-	$.uniqid = function() {
-		var id;
-		do {
-			id = uniqid( "uid-" );
+	$.fn.requiredId = function(){
+		var id = this.attr('id');
+		if(this.length>1){
+			return this.each(function(){
+				$(this).requiredId();
+			});
 		}
-		while ( $( "#" + id ).length );
-		return id;
-	};
-	$.fn.getId = function( force ) {
-		var id = this.attr( "id" );
-		if ( !id || force ) {
-			id = $.uniqid();
-			this.attr( "id", id );
+		if(!id){
+			id = jstack.uniqid('uid-');
+			this.attr('id', id);
 		}
 		return id;
 	};
