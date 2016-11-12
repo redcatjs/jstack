@@ -2,14 +2,6 @@
 
 	j.templateVarSubstitutions = {};
 
-	//Var separatorStart = '<%';
-	//var separatorEnd = '%>';
-	//var escapeRegExp = function(str) {
-		//return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|\%]/g, "\\$&");
-	//}
-	//var separatorEndE = escapeRegExp(separatorEnd);
-	//var separatorStartE = escapeRegExp(separatorStart);
-
 	var separatorStart = "<%";
 	var separatorEnd = "%>";
 	var separatorStartE = "<\%";
