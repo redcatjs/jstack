@@ -34,6 +34,7 @@ grunt.initConfig({
 				"src/populate.js",
 				"src/data-if.js",
 				"src/mvc.js",
+				"src/app.js",
 			],
 			dest: 'jstack.js'
 		}

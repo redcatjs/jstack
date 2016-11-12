@@ -715,10 +715,11 @@ jstack.route = ( function( w, url ) {
 		var h = getHash();
 		if ( h != currentHash ) {
 			currentHash = h;
-			$( window ).trigger( "mainHashchange" );
+			$(document).trigger( "j:route:load" );
 			return hashLoad( currentHash );
-		} else {
-			$( window ).trigger( "subHashchange" );
+		}
+		else {
+			$(document).trigger("j:subroute:change" );
 		}
 	};
 	routie.reload = hashChanged;
@@ -837,7 +838,6 @@ jstack.route = ( function( w, url ) {
 	return routie;
 
 } )( window, jstack.url );
-
 ( function( w, j ) {
 
 	j.templateVarSubstitutions = {};
@@ -2553,3 +2553,26 @@ $.on('j:load','[j-view]',function(){
 		ready.resolve();
 	});
 });
+(function(){
+
+	jstack.app = function(el,app){
+		if(!app){
+			app = el.attr('j-app');
+		}
+		jstack.config.templatesPath = 'view-js/'+app+'/';
+		jstack.config.controllersPath = 'controller-js/'+app+'/';
+		
+		jstack.route('*', function(path){
+			path = jstack.url.getPath(path);
+			jstack.mvc(path).then(function(){
+				$(document).trigger('j:route:loaded');
+			});
+		});
+	};
+
+	var el = $('[j-app]');
+	if(el.length){
+		jstack.app(el);
+	}
+	
+}());
