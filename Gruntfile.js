@@ -25,7 +25,6 @@ grunt.initConfig({
 				"src/params-reflection.js",
 				"src/helpers.js",
 				"src/jml.js",
-				"src/jsonml.js",
 				"src/string-prototyping.js",
 				"src/populate.js",
 				"src/data-if.js",
