@@ -55,6 +55,21 @@ jstack.dataBinder = (function(){
 			var key = self.getScoped(el,varKey);
 			return self.dotGet(key,data,defaultValue);
 		},
+		getValueEval: function(el,varKey,defaultValue){
+			var self = this;
+			var scopeValue = self.getScopeValue(el);
+			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
+			/* replace $controller, $scope, default value (with undefined ?), meta _parent (?) */
+			var func = new Function( "jstackScopeValue", "with(jstackScopeValue){return "+varKey.replace(/[\r\t\n]/g,'')+";}" );
+			var value = func(scopeValue);
+			console.log(value);
+			return value;
+		},
+		getAttrValueEval: function(el,attr,defaultValue){
+			var self = this;
+			var attrKey = $(el).attr(attr);
+			return self.getValueEval(el,attrKey,defaultValue);
+		},
 		getAttrValue: function(el,attr,defaultValue){
 			var attrKey = $(el).attr(attr);
 			return this.getValue(el,attrKey,defaultValue);
@@ -125,12 +140,13 @@ jstack.dataBinder = (function(){
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
 				var defaultValue = self.getInputVal(this);
+				//var value = self.getAttrValueEval(this,'name',defaultValue); //need handle [] syntax
 				var value = self.getAttrValue(this,'name',defaultValue);
 				$(this).populateInput(value,{preventValEvent:true});
 				$(this).trigger('val:model');
 			});
 			controller.find('[j-var]').each(function(){
-				var value = self.getAttrValue(this,'j-var');
+				var value = self.getAttrValueEval(this,'j-var');
 				$(this).html(value);
 			});
 			controller.find(':attrStartsWith("j-var-")').each(function(){
@@ -337,7 +353,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-if]').each(function(){
 				var $this = $(this);
-				var value = self.getAttrValue(this,'j-if');
+				var value = self.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
 				if(!contents){
@@ -371,7 +387,7 @@ jstack.dataBinder = (function(){
 			
 			$('[j-repeat-list]').each(function(){
 				var $this = $(this);
-				var data = self.getControllerData(this);
+				//var data = self.getControllerData(this);
 				var list = $this.data('jRepeatList') || [];
 				var scopes = [];
 				
@@ -380,8 +396,9 @@ jstack.dataBinder = (function(){
 					var $original = $(original);
 										
 					var attrRepeat = $original.attr('j-repeat');
-					var key = self.getScoped($this.get(0),attrRepeat);
-					var value = self.dotGet(key,data);
+					//var key = self.getScoped($this.get(0),attrRepeat);
+					//var value = self.dotGet(key,data);
+					var value = self.getValueEval($this.get(0),attrRepeat);
 					
 					var i = 1;
 					$.each(value,function(k,v){

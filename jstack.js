@@ -8,6 +8,7 @@ jstackClass = function(){
 			} );
 		},
 		defaultTarget: '[j-app]',
+		debug: $js.dev,
 	};
 	this.controllers = {};
 };
@@ -613,7 +614,7 @@ jstack.template.templateVarSubstitutions = {};
 	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
 	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
 	
-	j.template.parse = function( html, data, id, debug ) {
+	j.template.parse = function( html, data, id ) {
 		var fn;
 		if ( id && cache[ id ] ) {
 			fn = cache[ id ];
@@ -625,7 +626,7 @@ jstack.template.templateVarSubstitutions = {};
 					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
-			var logUndefined = debug?'console.log(tmplException.message);':'';
+			var logUndefined = jstack.config.debug?'console.log(tmplException.message);':'';
 			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )
@@ -640,7 +641,7 @@ jstack.template.templateVarSubstitutions = {};
 				if ( id ) cache[ id ] = fn;
 			}
 			catch ( e ) {
-				if ( debug ) {
+				if ( jstack.config.debug ) {
 					console.log( e );
 					console.log( compile );
 					console.log( html );
@@ -651,12 +652,11 @@ jstack.template.templateVarSubstitutions = {};
 	};
 
 } )( window, jstack );
-jstack.template.compile = function( el, cacheId, templatesPath, debug ) {
-	if ( typeof( debug ) == "undefined" ) debug = $js.dev;
+jstack.template.compile = function( el, cacheId, templatesPath ) {
 	var defer = $.Deferred();
 	$.when.apply( $, jstack.template.directiveCompile( el, templatesPath ) ).then( function() {
 		var templateProcessor = function( data ) {
-			return jstack.template.directiveCompileLoaded( $( "<tmpl>" + jstack.template.parse( el, data, cacheId, debug ) + "</tmpl>" ) ).contents();
+			return jstack.template.directiveCompileLoaded( $( "<tmpl>" + jstack.template.parse( el, data, cacheId ) + "</tmpl>" ) ).contents();
 		};
 		defer.resolve( templateProcessor );
 	} );
@@ -1046,12 +1046,10 @@ jstack.route = ( function( w, url ) {
 	var routie = function( path, fn, extendParams ) {
 		if ( typeof fn == "function" ) {
 			addHandler( path, fn );
-			routie.reload();
 		} else if ( typeof path == "object" ) {
 			for ( var p in path ) {
 				addHandler( p, path[ p ] );
 			}
-			routie.reload();
 		} else if ( typeof fn === "undefined" ) {
 			routie.navigate( path );
 		} else if ( typeof fn === "object" ) {
@@ -1189,6 +1187,7 @@ jstack.route = ( function( w, url ) {
 			w.attachEvent( "onhashchange", hashChanged );
 		}
 		$( document ).on( "click", "a", rootClick );
+		routie.reload();
 	};
 
 	var removeListener = function() {
@@ -1329,6 +1328,21 @@ jstack.dataBinder = (function(){
 			var key = self.getScoped(el,varKey);
 			return self.dotGet(key,data,defaultValue);
 		},
+		getValueEval: function(el,varKey,defaultValue){
+			var self = this;
+			var scopeValue = self.getScopeValue(el);
+			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
+			/* replace $controller, $scope, default value (with undefined ?), meta _parent (?) */
+			var func = new Function( "jstackScopeValue", "with(jstackScopeValue){return "+varKey.replace(/[\r\t\n]/g,'')+";}" );
+			var value = func(scopeValue);
+			console.log(value);
+			return value;
+		},
+		getAttrValueEval: function(el,attr,defaultValue){
+			var self = this;
+			var attrKey = $(el).attr(attr);
+			return self.getValueEval(el,attrKey,defaultValue);
+		},
 		getAttrValue: function(el,attr,defaultValue){
 			var attrKey = $(el).attr(attr);
 			return this.getValue(el,attrKey,defaultValue);
@@ -1399,12 +1413,13 @@ jstack.dataBinder = (function(){
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
 				var defaultValue = self.getInputVal(this);
+				//var value = self.getAttrValueEval(this,'name',defaultValue); //need handle [] syntax
 				var value = self.getAttrValue(this,'name',defaultValue);
 				$(this).populateInput(value,{preventValEvent:true});
 				$(this).trigger('val:model');
 			});
 			controller.find('[j-var]').each(function(){
-				var value = self.getAttrValue(this,'j-var');
+				var value = self.getAttrValueEval(this,'j-var');
 				$(this).html(value);
 			});
 			controller.find(':attrStartsWith("j-var-")').each(function(){
@@ -1611,7 +1626,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-if]').each(function(){
 				var $this = $(this);
-				var value = self.getAttrValue(this,'j-if');
+				var value = self.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
 				if(!contents){
@@ -1645,7 +1660,7 @@ jstack.dataBinder = (function(){
 			
 			$('[j-repeat-list]').each(function(){
 				var $this = $(this);
-				var data = self.getControllerData(this);
+				//var data = self.getControllerData(this);
 				var list = $this.data('jRepeatList') || [];
 				var scopes = [];
 				
@@ -1654,8 +1669,9 @@ jstack.dataBinder = (function(){
 					var $original = $(original);
 										
 					var attrRepeat = $original.attr('j-repeat');
-					var key = self.getScoped($this.get(0),attrRepeat);
-					var value = self.dotGet(key,data);
+					//var key = self.getScoped($this.get(0),attrRepeat);
+					//var value = self.dotGet(key,data);
+					var value = self.getValueEval($this.get(0),attrRepeat);
 					
 					var i = 1;
 					$.each(value,function(k,v){
