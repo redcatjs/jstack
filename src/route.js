@@ -200,10 +200,11 @@ jstack.route = ( function( w, url ) {
 		var h = getHash();
 		if ( h != currentHash ) {
 			currentHash = h;
-			$( window ).trigger( "mainHashchange" );
+			$(document).trigger( "j:route:load" );
 			return hashLoad( currentHash );
-		} else {
-			$( window ).trigger( "subHashchange" );
+		}
+		else {
+			$(document).trigger("j:subroute:change" );
 		}
 	};
 	routie.reload = hashChanged;
