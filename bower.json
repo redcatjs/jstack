@@ -5,7 +5,7 @@
 		"js": "latest",
 		"jquery": "latest"
 	},
-	"homepage": "https://github.com/redcatphp/jstack",
+	"homepage": "https://github.com/redcatjs/jstack",
 	"description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery ",
 	"moduleType": [],
 	"keywords": [

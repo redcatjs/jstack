@@ -13,7 +13,7 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redcatphp/jstack.git"
+    "url": "git+https://github.com/redcatjs/jstack.git"
   },
   "keywords": [
     "mvc",
@@ -28,7 +28,7 @@
   "author": "Jo Surikat <jo@surikat.pro>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/redcatphp/jstack/issues"
+    "url": "https://github.com/redcatjs/jstack/issues"
   },
-  "homepage": "https://github.com/redcatphp/jstack#readme"
+  "homepage": "https://github.com/redcatjs/jstack#readme"
 }
