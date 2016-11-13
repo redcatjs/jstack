@@ -1445,9 +1445,20 @@ jstack.dataBinder = (function(){
 			});
 			controller.find(':input[j-val]').each(function(){
 				var el = $(this);
-				var defaultValue = self.getInputVal(this);
-				var value = self.getAttrValueEval(this,'j-val',defaultValue);
+				var type = el.prop('type');
+				//var value = self.getAttrValueEval(this,'j-val',self.getInputVal(this));
+				var value = self.getAttrValueEval(this,'j-val');
 				var name = el.attr('name');
+				if(typeof(value)=='undefined'){
+					var defaultValue;
+					if(type=="checkbox"||type=="radio"){
+						defaultValue = this.defaultChecked;
+					}
+					else{
+						defaultValue = this.defaultValue;
+					}
+					value = defaultValue;
+				}
 				if(name){
 					self.dotSet(self.getKey(name),self.getScopeValue(this),value);
 				}
