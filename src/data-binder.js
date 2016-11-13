@@ -58,10 +58,18 @@ jstack.dataBinder = (function(){
 		getValueEval: function(el,varKey,defaultValue){
 			var self = this;
 			var scopeValue = self.getScopeValue(el);
-			varKey = varKey.replace(/[\r\t\n]/g,'');
-			varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
-			if(varKey==''){
+			if(typeof(varKey)=='undefined'){
 				varKey = 'undefined';
+			}
+			else if(varKey===null){
+				varKey = 'null';
+			}
+			else if(varKey.trim()==''){
+				varKey = 'undefined';
+			}
+			else{
+				varKey = varKey.replace(/[\r\t\n]/g,'');
+				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
 			var func = new Function( "$scope, $controller, $this, $default, $parent", "with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}" );
 			var controllerData = self.getControllerData(el);
