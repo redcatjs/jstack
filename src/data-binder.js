@@ -174,6 +174,10 @@ jstack.dataBinder = (function(){
 				var el = $(this);
 				var defaultValue = self.getInputVal(this);
 				var value = self.getAttrValueEval(this,'j-val',defaultValue);
+				var name = el.attr('name');
+				if(name){
+					self.dotSet(self.getKey(name),self.getScopeValue(this),value);
+				}
 				el.populateInput(value,{preventValEvent:true});
 				el.trigger('j:val');
 			});
