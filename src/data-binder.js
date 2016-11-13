@@ -69,10 +69,10 @@ jstack.dataBinder = (function(){
 			}
 			else{
 				varKey = varKey.replace(/[\r\t\n]/g,'');
-				//varKey = varKey.replace(/(?:^|\b)((?:[a-z][a-z0-9_]*))(?=\b|$)/g,'$this');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var func = new Function( "$scope, $controller, $this, $default, $parent", "with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}" );
+			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
+			var func = new Function( "$scope, $controller, $this, $default, $parent", "try{ with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;} }catch(jstackException){"+logUndefined+"}" );
 			var controllerData = self.getControllerData(el);
 			
 			var parent;
