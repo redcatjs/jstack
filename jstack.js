@@ -1504,7 +1504,7 @@ jstack.dataBinder = (function(){
 			};
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
-				console.log('mutations');
+				//console.log('mutations');
 			
 				var events = $._data(document,'events');
 				var eventsLoad = events['j:load'] || [];
