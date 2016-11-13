@@ -1273,7 +1273,7 @@ jstack.route = ( function( w, url ) {
 } )( window, jstack.url );
 jstack.dataBinder = (function(){
 	var dataBinder = function(){
-		
+		this.updateWait = 100;
 	};
 	dataBinder.prototype = {
 		dotGet: function(key,data,defaultValue){
@@ -1504,7 +1504,7 @@ jstack.dataBinder = (function(){
 			};
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
-				//console.log('mutations');
+				console.log('mutations');
 			
 				var events = $._data(document,'events');
 				var eventsLoad = events['j:load'] || [];
@@ -1636,10 +1636,11 @@ jstack.dataBinder = (function(){
 				
 				self.stateObserver = true;
 				
-			}, 100);
+			}, self.updateWait);
 		},
 		update: function(){
 			var self = this;
+			//console.log('update');
 			self.updateRepeat();
 			self.updateIf();
 			self.updateController();
@@ -1686,9 +1687,18 @@ jstack.dataBinder = (function(){
 				var value = self.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
-				if(!contents){
+				if(typeof(contents)=='undefined'){
 					contents = $this.contents();
 					$this.data('jIf',contents);
+				}
+				
+				var state = $this.data('jIfState');
+				if(typeof(state)=='undefined'){
+					state = value;
+					$this.data('jIfState',state);
+				}
+				else if(Boolean(state)===Boolean(value)){
+					return;
 				}
 				
 				if(value){
