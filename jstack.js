@@ -1446,7 +1446,7 @@ jstack.dataBinder = (function(){
 			controller.find(':input[j-val]').each(function(){
 				var el = $(this);
 				var defaultValue = self.getInputVal(this);
-				var value = self.getAttrValueEval(this,'j-var',defaultValue);
+				var value = self.getAttrValueEval(this,'j-val',defaultValue);
 				el.populateInput(value,{preventValEvent:true});
 				el.trigger('j:val');
 			});
