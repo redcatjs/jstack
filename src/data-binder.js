@@ -71,7 +71,6 @@ jstack.dataBinder = (function(){
 				for(var i=0;i<depth;i++){
 					parentEl = self.getParentScope(parentEl);
 				}
-				console.log(parentEl);
 				var scopeV = self.getScopeValue(parentEl);
 				return scopeV;
 			};
@@ -155,10 +154,17 @@ jstack.dataBinder = (function(){
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
 				var defaultValue = self.getInputVal(this);
-				//var value = self.getAttrValueEval(this,'name',defaultValue); //need handle [] syntax
+				var input = $(this);
 				var value = self.getAttrValue(this,'name',defaultValue);
-				$(this).populateInput(value,{preventValEvent:true});
-				$(this).trigger('val:model');
+				input.populateInput(value,{preventValEvent:true});
+				input.trigger('j:val');
+			});
+			controller.find(':input[j-val]').each(function(){
+				var el = $(this);
+				var defaultValue = self.getInputVal(this);
+				var value = self.getAttrValueEval(this,'j-var',defaultValue);
+				el.populateInput(value,{preventValEvent:true});
+				el.trigger('j:val');
 			});
 			controller.find('[j-var]').each(function(){
 				var value = self.getAttrValueEval(this,'j-var');
@@ -248,13 +254,15 @@ jstack.dataBinder = (function(){
 			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$.on('j:load',':input[name]',function(){
-				self.inputToModel(this,'load:model',true);
+				//console.log('input default');
+				self.inputToModel(this,'j:default',true);
 			});
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
-				self.inputToModel(this,'input:model');
+				self.inputToModel(this,'j:input');
 			});
 			$(document.body).on('input', ':input[name]', function(e){
-				self.inputToModel(this,'input:model');
+				//console.log('input user');
+				self.inputToModel(this,'j:input');
 			});
 		},
 		getControllerData:function(input){
@@ -368,6 +376,7 @@ jstack.dataBinder = (function(){
 		updateController: function(){
 			var self = this;
 			$('[j-controller]').each(function(){
+				//console.log('input populate');
 				self.populate(this);
 			});
 		},
