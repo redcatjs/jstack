@@ -52,7 +52,6 @@ grunt.initConfig({
 				"src/data-binder.js",
 				"src/ajax.js",
 				"src/populate.js",
-				"src/data-if.js",
 				"src/mvc.js",
 				"src/app.js",
 			],
