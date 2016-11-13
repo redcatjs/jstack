@@ -58,12 +58,25 @@ jstack.dataBinder = (function(){
 		getValueEval: function(el,varKey,defaultValue){
 			var self = this;
 			var scopeValue = self.getScopeValue(el);
-			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
-			/* replace $controller, $scope, default value (with undefined ?), meta _parent (?) */
-			var func = new Function( "jstackScopeValue", "with(jstackScopeValue){return "+varKey.replace(/[\r\t\n]/g,'')+";}" );
-			var value = func(scopeValue);
-			console.log(value);
-			return value;
+			varKey = varKey.replace(/[\r\t\n]/g,'');
+			varKey = varKey.replace(/this/g,'$this');
+			var func = new Function( "$scope, $controller, $this, $default, $parent", "with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}" );
+			var controllerData = self.getControllerData(el);
+			
+			var parent;
+			parent = function(depth){
+				if(!depth) depth = 1;
+				depth += 1;
+				var parentEl = el;
+				for(var i=0;i<depth;i++){
+					parentEl = self.getParentScope(parentEl);
+				}
+				console.log(parentEl);
+				var scopeV = self.getScopeValue(parentEl);
+				return scopeV;
+			};
+			
+			return func(scopeValue, controllerData, el, defaultValue, parent);
 		},
 		getAttrValueEval: function(el,attr,defaultValue){
 			var self = this;
@@ -71,15 +84,17 @@ jstack.dataBinder = (function(){
 			return self.getValueEval(el,attrKey,defaultValue);
 		},
 		getAttrValue: function(el,attr,defaultValue){
+			var self = this;
 			var attrKey = $(el).attr(attr);
-			return this.getValue(el,attrKey,defaultValue);
+			return self.getValue(el,attrKey,defaultValue);
 		},
 		getScopeValue: function(el){
+			var self = this;
 			var scope = $(el).closest('[j-scope]');
 			if(!scope.length){
 				return self.getControllerData(el);
 			}
-			return this.getAttrValue(scope,'j-scope');
+			return self.getAttrValue(scope,'j-scope',{});
 		},
 		getScope: function(input){
 			return $(input).parents('[j-scope]')
@@ -244,6 +259,13 @@ jstack.dataBinder = (function(){
 		},
 		getControllerData:function(input){
 			return this.getController(input).data('jModel');
+		},
+		getParentScope:function(el){
+			var parent = $(el).parent().closest('[j-scope]');
+			if(!parent.length){
+				parent = this.getController(el);
+			}
+			return parent;
 		},
 		getController:function(input){
 			var controller = $(input).closest('[j-controller]');
