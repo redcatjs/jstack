@@ -1565,7 +1565,11 @@ jstack.dataBinder = (function(){
 				self.inputToModel(this,'j:input');
 			});
 			$(document.body).on('j:update', ':input[name]', function(e){
+				$(this).data('j:populate:prevent',true);
 				self.inputToModel(this,'j:input');
+				$(this).one('j:input',function(){
+					$(this).data('j:populate:prevent',false);
+				});
 			});
 		},
 		filter:function(el,value){
@@ -1618,7 +1622,7 @@ jstack.dataBinder = (function(){
 			
 			var performInputToModel = function(value){
 				var key = self.getScopedInput(el);
-				self.dotSet(key,data,value,isDefault);			
+				self.dotSet(key,data,value,isDefault);
 				if(filteredValue!=value){
 					input.setVal(filteredValue);
 				}
@@ -1977,6 +1981,7 @@ $.fn.populateInput = function( value, config ) {
 	};
 	return this.each(function(){
 		var input = $(this);
+		if(input.data('j:populate:prevent')) return;
 		if ( input.is( "select" ) ) {
 			if ( value instanceof Array ) {
 				for ( var i = 0, l = value.length; i < l; i++ ) {
