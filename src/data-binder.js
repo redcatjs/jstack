@@ -346,6 +346,9 @@ jstack.dataBinder = (function(){
 			var performInputToModel = function(value){
 				var key = self.getScopedInput(el);
 				self.dotSet(key,data,value,isDefault);			
+				if(filteredValue!=value){
+					input.setVal(filteredValue);
+				}
 				var defer = $.Deferred();
 				self.triggerUpdate(defer);
 				defer.then(function(){
