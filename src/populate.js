@@ -40,6 +40,7 @@ $.fn.populateInput = function( value, config ) {
 	};
 	return this.each(function(){
 		var input = $(this);
+		if(input.data('j:populate:prevent')) return;
 		if ( input.is( "select" ) ) {
 			if ( value instanceof Array ) {
 				for ( var i = 0, l = value.length; i < l; i++ ) {
