@@ -292,6 +292,27 @@ jstack.dataBinder = (function(){
 				self.inputToModel(this,'j:input');
 			});
 		},
+		filter:function(el,value){
+			var self = this;
+			var filter = self.getFilter(el);
+			if(typeof(filter)=='function'){
+				value = filter(value);
+			}
+			return value;
+		},
+		getFilter:function(el){
+			var self = this;
+			el = $(el);
+			var filter = el.data('j-filter');
+			if(!filter){
+				var attrFilter = el.attr('j-filter');
+				if(attrFilter){
+					var method = self.getValue(el,attrFilter);
+					el.data('j-filter',method);
+				}
+			}
+			return filter;
+		},
 		getControllerData:function(input){
 			return this.getController(input).data('jModel');
 		},
@@ -318,14 +339,30 @@ jstack.dataBinder = (function(){
 			var input = $(el);
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
+			
+			var performInputToModel = function(value){
+				var key = self.getScopedInput(el);
+				self.dotSet(key,data,value,isDefault);			
+				var defer = $.Deferred();
+				self.triggerUpdate(defer);
+				defer.then(function(){
+					input.trigger(eventName);
+				});
+			};
+			
 			var value = self.getInputVal(el);
-			var key = self.getScopedInput(el);
-			self.dotSet(key,data,value,isDefault);			
-			var defer = $.Deferred();
-			self.triggerUpdate(defer);
-			defer.then(function(){
-				input.trigger(eventName);
-			});
+			value = self.filter(el,value);
+			
+			if(typeof(value)=='object'&&value!==null&&typeof(value.promise)=='function'){
+				filterReturn.then(function(value){
+					performInputToModel(value);
+				});
+				return;
+			}
+			else{
+				performInputToModel(value);
+			}
+			
 		},
 		updateDefers: [],
 		updateDeferStateObserver: null,
