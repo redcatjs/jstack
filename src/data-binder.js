@@ -284,11 +284,14 @@ jstack.dataBinder = (function(){
 				//console.log('input default');
 				self.inputToModel(this,'j:default',true);
 			});
+			$(document.body).on('input', ':input[name]', function(e){
+				//console.log('input user');
+				self.inputToModel(this,'j:input');
+			});
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
 				self.inputToModel(this,'j:input');
 			});
-			$(document.body).on('input', ':input[name]', function(e){
-				//console.log('input user');
+			$(document.body).on('j:update', ':input[name]', function(e){
 				self.inputToModel(this,'j:input');
 			});
 		},
