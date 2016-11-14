@@ -354,16 +354,16 @@ jstack.dataBinder = (function(){
 			};
 			
 			var value = self.getInputVal(el);
-			value = self.filter(el,value);
+			var filteredValue = self.filter(el,value);
 			
-			if(typeof(value)=='object'&&value!==null&&typeof(value.promise)=='function'){
-				filterReturn.then(function(value){
+			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
+				filteredValue.then(function(value){
 					performInputToModel(value);
 				});
 				return;
 			}
 			else{
-				performInputToModel(value);
+				performInputToModel(filteredValue);
 			}
 			
 		},
