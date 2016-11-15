@@ -1501,6 +1501,31 @@ jstack.dataBinder = (function(){
 		},
 		observer: null,
 		stateObserver: true,
+		triggerMutationsLoad: function(mutationsCollection){
+			var self = this;
+			
+			var events = $._data(document,'events');
+			
+			var eventsLoad = events['j:load'] || [];
+			var eventLoad = $.Event('j:load');
+			$.each(mutationsCollection.load,function(i,n){
+				$.each(eventsLoad,function(type,e){
+					if(e.selector&&$(n).is(e.selector)){
+						e.handler.call(n,eventLoad);
+					}
+				});
+			});
+			
+			var eventsUnload = events['j:unload'] || [];
+			var eventUnload = $.Event('j:unload');
+			$.each(mutationsCollection.unload,function(i,n){
+				$.each(eventsUnload,function(type,e){
+					if(e.selector&&$(n).is(e.selector)){
+						e.handler.call(n,eventUnload);
+					}
+				});
+			});
+		},
 		eventListener: function(){
 			var self = this;
 			var validNodeEvent = function(n){
@@ -1516,50 +1541,37 @@ jstack.dataBinder = (function(){
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
-			
-				var events = $._data(document,'events');
-				var eventsLoad = events['j:load'] || [];
-				var eventsUnload = events['j:unload'] || [];
 				
-				var eventLoad = $.Event('j:load');
-				var eventUnload = $.Event('j:unload');
-				var update = false;
+				var mutationsCollection = {load:[],unload:[]};
 				$.each(mutations,function(i,mutation){
 					$.each(mutation.addedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
-						
 						nodes.each(function(iii,n){
 							if(!validNodeEvent(n)) return;
-							update = true;
-							$.each(eventsLoad,function(type,e){
-								if(e.selector&&$(n).is(e.selector)){
-									e.handler.call(n,eventLoad);
-								}
-							});
-							
+							mutationsCollection.load.push(n);
 						});
 						
 					});
 					$.each(mutation.removedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
-							
 						nodes.each(function(iii,n){
 							if(!validNodeEvent(n)) return;
-							update = true;
-							$.each(eventsUnload,function(type,e){
-								if(e.selector&&$(n).is(e.selector)){
-									e.handler.call(n,eventUnload);
-								}
-							});
-							
+							mutationsCollection.unload.push(n);							
 						});
 							
 					});
 				});
 				
-				if(!self.stateObserver||!update) return;
+				if( mutationsCollection.load.length || mutationsCollection.unload.length ){
+					var mut = $.Deferred();
+					if(self.stateObserver){
+						self.triggerUpdate(mut);
+					}
+					mut.then(function(){
+						self.triggerMutationsLoad(mutationsCollection);
+					});
+				}
 				
-				self.triggerUpdate();
 			});
 			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
@@ -1703,8 +1715,7 @@ jstack.dataBinder = (function(){
 			self.updateRepeat();
 			self.updateIf();
 			self.updateController();
-			self.updateOn();
-			
+			self.updateOn();			
 		},
 		updateOn: function(){
 			var self = this;
