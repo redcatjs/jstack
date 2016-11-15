@@ -351,7 +351,7 @@ jstack.dataBinder = (function(){
 				var key = self.getScopedInput(el);
 				self.dotSet(key,data,value,isDefault);
 				if(filteredValue!=value){
-					input.setVal(filteredValue);
+					input.populateInput(filteredValue,{preventValEvent:true});
 				}
 				var defer = $.Deferred();
 				self.triggerUpdate(defer);
