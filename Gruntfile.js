@@ -38,6 +38,7 @@ grunt.initConfig({
 				"src/jquery/requiredId.js",
 				"src/jquery/reverse.js",
 				"src/jquery/val.js",
+				"src/jquery/populate.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",
@@ -51,7 +52,6 @@ grunt.initConfig({
 				"src/route.js",
 				"src/data-binder.js",
 				"src/ajax.js",
-				"src/populate.js",
 				"src/mvc.js",
 				"src/app.js",
 			],
