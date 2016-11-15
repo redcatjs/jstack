@@ -169,7 +169,7 @@ jstack.dataBinder = (function(){
 				var input = $(this);
 				var value = self.getAttrValue(this,'name',defaultValue);
 				input.populateInput(value,{preventValEvent:true});
-				input.trigger('j:val');
+				input.trigger('j:val',[value]);
 			});
 			controller.find(':input[j-val]').each(function(){
 				var el = $(this);
@@ -191,7 +191,7 @@ jstack.dataBinder = (function(){
 					self.dotSet(self.getKey(name),self.getScopeValue(this),value);
 				}
 				el.populateInput(value,{preventValEvent:true});
-				el.trigger('j:val');
+				el.trigger('j:val',[value]);
 			});
 			controller.find('[j-var]').each(function(){
 				var value = self.getAttrValueEval(this,'j-var');
