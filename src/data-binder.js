@@ -19,6 +19,9 @@ jstack.dataBinder = (function(){
 			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
+					if(isDefault&&obj[k]){
+						value = obj[k];
+					}
 					if(!isDefault||!obj[k]){
 						obj[k] = value;
 					}
@@ -30,6 +33,7 @@ jstack.dataBinder = (function(){
 					return obj[k];
 				}
 			}, data);
+			return value;
 		},
 		dotDel: function(key,data,value){
 			key.split('.').reduce(function(obj,k,index,array){
@@ -349,14 +353,15 @@ jstack.dataBinder = (function(){
 			
 			var performInputToModel = function(value){
 				var key = self.getScopedInput(el);
-				self.dotSet(key,data,value,isDefault);
+				value = self.dotSet(key,data,value,isDefault);
 				if(filteredValue!=value){
-					input.populateInput(filteredValue,{preventValEvent:true});
+					value = filteredValue;
+					input.populateInput(value,{preventValEvent:true});
 				}
 				var defer = $.Deferred();
 				self.triggerUpdate(defer);
 				defer.then(function(){
-					input.trigger(eventName);
+					input.trigger(eventName,[value]);
 				});
 			};
 			
