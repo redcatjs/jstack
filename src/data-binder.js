@@ -172,6 +172,7 @@ jstack.dataBinder = (function(){
 				var defaultValue = self.getInputVal(this);
 				var input = $(this);
 				var value = self.getAttrValue(this,'name',defaultValue);
+				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);
 			});
@@ -194,6 +195,7 @@ jstack.dataBinder = (function(){
 				if(name){
 					self.dotSet(self.getKey(name),self.getScopeValue(this),value);
 				}
+				if(el.data('j:populate:prevent')) return;
 				el.populateInput(value,{preventValEvent:true});
 				el.trigger('j:val',[value]);
 			});
