@@ -94,4 +94,10 @@ jstack.loader = function(selector,handler,unloader){
 	});
 };
 
+jstack.preloader = {
+	':input[name]':function(){
+		jstack.dataBinder.inputToModel(this,'j:default',true);
+	},
+};
+
 })();
