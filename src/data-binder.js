@@ -165,7 +165,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		populate: function(controller){
+		modelToInput: function(controller){
 			var self = this;
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
@@ -474,7 +474,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-controller]').each(function(){
 				//console.log('input populate');
-				self.populate(this);
+				self.modelToInput(this);
 			});
 		},
 		updateIf: function(){
