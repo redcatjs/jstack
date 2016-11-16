@@ -1640,12 +1640,13 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		populate: function(controller){
+		modelToInput: function(controller){
 			var self = this;
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
-				var defaultValue = self.getInputVal(this);
 				var input = $(this);
+				if(input.closest('[j-unscope]').length) return;
+				var defaultValue = self.getInputVal(this);
 				var value = self.getAttrValue(this,'name',defaultValue);
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
@@ -1696,6 +1697,43 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(6),varAttr);
 				});
 			});
+		},
+		inputToModel: function(el,eventName,isDefault){
+			var input = $(el);
+			if(input.closest('[j-unscope]').length) return;
+			
+			var self = this;
+			
+			var data = self.getControllerData(el);
+			var name = input.attr('name');
+			
+			var performInputToModel = function(value){
+				var key = self.getScopedInput(el);
+				value = self.dotSet(key,data,value,isDefault);
+				if(filteredValue!=value){
+					value = filteredValue;
+					input.populateInput(value,{preventValEvent:true});
+				}
+				var defer = $.Deferred();
+				self.triggerUpdate(defer);
+				defer.then(function(){
+					input.trigger(eventName,[value]);
+				});
+			};
+			
+			var value = self.getInputVal(el);
+			var filteredValue = self.filter(el,value);
+			
+			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
+				filteredValue.then(function(value){
+					performInputToModel(value);
+				});
+				return;
+			}
+			else{
+				performInputToModel(filteredValue);
+			}
+			
 		},
 		observer: null,
 		stateObserver: true,
@@ -1838,40 +1876,6 @@ jstack.dataBinder = (function(){
 			}
 			return controller;
 		},
-		inputToModel: function(el,eventName,isDefault){
-			var self = this;
-			var input = $(el);
-			var data = self.getControllerData(el);
-			var name = input.attr('name');
-			
-			var performInputToModel = function(value){
-				var key = self.getScopedInput(el);
-				value = self.dotSet(key,data,value,isDefault);
-				if(filteredValue!=value){
-					value = filteredValue;
-					input.populateInput(value,{preventValEvent:true});
-				}
-				var defer = $.Deferred();
-				self.triggerUpdate(defer);
-				defer.then(function(){
-					input.trigger(eventName,[value]);
-				});
-			};
-			
-			var value = self.getInputVal(el);
-			var filteredValue = self.filter(el,value);
-			
-			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
-				filteredValue.then(function(value){
-					performInputToModel(value);
-				});
-				return;
-			}
-			else{
-				performInputToModel(filteredValue);
-			}
-			
-		},
 		updateDefers: [],
 		updateDeferStateObserver: null,
 		updateTimeout: null,
@@ -1949,7 +1953,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			$('[j-controller]').each(function(){
 				//console.log('input populate');
-				self.populate(this);
+				self.modelToInput(this);
 			});
 		},
 		updateIf: function(){

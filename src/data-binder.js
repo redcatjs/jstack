@@ -169,8 +169,9 @@ jstack.dataBinder = (function(){
 			var self = this;
 			controller = $(controller);
 			controller.find(':input[name]').each(function(){
-				var defaultValue = self.getInputVal(this);
 				var input = $(this);
+				if(input.closest('[j-unscope]').length) return;
+				var defaultValue = self.getInputVal(this);
 				var value = self.getAttrValue(this,'name',defaultValue);
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
@@ -223,8 +224,11 @@ jstack.dataBinder = (function(){
 			});
 		},
 		inputToModel: function(el,eventName,isDefault){
-			var self = this;
 			var input = $(el);
+			if(input.closest('[j-unscope]').length) return;
+			
+			var self = this;
+			
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
 			
