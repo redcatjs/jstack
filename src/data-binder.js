@@ -222,6 +222,40 @@ jstack.dataBinder = (function(){
 				});
 			});
 		},
+		inputToModel: function(el,eventName,isDefault){
+			var self = this;
+			var input = $(el);
+			var data = self.getControllerData(el);
+			var name = input.attr('name');
+			
+			var performInputToModel = function(value){
+				var key = self.getScopedInput(el);
+				value = self.dotSet(key,data,value,isDefault);
+				if(filteredValue!=value){
+					value = filteredValue;
+					input.populateInput(value,{preventValEvent:true});
+				}
+				var defer = $.Deferred();
+				self.triggerUpdate(defer);
+				defer.then(function(){
+					input.trigger(eventName,[value]);
+				});
+			};
+			
+			var value = self.getInputVal(el);
+			var filteredValue = self.filter(el,value);
+			
+			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
+				filteredValue.then(function(value){
+					performInputToModel(value);
+				});
+				return;
+			}
+			else{
+				performInputToModel(filteredValue);
+			}
+			
+		},
 		observer: null,
 		stateObserver: true,
 		triggerMutationsLoad: function(mutationsCollection){
@@ -362,40 +396,6 @@ jstack.dataBinder = (function(){
 				}
 			}
 			return controller;
-		},
-		inputToModel: function(el,eventName,isDefault){
-			var self = this;
-			var input = $(el);
-			var data = self.getControllerData(el);
-			var name = input.attr('name');
-			
-			var performInputToModel = function(value){
-				var key = self.getScopedInput(el);
-				value = self.dotSet(key,data,value,isDefault);
-				if(filteredValue!=value){
-					value = filteredValue;
-					input.populateInput(value,{preventValEvent:true});
-				}
-				var defer = $.Deferred();
-				self.triggerUpdate(defer);
-				defer.then(function(){
-					input.trigger(eventName,[value]);
-				});
-			};
-			
-			var value = self.getInputVal(el);
-			var filteredValue = self.filter(el,value);
-			
-			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
-				filteredValue.then(function(value){
-					performInputToModel(value);
-				});
-				return;
-			}
-			else{
-				performInputToModel(filteredValue);
-			}
-			
 		},
 		updateDefers: [],
 		updateDeferStateObserver: null,
