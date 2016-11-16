@@ -1142,6 +1142,12 @@ jstack.loader = function(selector,handler,unloader){
 	});
 };
 
+jstack.preloader = {
+	':input[name]':function(){
+		jstack.dataBinder.inputToModel(this,'j:default',true);
+	},
+};
+
 })();
 jstack.route = ( function( w, url ) {
 
@@ -1755,6 +1761,14 @@ jstack.dataBinder = (function(){
 				});
 				
 				if( mutationsCollection.load.length || mutationsCollection.unload.length ){
+					$.each(mutationsCollection.load,function(i,n){
+						$.each(jstack.preloader,function(selector,callback){
+							if($(n).is(selector)){
+								callback.call(n);
+							}
+						});
+					});
+					
 					var mut = $.Deferred();
 					if(self.stateObserver){
 						self.triggerUpdate(mut);
@@ -1767,10 +1781,6 @@ jstack.dataBinder = (function(){
 			});
 			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			$.on('j:load',':input[name]',function(){
-				//console.log('input default');
-				self.inputToModel(this,'j:default',true);
-			});
 			$(document.body).on('input', ':input[name]', function(e){
 				//console.log('input user');
 				self.inputToModel(this,'j:input');
