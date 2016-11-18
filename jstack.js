@@ -1888,6 +1888,9 @@ jstack.dataBinder = (function(){
 			}
 			return controller;
 		},
+		getControllerObject:function(input){
+			return this.getController(input).data('jController');
+		},
 		updateDefers: [],
 		updateDeferStateObserver: null,
 		updateTimeout: null,
@@ -1943,12 +1946,16 @@ jstack.dataBinder = (function(){
 				$.each(attrs,function(k,v){
 					var event = k.substr(5);
 					$this.removeAttr(k);
-					$this.on(event,function(){
-						var method = self.getValue($this,v);
+					$this.on(event,function(e){
+						var controller = self.getControllerObject(this);
+						if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+							throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+						}
+						var method = controller.methods[v];
 						if(typeof(method)!='function'){
 							return;
 						}
-						var r = method.apply(this,arguments);
+						var r = method.call(controller,e,this);
 						if(r===false){
 							return false;
 						}
@@ -2241,6 +2248,7 @@ jstack.mvc = function(config){
 		}
 		
 		ctrl.element = element;
+		element.data('jController',ctrl);
 		
 		if(config.target){
 			ctrl.target = config.target;

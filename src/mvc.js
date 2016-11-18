@@ -60,6 +60,7 @@ jstack.mvc = function(config){
 		}
 		
 		ctrl.element = element;
+		element.data('jController',ctrl);
 		
 		if(config.target){
 			ctrl.target = config.target;
