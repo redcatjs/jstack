@@ -82,7 +82,10 @@ jstack.mvc = function(config){
 		};
 		
 		if(ctrl.setData){
-			ctrl.setData.call(ctrl);
+			var setDataReturn = ctrl.setData.call(ctrl);
+			if(setDataReturn===false){
+				return;
+			}
 		}
 		if(ctrl.domReady){
 			ready.then(function(){
