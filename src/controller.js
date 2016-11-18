@@ -17,25 +17,30 @@ jstack.controller = function(controller){
 			dependencies.push(dependenciesJs[i]);
 		}
 	}
-	if(dependenciesData&&dependenciesData.length){
-		for(var i = 0, l = dependenciesData.length; i < l; i++){
-			var dependencyData = dependenciesData[i];
-			if(typeof(dependencyData)=='function'){
-				dependencyData = dependencyData.call(controller);
-			}
-			dependencies.push(dependencyData);
+	if(dependenciesData){
+		if(typeof(dependenciesData)=='function'){
+			dependenciesData = dependenciesData.call(controller);
 		}
-		var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
-			if(dependenciesData.length==1){
-				args.push(arguments[0]);
-			}
-			else{
-				for(var i = 0, l = arguments.length; i < l; i++){
-					args.push(arguments[i][0]);
+		if(dependenciesData.length){
+			for(var i = 0, l = dependenciesData.length; i < l; i++){
+				var dependencyData = dependenciesData[i];
+				if(typeof(dependencyData)=='function'){
+					dependencyData = dependencyData.call(controller);
 				}
+				dependencies.push(dependencyData);
 			}
-		});
-		dependencies.push(resolveDeferred);
+			var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
+				if(dependenciesData.length==1){
+					args.push(arguments[0]);
+				}
+				else{
+					for(var i = 0, l = arguments.length; i < l; i++){
+						args.push(arguments[i][0]);
+					}
+				}
+			});
+			dependencies.push(resolveDeferred);
+		}
 	}
 	
 	$js.require(dependencies);
