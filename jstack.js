@@ -2248,22 +2248,41 @@ jstack.mvc = function(config){
 		}
 		
 		ctrl.element = element;
+		ctrl.target = config.target;
 		
 		ctrl.render = function(data,target){
 			if(!target){
-				target = config.target;
+				target = ctrl.target;
 			}
 			if(data&&data!==ctrl.data){
 				$.extend(ctrl.data,data);
 			}
+			
 			var processedTemplate = processor(ctrl.data);
 			
-			$(target).html(element);
+			$(target).html(ctrl.element);
 			
-			ready.resolve(element,ctrl);
+			ready.resolve(ctrl.element,ctrl);
 		};
 		
-		ctrl();
+		var deferRender = ctrl();
+		if(deferRender){
+			if(typeof(deferRender)=='function'){
+				ready.then(deferRender);
+				ctrl.render();
+				return;
+			}
+			else if(typeof(deferRender)=='object'&&typeof(eferRender.then)=='function'){
+				deferRender.then(function(data){
+					if(typeof(data)!='object'||data===null){
+						data = false;
+					}
+					ctrl.render(data);
+				});
+				return;
+			}
+		}
+		ctrl.render();
 		
 	} );
 
