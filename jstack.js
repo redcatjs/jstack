@@ -1254,6 +1254,14 @@ jstack.route = ( function( w, url ) {
 			map[ path ] = new Route( path, name );
 			routes.push( map[ path ] );
 		}
+		
+		routes = routes.sort(function(a,b){
+			if(a.path=='*'){
+				return true;
+			}
+			return routes.indexOf(a) > routes.indexOf(b);
+		});
+		
 		map[ path ].addHandler( fn );
 	};
 
