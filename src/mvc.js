@@ -86,11 +86,17 @@ jstack.mvc = function(config){
 				return;
 			}
 			else if(typeof(deferRender)=='object'&&typeof(deferRender.then)=='function'){
-				deferRender.then(function(data){
-					if(typeof(data)!='object'||data===null){
-						data = false;
+				deferRender.then(function(r){
+					if(typeof(r)=='object'&&r!==null){
+						ctrl.render(r);
 					}
-					ctrl.render(data);
+					else if(typeof(r)=='function'){
+						ready.then(r);
+						ctrl.render();
+					}
+					else{
+						ctrl.render();
+					}
 				});
 				return;
 			}
