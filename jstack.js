@@ -2283,6 +2283,9 @@ jstack.mvc = function(config){
 			if(setDataReturn===false){
 				return;
 			}
+			if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
+				$.extend(ctrl.data,setDataReturn);
+			}
 		}
 		if(ctrl.domReady){
 			ready.then(function(){
