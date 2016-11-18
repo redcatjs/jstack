@@ -40,7 +40,6 @@ jstack.controller = function(id){
 		var ctrl = function() {
 			return fn.apply( ctrl, args );
 		};
-		ctrl.jstack = {};
 		jstack.controllers[ id ] = ctrl;
 	}
 	return jstack.controllers[ id ];

@@ -54,27 +54,30 @@ jstack.mvc = function(config){
 		if(!ctrl){
 			ctrl = jstack.controller(config.controller,jstack.config.defaultController);
 		}
-		ctrl.jstack.render = function(data,target){
+		
+		ctrl.data = {};
+		if(typeof(config.data)=='object'&&config.data!==null){
+			$.extend(ctrl.data,config.data);
+		}
+		
+		ctrl.element = element;
+		
+		ctrl.render = function(data,target){
 			if(!target){
 				target = config.target;
 			}
-			if (!data){
-				data = {};
+			if(data&&data!==ctrl.data){
+				$.extend(ctrl.data,data);
 			}
-			if(typeof(config.data)=='object'&&config.data!==null){
-				data = $.extend({},config.data,data);
-			}
-			ctrl.jstack.data = data;
-			var processedTemplate = processor(ctrl.jstack.data);
+			var processedTemplate = processor(ctrl.data);
 			
 			$(target).html(element);
 			
 			ready.resolve(element,ctrl);
-			
-			return data;
 		};
-		ctrl.jstack.element = element;
+		
 		ctrl();
+		
 	} );
 
 	return ready;

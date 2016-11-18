@@ -4,7 +4,7 @@ jstackClass = function(){
 		controllersPath: 'controller-js/',
 		defaultController: function( controllerPath ) {
 			jstack.controller( controllerPath, function() {
-				this.jstack.render();
+				this.render();
 			} );
 		},
 		defaultTarget: '[j-app]',
