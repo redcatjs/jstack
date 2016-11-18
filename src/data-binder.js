@@ -27,7 +27,7 @@ jstack.dataBinder = (function(){
 					}
 				}
 				else{
-					if(typeof(obj[k])!='object'){
+					if(typeof(obj[k])!='object'||obj[k]===null){
 						obj[k] = {};
 					}					
 					return obj[k];
