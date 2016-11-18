@@ -1,35 +1,44 @@
-jstack.controller = function(id,deps,fn){
+jstack.controller = function(controller){
 	
-	if(arguments.length==1){
-		return jstack.controllers[ id ];
+	if(typeof(controller)=='string'){
+		return jstack.controllers[controller];
 	}
+	
+	var name = controller.name;
+	var dependenciesJs = controller.dependencies;
+	var dependenciesData = controller.dependenciesData;
+	var setData = controller.setData;
+	var domReady = controller.domReady;
 	
 	var args = [];
-	if ( deps instanceof Array ) {
-		
-		var deferredObjects = [];
-		for(var i = 0, l = deps.length; i < l; i++){
-			var df = deps[i];
-			if(typeof(df)=='object'&&typeof(df.then)=='function'){
-				deferredObjects.push(df);
-			}
+	var dependencies = [];
+	if(dependenciesJs&&dependenciesJs.length){
+		for(var i = 0, l = dependenciesJs.length; i < l; i++){
+			dependencies.push(dependenciesJs[i]);
 		}
-		
-		if(deferredObjects.length){
-			var resolveDeferred = $.when.apply($, deferredObjects).then(function(){
-				for(var i = 0, l = arguments.length-2; i < l; i++){
-					args.push(arguments[i]);
-				}
-			});
-			deps.push(resolveDeferred);
-		}
-				
-		$js.require(deps);
 	}
-
-	var ctrl = function() {
-		return fn.apply( ctrl, args );
-	};
-	jstack.controllers[ id ] = ctrl;
+	if(dependenciesData&&dependenciesData.length){
+		for(var i = 0, l = dependenciesData.length; i < l; i++){
+			dependencies.push(dependenciesData[i]);
+		}
+		var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
+			for(var i = 0, l = arguments.length-2; i < l; i++){
+				args.push(arguments[i]);
+			}
+		});
+		dependencies.push(resolveDeferred);
+	}
 	
+	$js.require(dependencies);
+	
+	if(setData){
+		var originalSetData = setData;
+		controller.setData = function(){
+			return originalSetData.apply( this, args );
+		};
+	}
+	
+	controller.data = controller.data || {};
+	
+	jstack.controllers[name] = controller;
 };

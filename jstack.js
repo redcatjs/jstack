@@ -2,11 +2,7 @@ jstackClass = function(){
 	this.config = {
 		templatesPath: 'view-js/',
 		controllersPath: 'controller-js/',
-		defaultController: function( controllerPath ) {
-			jstack.controller( controllerPath, function() {
-				this.render();
-			} );
-		},
+		defaultController: {},
 		defaultTarget: '[j-app]',
 		debug: $js.dev,
 	};
@@ -16,51 +12,49 @@ jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
-jstack.controller = function(id){
-	var fn, sync, deps = true;
-	for ( var i = 0; i < arguments.length; i++ ) {
-		switch ( typeof( arguments[ i ] ) ){
-			case "boolean":
-				sync = arguments[ i ];
-			break;
-			case "function":
-				fn = arguments[ i ];
-			break;
-			case "object":
-				deps = arguments[ i ];
-			break;
-		}
+jstack.controller = function(controller){
+	
+	if(typeof(controller)=='string'){
+		return jstack.controllers[controller];
 	}
+	
+	var name = controller.name;
+	var dependenciesJs = controller.dependencies;
+	var dependenciesData = controller.dependenciesData;
+	var setData = controller.setData;
+	var domReady = controller.domReady;
+	
 	var args = [];
-	if ( deps instanceof Array ) {
-		
-		var deferredObjects = [];
-		for(var i = 0, l = deps.length; i < l; i++){
-			var df = deps[i];
-			if(typeof(df)=='object'&&typeof(df.then)=='function'){
-				deferredObjects.push(df);
+	var dependencies = [];
+	if(dependenciesJs&&dependenciesJs.length){
+		for(var i = 0, l = dependenciesJs.length; i < l; i++){
+			dependencies.push(dependenciesJs[i]);
+		}
+	}
+	if(dependenciesData&&dependenciesData.length){
+		for(var i = 0, l = dependenciesData.length; i < l; i++){
+			dependencies.push(dependenciesData[i]);
+		}
+		var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
+			for(var i = 0, l = arguments.length-2; i < l; i++){
+				args.push(arguments[i]);
 			}
-		}
-		
-		if(deferredObjects.length){
-			var resolveDeferred = $.when.apply($, deferredObjects).then(function(){
-				for(var i = 0, l = arguments.length-2; i < l; i++){
-					args.push(arguments[i]);
-				}
-			});
-			deps.push(resolveDeferred);
-		}
-				
-		$js.require( deps, sync );
+		});
+		dependencies.push(resolveDeferred);
 	}
-
-	if ( fn ) {
-		var ctrl = function() {
-			return fn.apply( ctrl, args );
+	
+	$js.require(dependencies);
+	
+	if(setData){
+		var originalSetData = setData;
+		controller.setData = function(){
+			return originalSetData.apply( this, args );
 		};
-		jstack.controllers[ id ] = ctrl;
 	}
-	return jstack.controllers[ id ];
+	
+	controller.data = controller.data || {};
+	
+	jstack.controllers[name] = controller;
 };
 jstack.url = (function(){
 	var Url = function(){};
@@ -2237,18 +2231,20 @@ jstack.mvc = function(config){
 	
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
-		var ctrl = jstack.controller(config.controller);
-		if(!ctrl){
-			ctrl = jstack.controller(config.controller,jstack.config.defaultController);
-		}
 		
-		ctrl.data = {};
+		var ctrl = jstack.controller(config.controller) || jstack.config.defaultController;
+		
+		ctrl = $.extend(true,{},ctrl); //clone, so we leave original unaffected
+		
 		if(typeof(config.data)=='object'&&config.data!==null){
 			$.extend(ctrl.data,config.data);
 		}
 		
 		ctrl.element = element;
-		ctrl.target = config.target;
+		
+		if(config.target){
+			ctrl.target = config.target;
+		}
 		
 		ctrl.render = function(data,target){
 			if(!target){
@@ -2265,28 +2261,13 @@ jstack.mvc = function(config){
 			ready.resolve(ctrl.element,ctrl);
 		};
 		
-		var deferRender = ctrl();
-		if(deferRender){
-			if(typeof(deferRender)=='function'){
-				ready.then(deferRender);
-				ctrl.render();
-				return;
-			}
-			else if(typeof(deferRender)=='object'&&typeof(deferRender.then)=='function'){
-				deferRender.then(function(r){
-					if(typeof(r)=='object'&&r!==null){
-						ctrl.render(r);
-					}
-					else if(typeof(r)=='function'){
-						ready.then(r);
-						ctrl.render();
-					}
-					else{
-						ctrl.render();
-					}
-				});
-				return;
-			}
+		if(ctrl.setData){
+			ctrl.setData.call(ctrl);
+		}
+		if(ctrl.domReady){
+			ready.then(function(){
+				ctrl.domReady.call(ctrl);
+			});
 		}
 		ctrl.render();
 		

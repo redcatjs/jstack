@@ -2,11 +2,7 @@ jstackClass = function(){
 	this.config = {
 		templatesPath: 'view-js/',
 		controllersPath: 'controller-js/',
-		defaultController: function( controllerPath ) {
-			jstack.controller( controllerPath, function() {
-				this.render();
-			} );
-		},
+		defaultController: {},
 		defaultTarget: '[j-app]',
 		debug: $js.dev,
 	};

@@ -50,18 +50,20 @@ jstack.mvc = function(config){
 	
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
-		var ctrl = jstack.controller(config.controller);
-		if(!ctrl){
-			ctrl = jstack.controller(config.controller,jstack.config.defaultController);
-		}
 		
-		ctrl.data = {};
+		var ctrl = jstack.controller(config.controller) || jstack.config.defaultController;
+		
+		ctrl = $.extend(true,{},ctrl); //clone, so we leave original unaffected
+		
 		if(typeof(config.data)=='object'&&config.data!==null){
 			$.extend(ctrl.data,config.data);
 		}
 		
 		ctrl.element = element;
-		ctrl.target = config.target;
+		
+		if(config.target){
+			ctrl.target = config.target;
+		}
 		
 		ctrl.render = function(data,target){
 			if(!target){
@@ -78,28 +80,13 @@ jstack.mvc = function(config){
 			ready.resolve(ctrl.element,ctrl);
 		};
 		
-		var deferRender = ctrl();
-		if(deferRender){
-			if(typeof(deferRender)=='function'){
-				ready.then(deferRender);
-				ctrl.render();
-				return;
-			}
-			else if(typeof(deferRender)=='object'&&typeof(deferRender.then)=='function'){
-				deferRender.then(function(r){
-					if(typeof(r)=='object'&&r!==null){
-						ctrl.render(r);
-					}
-					else if(typeof(r)=='function'){
-						ready.then(r);
-						ctrl.render();
-					}
-					else{
-						ctrl.render();
-					}
-				});
-				return;
-			}
+		if(ctrl.setData){
+			ctrl.setData.call(ctrl);
+		}
+		if(ctrl.domReady){
+			ready.then(function(){
+				ctrl.domReady.call(ctrl);
+			});
 		}
 		ctrl.render();
 		
