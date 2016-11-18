@@ -2272,7 +2272,7 @@ jstack.mvc = function(config){
 				ctrl.render();
 				return;
 			}
-			else if(typeof(deferRender)=='object'&&typeof(eferRender.then)=='function'){
+			else if(typeof(deferRender)=='object'&&typeof(deferRender.then)=='function'){
 				deferRender.then(function(data){
 					if(typeof(data)!='object'||data===null){
 						data = false;
