@@ -1,7 +1,7 @@
 jstack.controller = function(controller){
 	
 	if(typeof(controller)=='string'){
-		return jstack.controllers[controller];
+		return jstack.controllers[controller] || jstack.controller($.extend(true,{},jstack.config.defaultController));
 	}
 	
 	var name = controller.name;
@@ -19,7 +19,11 @@ jstack.controller = function(controller){
 	}
 	if(dependenciesData&&dependenciesData.length){
 		for(var i = 0, l = dependenciesData.length; i < l; i++){
-			dependencies.push(dependenciesData[i]);
+			var dependencyData = dependenciesData[i];
+			if(typeof(dependencyData)=='function'){
+				dependencyData = dependencyData.call(controller);
+			}
+			dependencies.push(dependencyData);
 		}
 		var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
 			if(dependenciesData.length==1){
@@ -46,4 +50,6 @@ jstack.controller = function(controller){
 	controller.data = controller.data || {};
 	
 	jstack.controllers[name] = controller;
+	
+	return controller;
 };

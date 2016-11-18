@@ -51,7 +51,7 @@ jstack.mvc = function(config){
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		
-		var ctrl = jstack.controller(config.controller) || jstack.config.defaultController;
+		var ctrl = jstack.controller(config.controller);
 		
 		ctrl = $.extend(true,{},ctrl); //clone, so we leave original unaffected
 		
