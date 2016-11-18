@@ -78,6 +78,7 @@ jstack.mvc = function(config){
 			
 			$(ctrl.target).html(ctrl.element);
 			
+			
 			ready.resolve(ctrl.element,ctrl);
 		};
 		
@@ -118,7 +119,13 @@ jstack.viewReady = function(el){
 	return ready;
 };
 $.on('j:load','[j-view]',function(){
+	
 	var el = $(this);
+	if(el.data('j-view-handled')){
+		return;
+	}
+	el.data('j-view-handled',true);
+	
 	var view = el.attr('j-view');
 	var controller = el.attr('j-controller') || view;
 	var parent = el.parent().closest('[j-controller]');
