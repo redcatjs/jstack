@@ -1,18 +1,9 @@
-jstack.controller = function(id){
-	var fn, sync, deps = true;
-	for ( var i = 0; i < arguments.length; i++ ) {
-		switch ( typeof( arguments[ i ] ) ){
-			case "boolean":
-				sync = arguments[ i ];
-			break;
-			case "function":
-				fn = arguments[ i ];
-			break;
-			case "object":
-				deps = arguments[ i ];
-			break;
-		}
+jstack.controller = function(id,deps,fn){
+	
+	if(arguments.length==1){
+		return jstack.controllers[ id ];
 	}
+	
 	var args = [];
 	if ( deps instanceof Array ) {
 		
@@ -33,14 +24,12 @@ jstack.controller = function(id){
 			deps.push(resolveDeferred);
 		}
 				
-		$js.require( deps, sync );
+		$js.require(deps);
 	}
 
-	if ( fn ) {
-		var ctrl = function() {
-			return fn.apply( ctrl, args );
-		};
-		jstack.controllers[ id ] = ctrl;
-	}
-	return jstack.controllers[ id ];
+	var ctrl = function() {
+		return fn.apply( ctrl, args );
+	};
+	jstack.controllers[ id ] = ctrl;
+	
 };
