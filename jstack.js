@@ -2263,8 +2263,8 @@ jstack.mvc = function(config){
 		}
 		
 		ctrl.render = function(data,target){
-			if(!target){
-				target = ctrl.target;
+			if(target){
+				ctrl.target = target;
 			}
 			if(data&&data!==ctrl.data){
 				$.extend(ctrl.data,data);
@@ -2272,7 +2272,7 @@ jstack.mvc = function(config){
 			
 			var processedTemplate = processor(ctrl.data);
 			
-			$(target).html(ctrl.element);
+			$(ctrl.target).html(ctrl.element);
 			
 			ready.resolve(ctrl.element,ctrl);
 		};
