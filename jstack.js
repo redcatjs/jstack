@@ -14,9 +14,15 @@ jstackClass.prototype.extend = function(c,parent){
 jstack = new jstackClass();
 jstack.controller = function(controller){
 	
-	if(typeof(controller)=='string'){
-		return jstack.controllers[controller] || jstack.controller($.extend(true,{},jstack.config.defaultController));
+	if(typeof(controller)=='object'){
+		jstack.controllers[controller.name] = controller;
+		return controller;
 	}
+
+	
+	controller = jstack.controllers[controller] || jstack.config.defaultController;
+	controller = $.extend(true,{},controller); //clone, so we leave original unaffected
+	controller.ready = $.Deferred();		
 	
 	var name = controller.name;
 	var dependenciesJs = controller.dependencies;
@@ -46,7 +52,7 @@ jstack.controller = function(controller){
 				dependencies.push(dependencyData);
 			}
 			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
-				if(dependenciesData.length==1){
+				if(dependenciesDataRun.length==1){
 					args.push(arguments[0]);
 				}
 				else{
@@ -59,8 +65,6 @@ jstack.controller = function(controller){
 		}
 	}
 	
-	$js.require(dependencies);
-	
 	if(setData){
 		var originalSetData = setData;
 		controller.setData = function(){
@@ -70,7 +74,9 @@ jstack.controller = function(controller){
 	
 	controller.data = controller.data || {};
 	
-	jstack.controllers[name] = controller;
+	$js(dependencies,function(){
+		controller.ready.resolve();
+	});
 	
 	return controller;
 };
@@ -2267,50 +2273,52 @@ jstack.mvc = function(config){
 		
 		var ctrl = jstack.controller(config.controller);
 		
-		ctrl = $.extend(true,{},ctrl); //clone, so we leave original unaffected
+		ctrl.ready.then(function(){
 		
-		if(typeof(config.data)=='object'&&config.data!==null){
-			$.extend(ctrl.data,config.data);
-		}
-		
-		ctrl.element = element;
-		element.data('jController',ctrl);
-		
-		if(config.target){
-			ctrl.target = config.target;
-		}
-		
-		ctrl.render = function(data,target){
-			if(target){
-				ctrl.target = target;
-			}
-			if(data&&data!==ctrl.data){
-				$.extend(ctrl.data,data);
+			if(typeof(config.data)=='object'&&config.data!==null){
+				$.extend(ctrl.data,config.data);
 			}
 			
-			var processedTemplate = processor(ctrl.data);
+			ctrl.element = element;
+			element.data('jController',ctrl);
 			
-			$(ctrl.target).html(ctrl.element);
+			if(config.target){
+				ctrl.target = config.target;
+			}
 			
+			ctrl.render = function(data,target){
+				if(target){
+					ctrl.target = target;
+				}
+				if(data&&data!==ctrl.data){
+					$.extend(ctrl.data,data);
+				}
+				
+				var processedTemplate = processor(ctrl.data);
+				
+				$(ctrl.target).html(ctrl.element);
+				
+				
+				ready.resolve(ctrl.element,ctrl);
+			};
 			
-			ready.resolve(ctrl.element,ctrl);
-		};
+			if(ctrl.setData){
+				var setDataReturn = ctrl.setData.call(ctrl);
+				if(setDataReturn===false){
+					return;
+				}
+				if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
+					$.extend(ctrl.data,setDataReturn);
+				}
+			}
+			if(ctrl.domReady){
+				ready.then(function(){
+					ctrl.domReady.call(ctrl);
+				});
+			}
+			ctrl.render();
 		
-		if(ctrl.setData){
-			var setDataReturn = ctrl.setData.call(ctrl);
-			if(setDataReturn===false){
-				return;
-			}
-			if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
-				$.extend(ctrl.data,setDataReturn);
-			}
-		}
-		if(ctrl.domReady){
-			ready.then(function(){
-				ctrl.domReady.call(ctrl);
-			});
-		}
-		ctrl.render();
+		});
 		
 	} );
 

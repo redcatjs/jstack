@@ -53,50 +53,52 @@ jstack.mvc = function(config){
 		
 		var ctrl = jstack.controller(config.controller);
 		
-		ctrl = $.extend(true,{},ctrl); //clone, so we leave original unaffected
+		ctrl.ready.then(function(){
 		
-		if(typeof(config.data)=='object'&&config.data!==null){
-			$.extend(ctrl.data,config.data);
-		}
-		
-		ctrl.element = element;
-		element.data('jController',ctrl);
-		
-		if(config.target){
-			ctrl.target = config.target;
-		}
-		
-		ctrl.render = function(data,target){
-			if(target){
-				ctrl.target = target;
-			}
-			if(data&&data!==ctrl.data){
-				$.extend(ctrl.data,data);
+			if(typeof(config.data)=='object'&&config.data!==null){
+				$.extend(ctrl.data,config.data);
 			}
 			
-			var processedTemplate = processor(ctrl.data);
+			ctrl.element = element;
+			element.data('jController',ctrl);
 			
-			$(ctrl.target).html(ctrl.element);
+			if(config.target){
+				ctrl.target = config.target;
+			}
 			
+			ctrl.render = function(data,target){
+				if(target){
+					ctrl.target = target;
+				}
+				if(data&&data!==ctrl.data){
+					$.extend(ctrl.data,data);
+				}
+				
+				var processedTemplate = processor(ctrl.data);
+				
+				$(ctrl.target).html(ctrl.element);
+				
+				
+				ready.resolve(ctrl.element,ctrl);
+			};
 			
-			ready.resolve(ctrl.element,ctrl);
-		};
+			if(ctrl.setData){
+				var setDataReturn = ctrl.setData.call(ctrl);
+				if(setDataReturn===false){
+					return;
+				}
+				if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
+					$.extend(ctrl.data,setDataReturn);
+				}
+			}
+			if(ctrl.domReady){
+				ready.then(function(){
+					ctrl.domReady.call(ctrl);
+				});
+			}
+			ctrl.render();
 		
-		if(ctrl.setData){
-			var setDataReturn = ctrl.setData.call(ctrl);
-			if(setDataReturn===false){
-				return;
-			}
-			if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
-				$.extend(ctrl.data,setDataReturn);
-			}
-		}
-		if(ctrl.domReady){
-			ready.then(function(){
-				ctrl.domReady.call(ctrl);
-			});
-		}
-		ctrl.render();
+		});
 		
 	} );
 

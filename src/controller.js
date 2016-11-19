@@ -1,8 +1,14 @@
 jstack.controller = function(controller){
 	
-	if(typeof(controller)=='string'){
-		return jstack.controllers[controller] || jstack.controller($.extend(true,{},jstack.config.defaultController));
+	if(typeof(controller)=='object'){
+		jstack.controllers[controller.name] = controller;
+		return controller;
 	}
+
+	
+	controller = jstack.controllers[controller] || jstack.config.defaultController;
+	controller = $.extend(true,{},controller); //clone, so we leave original unaffected
+	controller.ready = $.Deferred();		
 	
 	var name = controller.name;
 	var dependenciesJs = controller.dependencies;
@@ -32,7 +38,7 @@ jstack.controller = function(controller){
 				dependencies.push(dependencyData);
 			}
 			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
-				if(dependenciesData.length==1){
+				if(dependenciesDataRun.length==1){
 					args.push(arguments[0]);
 				}
 				else{
@@ -45,8 +51,6 @@ jstack.controller = function(controller){
 		}
 	}
 	
-	$js.require(dependencies);
-	
 	if(setData){
 		var originalSetData = setData;
 		controller.setData = function(){
@@ -56,7 +60,9 @@ jstack.controller = function(controller){
 	
 	controller.data = controller.data || {};
 	
-	jstack.controllers[name] = controller;
+	$js(dependencies,function(){
+		controller.ready.resolve();
+	});
 	
 	return controller;
 };
