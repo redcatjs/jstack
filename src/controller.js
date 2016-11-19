@@ -22,14 +22,16 @@ jstack.controller = function(controller){
 			dependenciesData = dependenciesData.call(controller);
 		}
 		if(dependenciesData.length){
+			var dependenciesDataRun = [];
 			for(var i = 0, l = dependenciesData.length; i < l; i++){
 				var dependencyData = dependenciesData[i];
 				if(typeof(dependencyData)=='function'){
 					dependencyData = dependencyData.call(controller);
 				}
+				dependenciesDataRun.push(dependencyData);
 				dependencies.push(dependencyData);
 			}
-			var resolveDeferred = $.when.apply($, dependenciesData).then(function(){
+			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
 				if(dependenciesData.length==1){
 					args.push(arguments[0]);
 				}
