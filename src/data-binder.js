@@ -445,7 +445,7 @@ jstack.dataBinder = (function(){
 		},
 		update: function(){
 			var self = this;
-			//console.log('update');
+			console.log('update');
 			self.updateRepeat();
 			self.updateIf();
 			self.updateController();
@@ -500,14 +500,11 @@ jstack.dataBinder = (function(){
 					$this.data('jIf',contents);
 				}
 				
-				var state = $this.data('jIfState');
-				if(typeof(state)=='undefined'){
-					state = value;
-					$this.data('jIfState',state);
-				}
-				else if(Boolean(state)===Boolean(value)){
+				var state = $this.data('jIfState') || true;
+				if(Boolean(state)===Boolean(value)){
 					return;
 				}
+				$this.data('jIfState',state);
 				
 				if(value){
 					contents.appendTo($this);
