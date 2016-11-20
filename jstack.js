@@ -833,6 +833,18 @@ $.fn.populateReset = function(){
 		}
 	});
 };
+$.fn.outerHTML = function(){
+	if (this.length){
+		var div = $('<tmpl style="display:none;"></tmpl>');
+		var clone = $(this[0].cloneNode(false)).html(this.html()).appendTo(div);
+		var outer = div.html();
+		div.remove();
+		return outer;
+	}
+	else{
+		return null;
+	}
+};
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
 ( function( w, j ) {
@@ -1964,9 +1976,10 @@ jstack.dataBinder = (function(){
 		},
 		update: function(){
 			var self = this;
-			//console.log('update');
+			console.log('update');
 			self.updateRepeat();
 			self.updateIf();
+			self.updateSwitch();
 			self.updateController();
 			self.updateOn();			
 		},
@@ -2019,23 +2032,62 @@ jstack.dataBinder = (function(){
 					$this.data('jIf',contents);
 				}
 				
-				var state = $this.data('jIfState');
-				if(typeof(state)=='undefined'){
-					state = value;
-					$this.data('jIfState',state);
-				}
-				else if(Boolean(state)===Boolean(value)){
-					return;
-				}
-				
 				if(value){
-					contents.appendTo($this);
-					$this.trigger('j-if:true');
+					if($this.is(':empty')){
+						contents.appendTo($this);
+						$this.trigger('j-if:true');
+					}
 				}
 				else{
-					contents.detach();
-					$this.trigger('j-if:false');
+					if(!$this.is(':empty')){
+						contents.detach();
+						$this.trigger('j-if:false');
+					}
 				}
+			});
+		},
+		updateSwitch: function(){
+			var self = this;
+			$('[j-switch]').each(function(){
+				var $this = $(this);
+				var value = self.getAttrValueEval(this,'j-switch');
+				var cases = $this.data('jSwitch');
+				if(typeof(cases)=='undefined'){
+					cases = $this.find('[j-case],[j-case-default]');
+					$this.data('jSwitch',cases);
+				}
+				
+				var state = $this.data('jSwitchState');
+				if(state===value){
+					return;
+				}
+				$this.data('jSwitchState',value);
+				
+				var found = false;
+				cases.filter('[j-case]').each(function(){
+					var jcase = $(this);
+					var caseVal = jcase.attr('j-case');
+					if(caseVal==value){
+						jcase.appendTo($this);
+						jcase.trigger('j-switch:true');
+						found = true;
+					}
+					else{
+						jcase.detach();
+						jcase.trigger('j-switch:false');
+					}
+				});
+				cases.filter('[j-case-default]').each(function(){
+					var jcase = $(this);
+					if(found){
+						jcase.detach();
+						jcase.trigger('j-switch:false');
+					}
+					else{
+						jcase.appendTo($this);
+						jcase.trigger('j-switch:true');
+					}
+				});
 			});
 		},
 		updateRepeat: function(){
