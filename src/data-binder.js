@@ -445,7 +445,7 @@ jstack.dataBinder = (function(){
 		},
 		update: function(){
 			var self = this;
-			console.log('update');
+			//console.log('update');
 			self.updateRepeat();
 			self.updateIf();
 			self.updateSwitch();
