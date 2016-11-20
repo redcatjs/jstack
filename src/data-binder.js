@@ -501,19 +501,17 @@ jstack.dataBinder = (function(){
 					$this.data('jIf',contents);
 				}
 				
-				var state = $this.data('jIfState') || true;
-				if(Boolean(state)===Boolean(value)){
-					return;
-				}
-				$this.data('jIfState',state);
-				
 				if(value){
-					contents.appendTo($this);
-					$this.trigger('j-if:true');
+					if($this.is(':empty')){
+						contents.appendTo($this);
+						$this.trigger('j-if:true');
+					}
 				}
 				else{
-					contents.detach();
-					$this.trigger('j-if:false');
+					if(!$this.is(':empty')){
+						contents.detach();
+						$this.trigger('j-if:false');
+					}
 				}
 			});
 		},
@@ -538,7 +536,6 @@ jstack.dataBinder = (function(){
 				cases.filter('[j-case]').each(function(){
 					var jcase = $(this);
 					var caseVal = jcase.attr('j-case');
-					console.log(caseVal,value);
 					if(caseVal==value){
 						jcase.appendTo($this);
 						jcase.trigger('j-switch:true');
