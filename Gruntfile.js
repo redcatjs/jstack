@@ -39,6 +39,7 @@ grunt.initConfig({
 				"src/jquery/reverse.js",
 				"src/jquery/val.js",
 				"src/jquery/populate.js",
+				"src/jquery/outerHTML.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",
