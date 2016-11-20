@@ -40,6 +40,7 @@ grunt.initConfig({
 				"src/jquery/val.js",
 				"src/jquery/populate.js",
 				"src/jquery/outerHTML.js",
+				"src/jquery/loadJml.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",

@@ -845,6 +845,12 @@ $.fn.outerHTML = function(){
 		return null;
 	}
 };
+$.fn.loadJml = function(url,data){
+	var self = this;
+	return jstack.jml(url,data).then(function(content){
+		self.append(content);
+	});
+};
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
 ( function( w, j ) {
