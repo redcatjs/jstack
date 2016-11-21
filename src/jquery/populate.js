@@ -129,7 +129,7 @@ $.fn.populateForm = function( data, config ) {
 		if(value===null){
 			value = '';
 		}
-		var inputs = $this.find('[name="'+key+'"]');
+		var inputs = $this.find('[name="'+key+'"],[name="'+key+'[]"]');
 		if(config.addMissing&&!inputs.length){
 			$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
 		}
