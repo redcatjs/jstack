@@ -2,6 +2,7 @@ $.fn.populateInput = function( value, config ) {
 	config = $.extend({
 		addMissing: false,
 		preventValEvent: false,
+		push: false,
 	},config);
 	var setValue;
 	if(config.preventValEvent){
@@ -16,35 +17,82 @@ $.fn.populateInput = function( value, config ) {
 	}
 	var populateSelect = function( input, value ) {
 		var found = false;
-		if(input.hasClass('select2-hidden-accessible')){
-			setValue(input,value);
-			if(!config.preventValEvent){
-				input.trigger('change');
+		if(input[0].hasAttribute('data-preselect')){
+		//if(input.prop('data-preselect')){
+			if(config.push){
+				var v = input.data('preselect') || [];
+				if(typeof(v)!='object'){
+					v = [v];
+				}
+				if(v.indexOf(value)===-1){
+					v.push(value);
+				}
+				console.log(input,input.attr('name'),v);
+				input.data('preselect',v);
+			}
+			else{
+				input.data('preselect',value);
 			}
 			return;
 		}
-		if(input[0].hasAttribute('data-preselect')){
-			input.attr('data-preselect',value);
-			return;
-		}
+		
+		//if(input.hasClass('select2-hidden-accessible')){
+			//if(config.push){
+				//var v = input.val();
+				//if(v===null){
+					//v = [];
+				//}
+				//if(typeof(v)!='object'){
+					//v = [v];
+				//}
+				//if(v.indexOf(value)===-1){
+					//v.push(value);
+				//}
+				//console.log(input,value);
+				//setValue(input,value);
+			//}
+			//else{
+				//setValue(input,value);
+			//}
+			//if(!config.preventValEvent){
+				//input.trigger('change');
+			//}
+			//return;
+		//}
+		
 		$( "option", input ).each( function() {
 			if ( $( this ).val() == value ) {
 				$( this ).prop( "selected", true );
 				found = true;
+			}
+			else{
+				if(!config.push){
+					$( this ).prop( "selected", false );
+				}
 			}
 		} );
 		if ( !found && config.addMissing ) {
 			input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
 			$( this ).prop( "selected", true );
 		}
+		
+		if(input.hasClass('select2-hidden-accessible')&&!config.preventValEvent){
+			input.trigger('change');
+		}
+		
 	};
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
 		if ( input.is( "select" ) ) {
 			if ( value instanceof Array ) {
-				for ( var i = 0, l = value.length; i < l; i++ ) {
-					populateSelect( input, value[ i ] );
+				if(input.attr('name').substr(-2)=='[]'||input.prop('multiple')){
+					populateSelect( input, value );
+				}
+				else{
+					for ( var i = 0, l = value.length; i < l; i++ ) {
+						populateSelect( input, value[ i ] );
+					}
 				}
 			}
 			else {
@@ -77,7 +125,9 @@ $.fn.populateInput = function( value, config ) {
 								$( this ).prop( "checked", true );
 							}
 							else {
-								$( this ).prop( "checked", false );
+								if(!config.push){
+									$( this ).prop( "checked", false );
+								}
 							}
 						} );
 					}
@@ -99,7 +149,9 @@ $.fn.populateInput = function( value, config ) {
 								$( this ).prop( "checked", true );
 							}
 							else {
-								$( this ).prop( "checked", false );
+								if(!config.push){
+									$( this ).prop( "checked", false );
+								}
 							}
 						} );
 					}
@@ -125,11 +177,12 @@ $.fn.populateForm = function( data, config ) {
 		notContainer: false
 	},config);
 	var $this = this;
-	var assignValue = function( key, value ){
+	
+	var assignValue = function(key, value){
 		if(value===null){
 			value = '';
 		}
-		var inputs = $this.find('[name="'+key+'"],[name="'+key+'[]"]');
+		var inputs = $this.find(':input[name="'+key+'"]');
 		if(config.addMissing&&!inputs.length){
 			$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
 		}
@@ -140,7 +193,18 @@ $.fn.populateForm = function( data, config ) {
 			input.populateInput(value, config);
 		});
 	};
+	var assignValueMulti = function(key, value){
+		var inputs = $this.find(':input[name="'+key+'"],:input[name="'+key+'[]"]');
+		inputs.each(function(){
+			var input = $(this);
+			if(config.not&&input.is(config.not)) return;
+			if(config.notContainer&&input.closest(config.notContainer).length) return;
+			input.populateInput(value, config);
+		});	
+	};
+	
 	var assignValueRecursive = function(key, value){
+		assignValueMulti(key,value);
 		$.each(value,function(k,v){
 			var keyAssign = key+'['+k+']';
 			if(typeof(v)=='object'&&v!=null){
@@ -151,6 +215,7 @@ $.fn.populateForm = function( data, config ) {
 			}
 		});
 	};
+	
 	$.each(data, function(key, value){
 		if(typeof(value)=='object'&&value!=null){
 			assignValueRecursive(key, value);
@@ -159,6 +224,7 @@ $.fn.populateForm = function( data, config ) {
 			assignValue(key, value);
 		}
 	});
+	
 	return this;
 };
 $.fn.populate = function( value, config ){
