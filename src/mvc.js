@@ -30,12 +30,14 @@ jstack.mvc = function(config){
 	}
 	
 	jstack.template.get(templatePath).then(function(html){
-		var html = $('<tmpl>' + html + '</tmpl>');
+		
+		html = $('<tmpl>' + html + '</tmpl>');
 		if(!html.find('> *').length){
 			html.wrapInner('<div />');
 		}
 		element = html.children(0);
 		element.attr('j-controller',config.controller);
+		
 		var cacheId = config.view + "#" + config.controller;
 		jstack.template.compile(element,cacheId,templatesPath).then(function(templateProcessor){
 			processor = function(data){
@@ -51,7 +53,7 @@ jstack.mvc = function(config){
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		
-		var ctrl = jstack.controller(config.controller,element);
+		var ctrl = jstack.controller(config.controller,element,config.target);
 		
 		ctrl.ready.then(function(){
 		
@@ -59,17 +61,10 @@ jstack.mvc = function(config){
 				$.extend(ctrl.data,config.data);
 			}
 			
-			ctrl.element = element;
-			element.data('jController',ctrl);
 			
-			if(config.target){
-				ctrl.target = config.target;
-			}
 			
-			ctrl.render = function(data,target){
-				if(target){
-					ctrl.target = target;
-				}
+			ctrl.render = function(data){
+				
 				if(data&&data!==ctrl.data){
 					$.extend(ctrl.data,data);
 				}
