@@ -34,17 +34,28 @@ jstack.controller = function(controller){
 				if(typeof(dependencyData)=='function'){
 					dependencyData = dependencyData.call(controller);
 				}
+				
+				if(typeof(dependencyData)=='object'&&dependencyData!==null){
+					if('abort' in dependencyData){
+						var ddata = dependencyData;
+						dependencyData = $.Deferred();
+						ddata.then(function(ajaxReturn){
+							dependencyData.resolve(ajaxReturn);
+						});
+					}
+				}
+				if(!(typeof(dependencyData)=='object'&&dependencyData!==null&&('then' in dependencyData))){
+					var ddata = dependencyData;
+					dependencyData = $.Deferred();
+					dependencyData.resolve(ddata);
+				}
+
 				dependenciesDataRun.push(dependencyData);
 				dependencies.push(dependencyData);
 			}
 			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
-				if(dependenciesDataRun.length==1){
-					args.push(arguments[0]);
-				}
-				else{
-					for(var i = 0, l = arguments.length; i < l; i++){
-						args.push(arguments[i][0]);
-					}
+				for(var i = 0, l = arguments.length; i < l; i++){
+					args.push(arguments[i]);
 				}
 			});
 			dependencies.push(resolveDeferred);
