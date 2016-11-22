@@ -1,4 +1,4 @@
-jstack.controller = function(controller){
+jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = controller;
@@ -9,6 +9,7 @@ jstack.controller = function(controller){
 	controller = jstack.controllers[controller] || jstack.config.defaultController;
 	controller = $.extend(true,{},controller); //clone, so we leave original unaffected
 	controller.ready = $.Deferred();		
+	controller.element = element;
 	
 	var name = controller.name;
 	var dependenciesJs = controller.dependencies;

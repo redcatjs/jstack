@@ -51,7 +51,7 @@ jstack.mvc = function(config){
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		
-		var ctrl = jstack.controller(config.controller);
+		var ctrl = jstack.controller(config.controller,element);
 		
 		ctrl.ready.then(function(){
 		

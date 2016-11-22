@@ -12,7 +12,7 @@ jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
-jstack.controller = function(controller){
+jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = controller;
@@ -23,6 +23,7 @@ jstack.controller = function(controller){
 	controller = jstack.controllers[controller] || jstack.config.defaultController;
 	controller = $.extend(true,{},controller); //clone, so we leave original unaffected
 	controller.ready = $.Deferred();		
+	controller.element = element;
 	
 	var name = controller.name;
 	var dependenciesJs = controller.dependencies;
@@ -2417,7 +2418,7 @@ jstack.mvc = function(config){
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		
-		var ctrl = jstack.controller(config.controller);
+		var ctrl = jstack.controller(config.controller,element);
 		
 		ctrl.ready.then(function(){
 		
