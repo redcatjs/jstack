@@ -71,7 +71,20 @@ $.fn.populateInput = function( value, config ) {
 			}
 		} );
 		if ( !found && config.addMissing ) {
-			input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
+			if(typeof(value)=='object'){
+				optionValue = value.value;
+				optionText = value.text;
+			}
+			else{
+				optionValue = value;
+			}
+			if(!optionText){
+				optionText = optionValue;
+			}
+			if(!optionValue){
+				optionValue = optionText;
+			}
+			input.append( '<option value="' + optionValue + '" selected="selected">' + optionText + "</option>" );
 		}
 		
 		if(isSelect2&&!config.preventValEvent){
