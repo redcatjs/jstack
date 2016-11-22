@@ -16,7 +16,8 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	var populateSelect = function( input, value ) {
-		if(input[0].hasAttribute('data-preselect')){
+		var isSelect2 = input.hasClass('select2-hidden-accessible');
+		if(input[0].hasAttribute('data-preselect')&&!isSelect2){
 			if(config.push){
 				var v = input.data('preselect') || [];
 				if(typeof(v)!='object'){
@@ -71,10 +72,9 @@ $.fn.populateInput = function( value, config ) {
 		} );
 		if ( !found && config.addMissing ) {
 			input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
-			$( this ).prop( "selected", true );
 		}
 		
-		if(input.hasClass('select2-hidden-accessible')&&!config.preventValEvent){
+		if(isSelect2&&!config.preventValEvent){
 			input.trigger('change');
 		}
 		

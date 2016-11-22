@@ -659,9 +659,8 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	var populateSelect = function( input, value ) {
-		var found = false;
-		if(input[0].hasAttribute('data-preselect')){
-		//if(input.prop('data-preselect')){
+		var isSelect2 = input.hasClass('select2-hidden-accessible');
+		if(input[0].hasAttribute('data-preselect')&&!isSelect2){
 			if(config.push){
 				var v = input.data('preselect') || [];
 				if(typeof(v)!='object'){
@@ -670,7 +669,6 @@ $.fn.populateInput = function( value, config ) {
 				if(v.indexOf(value)===-1){
 					v.push(value);
 				}
-				console.log(input,input.attr('name'),v);
 				input.data('preselect',v);
 			}
 			else{
@@ -703,6 +701,7 @@ $.fn.populateInput = function( value, config ) {
 			//return;
 		//}
 		
+		var found = false;
 		$( "option", input ).each( function() {
 			if ( $( this ).val() == value ) {
 				$( this ).prop( "selected", true );
@@ -716,10 +715,9 @@ $.fn.populateInput = function( value, config ) {
 		} );
 		if ( !found && config.addMissing ) {
 			input.append( '<option value="' + value + '" selected="selected">' + value + "</option>" );
-			$( this ).prop( "selected", true );
 		}
 		
-		if(input.hasClass('select2-hidden-accessible')&&!config.preventValEvent){
+		if(isSelect2&&!config.preventValEvent){
 			input.trigger('change');
 		}
 		
