@@ -3,6 +3,9 @@ jstack.controller = function(controller,element,target){
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = function(){
 			$.extend(true,this,controller);
+			this.setDataCall = function(){
+				return this.setData.apply( this, this.setDataArguments );
+			};
 		};
 		return jstack.controllers[controller.name];
 	}
@@ -21,20 +24,19 @@ jstack.controller = function(controller,element,target){
 	
 	var name = controller.name;
 	var dependenciesJs = controller.dependencies;
-	var dependenciesData = controller.dependenciesData;
-	var setData = controller.setData;
-	var domReady = controller.domReady;
 	
-	var args = [];
+	controller.setDataArguments = [];
 	var dependencies = [];
 	if(dependenciesJs&&dependenciesJs.length){
 		for(var i = 0, l = dependenciesJs.length; i < l; i++){
 			dependencies.push(dependenciesJs[i]);
 		}
 	}
+	
+	var dependenciesData = controller.dependenciesData;
 	if(dependenciesData){
 		if(typeof(dependenciesData)=='function'){
-			dependenciesData = dependenciesData(controller);
+			controller.dependenciesData = dependenciesData = controller.dependenciesData();
 		}
 		if(dependenciesData.length){
 			var dependenciesDataRun = [];
@@ -64,19 +66,12 @@ jstack.controller = function(controller,element,target){
 			}
 			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
 				for(var i = 0, l = arguments.length; i < l; i++){
-					args.push(arguments[i]);
+					controller.setDataArguments.push(arguments[i]);
 				}
 			});
 			dependencies.push(resolveDeferred);
 		}
 	}
-	
-	if(setData){
-		var originalSetData = setData;
-		controller.setData = function(){
-			return originalSetData.apply( this, args );
-		};
- 	}
  	
 	controller.data = controller.data || {};
 	
