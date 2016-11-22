@@ -17,11 +17,10 @@ jstack = new jstackClass();
 jstack.controller = function(controller,element,target){
 	
 	if(typeof(controller)=='object'){
-		jstack.controllers[controller.name] = controller;
 		jstack.controllers[controller.name] = function(){
-			$.extend(true,this,controller); //clone, so we leave original unaffected
+			$.extend(true,this,controller);
 		};
-		return controller;
+		return jstack.controllers[controller.name];
 	}
 
 	
@@ -51,7 +50,7 @@ jstack.controller = function(controller,element,target){
 	}
 	if(dependenciesData){
 		if(typeof(dependenciesData)=='function'){
-			dependenciesData = dependenciesData.call(controller);
+			dependenciesData = dependenciesData(controller);
 		}
 		if(dependenciesData.length){
 			var dependenciesDataRun = [];
@@ -93,8 +92,8 @@ jstack.controller = function(controller,element,target){
 		controller.setData = function(){
 			return originalSetData.apply( this, args );
 		};
-	}
-	
+ 	}
+ 	
 	controller.data = controller.data || {};
 	
 	$js(dependencies,function(){
@@ -2456,7 +2455,7 @@ jstack.mvc = function(config){
 			};
 			
 			if(ctrl.setData){
-				var setDataReturn = ctrl.setData.call(ctrl);
+				var setDataReturn = ctrl.setData();
 				if(setDataReturn===false){
 					return;
 				}
@@ -2466,7 +2465,7 @@ jstack.mvc = function(config){
 			}
 			if(ctrl.domReady){
 				ready.then(function(){
-					ctrl.domReady.call(ctrl);
+					ctrl.domReady();
 				});
 			}
 			ctrl.render();
