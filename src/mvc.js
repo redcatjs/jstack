@@ -17,8 +17,16 @@ jstack.mvc = function(config){
 	var target = $(config.target);
 	var controller = config.controller;
 	
-	var templatesPath = jstack.config.templatesPath;
-	var templatePath = templatesPath+config.view+'.jml';
+	
+	//var templatesPath = jstack.config.templatesPath;
+	//var templatePath = templatesPath+config.view+'.jml';
+	
+	var templatesPath = config.view.split('/');
+	templatesPath.pop();
+	templatesPath = templatesPath.join('/')+'/';
+	templatesPath = jstack.config.templatesPath+templatesPath;
+	var templatePath = jstack.config.templatesPath+config.view+'.jml';
+	
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
