@@ -2499,7 +2499,15 @@ $.on('j:load','[j-view]',function(){
 	el.data('j-view-handled',true);
 	
 	var view = el.attr('j-view');
-	var controller = el.attr('j-controller') || view;
+	
+	var controller;
+	if(el[0].hasAttribute('j-controller')){
+		controller = el.attr('j-controller');
+	}
+	else{
+		controller = view;
+	}
+	
 	var parent = el.parent().closest('[j-controller]');
 	var data = parent.length ? parent.data('jModel') : false;
 	var ready = jstack.viewReady(this);
