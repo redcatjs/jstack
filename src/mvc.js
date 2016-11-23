@@ -61,7 +61,7 @@ jstack.mvc = function(config){
 		
 		ctrl.ready.then(function(){
 		
-			if(typeof(config.data)=='object'&&config.data!==null){
+			if($.type(config.data)=='object'){
 				$.extend(ctrl.data,config.data);
 			}
 			
@@ -83,7 +83,7 @@ jstack.mvc = function(config){
 				if(setDataReturn===false){
 					return;
 				}
-				if(typeof(setDataReturn)=='object'&&setDataReturn!==null&&setDataReturn!==ctrl.data){
+				if($.type(setDataReturn)=='object'&&setDataReturn!==ctrl.data){
 					$.extend(ctrl.data,setDataReturn);
 				}
 			}
