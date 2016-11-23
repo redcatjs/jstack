@@ -2,10 +2,14 @@ jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = function(){
+			
 			$.extend(true,this,controller);
+			
+			this.setDataArguments = [];
 			this.setDataCall = function(){
 				return this.setData.apply( this, this.setDataArguments );
 			};
+			
 		};
 		return jstack.controllers[controller.name];
 	}
@@ -22,15 +26,17 @@ jstack.controller = function(controller,element){
 	element.data('jController',controller);
 	
 	var name = controller.name;
-	var dependenciesJs = controller.dependencies;
 	
-	controller.setDataArguments = [];
 	var dependencies = [];
-	if(dependenciesJs&&dependenciesJs.length){
-		for(var i = 0, l = dependenciesJs.length; i < l; i++){
-			dependencies.push(dependenciesJs[i]);
-		}
+	
+	if(controller.dependencies&&controller.dependencies.length){		
+		var dependenciesJsReady = $.Deferred();
+		$js(controller.dependencies,function(){
+			dependenciesJsReady.resolve();
+		});
+		dependencies.push(dependenciesJsReady);
 	}
+	
 	
 	var dependenciesData = controller.dependenciesData;
 	if(dependenciesData){
@@ -65,7 +71,6 @@ jstack.controller = function(controller,element){
 					
 
 				dependenciesDataRun.push(dependencyData);
-				dependencies.push(dependencyData);
 			}
 			var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
 				for(var i = 0, l = arguments.length; i < l; i++){
@@ -78,7 +83,7 @@ jstack.controller = function(controller,element){
  	
 	controller.data = controller.data || {};
 	
-	$js(dependencies,function(){
+	$.when.apply($, dependencies).then(function(){
 		controller.ready.resolve();
 	});
 	
