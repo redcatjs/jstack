@@ -2510,13 +2510,10 @@ jstack.viewReady = function(el){
 	}
 	return ready;
 };
-$.on('j:load','[j-view]',function(){
+$.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	
 	var el = $(this);
-	if(el.data('j-view-handled')){
-		return;
-	}
-	el.data('j-view-handled',true);
+	el.attr('j-view-loaded',true);
 	
 	var view = el.attr('j-view');
 	
