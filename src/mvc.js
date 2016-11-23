@@ -75,6 +75,10 @@ jstack.mvc = function(config){
 				
 				processor(ctrl.data);
 				
+				if(ctrl.domReady){
+					ctrl.domReady();
+				}
+				
 				ready.resolve(target,ctrl);
 			};
 			
@@ -86,11 +90,6 @@ jstack.mvc = function(config){
 				if($.type(setDataReturn)=='object'&&setDataReturn!==ctrl.data){
 					$.extend(ctrl.data,setDataReturn);
 				}
-			}
-			if(ctrl.domReady){
-				ready.then(function(){
-					ctrl.domReady();
-				});
 			}
 			ctrl.render();
 		
