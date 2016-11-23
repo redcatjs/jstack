@@ -29,7 +29,15 @@ jstack.route = ( function( w, url ) {
 
 	Route.prototype.run = function( params ) {
 		for ( var i = 0, c = this.fns.length; i < c; i++ ) {
-			this.fns[ i ].apply( this, params );
+			var defer = this.fns[ i ].apply( this, params );
+			if($.type(defer)=='object'&&'then' in defer){
+				defer.then(function(){
+					$(document).trigger('j:route:loaded');
+				});
+			}
+			else{
+				$(document).trigger('j:route:loaded');
+			}
 		}
 	};
 
@@ -207,7 +215,7 @@ jstack.route = ( function( w, url ) {
 		if ( h != currentHash ) {
 			currentHash = h;
 			$(document).trigger( "j:route:load" );
-			return hashLoad( currentHash );
+			hashLoad( currentHash );
 		}
 		else {
 			$(document).trigger("j:subroute:change" );

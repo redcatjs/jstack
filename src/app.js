@@ -9,9 +9,7 @@
 		
 		jstack.route('*', function(path){
 			path = jstack.url.getPath(path);
-			jstack.mvc(path).then(function(){
-				$(document).trigger('j:route:loaded');
-			});
+			return jstack.mvc(path);
 		});
 	};
 
