@@ -137,13 +137,14 @@ $.on('j:load','[j-view]',function(){
 		controller = view;
 	}
 	
-	var parent = el.parent().closest('[j-controller]');
-	
 	var data = el.data('jModel') || {};
-	
-	if(parent.length){
-		$.extend(data,parent.data('jModel'));
+	if(el.hasAttr('j-model-inherit')){
+		var parent = el.parent().closest('[j-controller]');
+		if(parent.length){
+			data = $.extend(parent.data('jModel'),data);
+		}
 	}
+	
 	
 	var ready = jstack.viewReady(this);
 	var mvc = jstack.mvc({
