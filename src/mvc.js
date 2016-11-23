@@ -137,7 +137,14 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	if(el.hasAttr('j-model-inherit')){
 		var parent = el.parent().closest('[j-controller]');
 		if(parent.length){
-			data = $.extend(parent.data('jModel'),data);
+			var inheritProp = el.attr('j-model-inherit');
+			var parentData = parent.data('jModel');
+			if(inheritProp){
+				data[inheritProp] = parentData;
+			}
+			else{
+				data = $.extend({},parentData,data);
+			}
 		}
 	}
 	
