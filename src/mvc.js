@@ -138,7 +138,7 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		var parent = el.parent().closest('[j-controller]');
 		if(parent.length){
 			var inheritProp = el.attr('j-model-inherit');
-			var parentData = parent.data('jModel');
+			var parentData = parent.data('jModel') || {};
 			if(inheritProp){
 				data[inheritProp] = parentData;
 			}
