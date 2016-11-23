@@ -953,6 +953,9 @@ $.fn.loadJml = function(url,data){
 		self.append(content);
 	});
 };
+$.fn.hasAttr = function(attr){
+	return this[0].hasAttribute(attr);
+};
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
 ( function( w, j ) {
