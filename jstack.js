@@ -1857,19 +1857,21 @@ jstack.dataBinder = (function(){
 			controller.find(':attrStartsWith("j-var-")').each(function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-var-');
-				$.each(attrs,function(k,varAttr){					
-					var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
-					if(match){
-						$.each(match,function(i,x){
-							var v = x.match(/[\w\.]+/)[0];
-							var value = self.getValue($this.get(0),v);
-							if(typeof(value)=='undefined'||value===null||!value){
-								value = '';
-							}
-							varAttr = varAttr.replace(new RegExp("\\$\\{"+v+"\\}",'g'),value);
-						});
-					}
-					$this.attr(k.substr(6),varAttr);
+				$.each(attrs,function(k,varAttr){
+					var value = self.getValueEval($this,varAttr);
+					$this.attr(k.substr(6),value);
+					//var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
+					//if(match){
+						//$.each(match,function(i,x){
+							//var v = x.match(/[\w\.]+/)[0];
+							//var value = self.getValue($this.get(0),v);
+							//if(typeof(value)=='undefined'||value===null||!value){
+								//value = '';
+							//}
+							//varAttr = varAttr.replace(new RegExp("\\$\\{"+v+"\\}",'g'),value);
+						//});
+					//}
+					//$this.attr(k.substr(6),varAttr);
 				});
 			});
 		},
@@ -2234,9 +2236,9 @@ jstack.dataBinder = (function(){
 					var $original = $(original);
 										
 					var attrRepeat = $original.attr('j-repeat');
-					//var key = self.getScoped($this.get(0),attrRepeat);
-					//var value = self.dotGet(key,data);
-					var value = self.getValueEval($this.get(0),attrRepeat);
+					
+					var value = self.getValue($this[0],attrRepeat);
+					//var value = self.getValueEval($this[0],attrRepeat); //add j-repeat-eval in future
 					
 					var i = 1;
 					$.each(value,function(k,v){
@@ -2480,7 +2482,9 @@ jstack.mvc = function(config){
 			}
 			if(ctrl.domReady){
 				ready.then(function(){
+					//console.log('domReady');
 					ctrl.domReady();
+					//console.log('endDomReady');
 				});
 			}
 			ctrl.render();
