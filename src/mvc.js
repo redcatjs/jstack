@@ -138,7 +138,13 @@ $.on('j:load','[j-view]',function(){
 	}
 	
 	var parent = el.parent().closest('[j-controller]');
-	var data = parent.length ? parent.data('jModel') : false;
+	
+	var data = el.data('jModel') || {};
+	
+	if(parent.length){
+		$.extend(data,parent.data('jModel'));
+	}
+	
 	var ready = jstack.viewReady(this);
 	var mvc = jstack.mvc({
 		view:view,
