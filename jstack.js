@@ -54,7 +54,7 @@ jstack.controller = function(controller,element,target){
 		if(typeof(dependenciesData)=='function'){
 			controller.dependenciesData = dependenciesData = controller.dependenciesData();
 		}
-		if(dependenciesData.length){
+		if(dependenciesData&&dependenciesData.length){
 			var dependenciesDataRun = [];
 			for(var i = 0, l = dependenciesData.length; i < l; i++){
 				var dependencyData = dependenciesData[i];
