@@ -14,7 +14,7 @@ jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
-jstack.controller = function(controller,element,target){
+jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = function(){
@@ -34,7 +34,6 @@ jstack.controller = function(controller,element,target){
 	controller.ready = $.Deferred();
 	
 	controller.element = element;
-	controller.target = target;
 	
 	element.data('jController',controller);
 	
@@ -62,20 +61,24 @@ jstack.controller = function(controller,element,target){
 					dependencyData = dependencyData.call(controller);
 				}
 				
-				if(typeof(dependencyData)=='object'&&dependencyData!==null){
+					
+				if($.type(dependencyData)=='object'){
 					if('abort' in dependencyData){
 						var ddata = dependencyData;
 						dependencyData = $.Deferred();
-						ddata.then(function(ajaxReturn){
-							dependencyData.resolve(ajaxReturn);
-						});
+						(function(dependencyData){
+							ddata.then(function(ajaxReturn){
+								dependencyData.resolve(ajaxReturn);
+							});
+						})(dependencyData);
 					}
 				}
-				if(!(typeof(dependencyData)=='object'&&dependencyData!==null&&('then' in dependencyData))){
+				if(!($.type(dependencyData)=='object'&&('then' in dependencyData))){
 					var ddata = dependencyData;
 					dependencyData = $.Deferred();
 					dependencyData.resolve(ddata);
 				}
+					
 
 				dependenciesDataRun.push(dependencyData);
 				dependencies.push(dependencyData);
@@ -2371,6 +2374,7 @@ $.on('reset','form[j-scope]',function(){
 
 } )( jQuery, jstack );
 jstack.mvc = function(config){
+	
 	if(typeof(arguments[0])=='string'){
 		config = {
 			view: arguments[0],
@@ -2385,6 +2389,9 @@ jstack.mvc = function(config){
 		config.target = jstack.config.defaultTarget;
 	}
 	
+	var target = $(config.target);
+	var controller = config.controller;
+	
 	var templatesPath = jstack.config.templatesPath;
 	var templatePath = templatesPath+config.view+'.jml';
 	var controllerPath = jstack.config.controllersPath+config.controller;
@@ -2392,7 +2399,6 @@ jstack.mvc = function(config){
 	var controllerReady = $.Deferred();
 	var viewReady = $.Deferred();
 	var processor;
-	var element;
 	
 	if(jstack.controllers[config.controller]){
 		controllerReady.resolve();
@@ -2402,20 +2408,13 @@ jstack.mvc = function(config){
 	}
 	
 	jstack.template.get(templatePath).then(function(html){
-		
-		html = $('<tmpl>' + html + '</tmpl>');
-		if(!html.find('> *').length){
-			html.wrapInner('<div />');
-		}
-		element = html.children(0);
-		element.attr('j-controller',config.controller);
-		
 		var cacheId = config.view + "#" + config.controller;
-		jstack.template.compile(element,cacheId,templatesPath).then(function(templateProcessor){
+		jstack.template.compile($('<tmpl>'+html+'</tmpl>'),cacheId,templatesPath).then(function(templateProcessor){
 			processor = function(data){
 				var processedTemplate = templateProcessor( data );
-				element.data('jModel',data);
-				element.html( processedTemplate );
+				target.data('jModel',data);
+				target.attr('j-controller',controller);
+				target.html( processedTemplate );
 			};
 			viewReady.resolve();
 		} );
@@ -2425,7 +2424,7 @@ jstack.mvc = function(config){
 	var ready = $.Deferred();
 	$.when( controllerReady, viewReady ).then( function() {
 		
-		var ctrl = jstack.controller(config.controller,element,config.target);
+		var ctrl = jstack.controller(config.controller,target);
 		
 		ctrl.ready.then(function(){
 		
@@ -2441,12 +2440,9 @@ jstack.mvc = function(config){
 					$.extend(ctrl.data,data);
 				}
 				
-				var processedTemplate = processor(ctrl.data);
+				processor(ctrl.data);
 				
-				$(ctrl.target).html(ctrl.element);
-				
-				
-				ready.resolve(ctrl.element,ctrl);
+				ready.resolve(target,ctrl);
 			};
 			
 			if(ctrl.setData){

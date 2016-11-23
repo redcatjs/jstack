@@ -1,4 +1,4 @@
-jstack.controller = function(controller,element,target){
+jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
 		jstack.controllers[controller.name] = function(){
@@ -18,7 +18,6 @@ jstack.controller = function(controller,element,target){
 	controller.ready = $.Deferred();
 	
 	controller.element = element;
-	controller.target = target;
 	
 	element.data('jController',controller);
 	
@@ -46,20 +45,24 @@ jstack.controller = function(controller,element,target){
 					dependencyData = dependencyData.call(controller);
 				}
 				
-				if(typeof(dependencyData)=='object'&&dependencyData!==null){
+					
+				if($.type(dependencyData)=='object'){
 					if('abort' in dependencyData){
 						var ddata = dependencyData;
 						dependencyData = $.Deferred();
-						ddata.then(function(ajaxReturn){
-							dependencyData.resolve(ajaxReturn);
-						});
+						(function(dependencyData){
+							ddata.then(function(ajaxReturn){
+								dependencyData.resolve(ajaxReturn);
+							});
+						})(dependencyData);
 					}
 				}
-				if(!(typeof(dependencyData)=='object'&&dependencyData!==null&&('then' in dependencyData))){
+				if(!($.type(dependencyData)=='object'&&('then' in dependencyData))){
 					var ddata = dependencyData;
 					dependencyData = $.Deferred();
 					dependencyData.resolve(ddata);
 				}
+					
 
 				dependenciesDataRun.push(dependencyData);
 				dependencies.push(dependencyData);
