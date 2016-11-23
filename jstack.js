@@ -2468,6 +2468,10 @@ jstack.mvc = function(config){
 				
 				processor(ctrl.data);
 				
+				if(ctrl.domReady){
+					ctrl.domReady();
+				}
+				
 				ready.resolve(target,ctrl);
 			};
 			
@@ -2479,13 +2483,6 @@ jstack.mvc = function(config){
 				if($.type(setDataReturn)=='object'&&setDataReturn!==ctrl.data){
 					$.extend(ctrl.data,setDataReturn);
 				}
-			}
-			if(ctrl.domReady){
-				ready.then(function(){
-					//console.log('domReady');
-					ctrl.domReady();
-					//console.log('endDomReady');
-				});
 			}
 			ctrl.render();
 		
@@ -2533,7 +2530,14 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	if(el.hasAttr('j-model-inherit')){
 		var parent = el.parent().closest('[j-controller]');
 		if(parent.length){
-			data = $.extend(parent.data('jModel'),data);
+			var inheritProp = el.attr('j-model-inherit');
+			var parentData = parent.data('jModel') || {};
+			if(inheritProp){
+				data[inheritProp] = parentData;
+			}
+			else{
+				data = $.extend({},parentData,data);
+			}
 		}
 	}
 	
