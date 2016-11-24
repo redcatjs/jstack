@@ -1,6 +1,6 @@
 jstack.dataBinder = (function(){
 	var dataBinder = function(){
-		this.updateWait = 100;
+		
 	};
 	dataBinder.prototype = {
 		dotGet: function(key,data,defaultValue){
@@ -241,11 +241,9 @@ jstack.dataBinder = (function(){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				var defer = $.Deferred();
-				self.triggerUpdate(defer);
-				defer.then(function(){
-					input.trigger(eventName,[value]);
-				});
+				
+				input.trigger(eventName,[value]);
+				
 			};
 			
 			var value = self.getInputVal(el);
@@ -262,33 +260,6 @@ jstack.dataBinder = (function(){
 			}
 			
 		},
-		observer: null,
-		stateObserver: true,
-		triggerMutationsLoad: function(mutationsCollection){
-			var self = this;
-			
-			var events = $._data(document,'events');
-			
-			var eventsLoad = events['j:load'] || [];
-			var eventLoad = $.Event('j:load');
-			$.each(mutationsCollection.load,function(i,n){
-				$.each(eventsLoad,function(type,e){
-					if(e.selector&&$(n).is(e.selector)){
-						e.handler.call(n,eventLoad);
-					}
-				});
-			});
-			
-			var eventsUnload = events['j:unload'] || [];
-			var eventUnload = $.Event('j:unload');
-			$.each(mutationsCollection.unload,function(i,n){
-				$.each(eventsUnload,function(type,e){
-					if(e.selector&&$(n).is(e.selector)){
-						e.handler.call(n,eventUnload);
-					}
-				});
-			});
-		},
 		eventListener: function(){
 			var self = this;
 			var validNodeEvent = function(n){
@@ -302,17 +273,32 @@ jstack.dataBinder = (function(){
 				return true;
 			};
 			
-			self.observer = new MutationObserver(function(mutations){
+			var observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
-				
-				var mutationsCollection = {load:[],unload:[]};
+								
+				var events = $._data(document,'events');			
+				var eventsLoad = events['j:load'] || [];
+				var eventLoad = $.Event('j:load');
+				var eventsUnload = events['j:unload'] || [];
+				var eventUnload = $.Event('j:unload');
 				$.each(mutations,function(i,mutation){
 					$.each(mutation.addedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
 						nodes.each(function(iii,n){
 							if(!validNodeEvent(n)) return;
-							mutationsCollection.load.push(n);
+							
+							$.each(jstack.preloader,function(selector,callback){
+								if($(n).is(selector)){
+									callback.call(n);
+								}
+							});
+							$.each(eventsLoad,function(type,e){
+								if(e.selector&&$(n).is(e.selector)){
+									e.handler.call(n,eventLoad);
+								}
+							});
+							
 						});
 						
 					});
@@ -320,32 +306,19 @@ jstack.dataBinder = (function(){
 						var nodes = $(node).add($(node).find('*'));
 						nodes.each(function(iii,n){
 							if(!validNodeEvent(n)) return;
-							mutationsCollection.unload.push(n);							
-						});
 							
+							$.each(eventsUnload,function(type,e){
+								if(e.selector&&$(n).is(e.selector)){
+									e.handler.call(n,eventUnload);
+								}
+							});
+							
+						});
 					});
 				});
 				
-				if( mutationsCollection.load.length || mutationsCollection.unload.length ){
-					$.each(mutationsCollection.load,function(i,n){
-						$.each(jstack.preloader,function(selector,callback){
-							if($(n).is(selector)){
-								callback.call(n);
-							}
-						});
-					});
-					
-					var mut = $.Deferred();
-					if(self.stateObserver){
-						self.triggerUpdate(mut);
-					}
-					mut.then(function(){
-						self.triggerMutationsLoad(mutationsCollection);
-					});
-				}
-				
 			});
-			self.observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
+			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$(document.body).on('input', ':input[name]', function(e){
 				//console.log('input user');
@@ -406,46 +379,7 @@ jstack.dataBinder = (function(){
 		},
 		getControllerObject:function(input){
 			return this.getController(input).data('jController');
-		},
-		updateDefers: [],
-		updateDeferStateObserver: null,
-		updateTimeout: null,
-		triggerUpdate: function(defer){
-			var self = this;
-			if(self.updateTimeout){
-				clearTimeout(self.updateTimeout);
-			}
-			if(defer){
-				self.updateDefers.push(defer);
-			}
-			self.updateTimeout = setTimeout(function(){
-				
-				if(self.updateDeferStateObserver){
-					self.updateDeferStateObserver.then(function(){
-						self.triggerUpdate();
-					});
-					return;
-				}
-				else{
-					self.updateDeferStateObserver = $.Deferred();
-				}
-				
-				self.stateObserver = false;
-				
-				self.update();
-				
-				while(self.updateDefers.length){
-					self.updateDefers.pop().resolve();
-				}
-				
-				
-				self.updateDeferStateObserver.resolve();
-				self.updateDeferStateObserver = false;
-				
-				self.stateObserver = true;
-				
-			}, self.updateWait);
-		},
+		},		
 		update: function(){
 			var self = this;
 			console.log('update');

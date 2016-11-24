@@ -19,6 +19,32 @@ jstack.controller = function(controller,element){
 			};
 			
 			
+			self.updateWait = 100;
+			self.updateDeferStateObserver = null;
+			self.updateTimeout = null;
+			self.triggerUpdate = function(){
+				if(self.updateTimeout){
+					clearTimeout(self.updateTimeout);
+				}
+				self.updateTimeout = setTimeout(function(){
+					
+					if(self.updateDeferStateObserver){
+						self.updateDeferStateObserver.then(function(){
+							self.triggerUpdate();
+						});
+						return;
+					}
+					else{
+						self.updateDeferStateObserver = $.Deferred();
+					}
+					
+					self.update();
+					self.updateDeferStateObserver.resolve();
+					self.updateDeferStateObserver = false;
+					
+				}, self.updateWait);
+			};
+			
 			
 		};
 		return jstack.controllers[controller.name];
@@ -88,6 +114,7 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = Object.fullObserve(controller.data,function(change){
+		controller.element.trigger('j:mutation');
 		jstack.dataBinder.triggerUpdate();
 		//controller.dataBinder.triggerUpdate();
 	});
