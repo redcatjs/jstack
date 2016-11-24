@@ -452,10 +452,6 @@ jstack.dataBinder = (function(){
 			self.updateRepeat();
 			self.updateIf();
 			self.updateSwitch();
-			self.updateController();
-		},
-		updateController: function(){
-			var self = this;
 			$('[j-controller]').each(function(){
 				//console.log('input populate');
 				self.modelToInput(this);
