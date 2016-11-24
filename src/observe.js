@@ -1,6 +1,7 @@
 //     proxy-observe v0.0.18
 //     Copyright (c) 2015, 2016 Simon Y. Blackwell, AnyWhichWay
 //     MIT License - http://opensource.org/licenses/mit-license.php
+// modified by surikat: add fullObserve
 (function() {
 	"use strict";
 	// Creates and returns a Proxy wrapping a target so that all changes can be trapped and forwarded to
@@ -222,20 +223,28 @@
 		  return object.unobserve(callback);
 	    }
 	}
-	Object.deepObserve = function(object,callback,parts) {
+	Object.deepObserve = function(object,callback,full,parts) {
 		parts = (parts ? parts : []);
 		var keys = Object.keys(object);
 		keys.forEach(function(key) {
 			if(object[key] instanceof Object) {
 				var newparts = parts.slice(0);
 				newparts.push(key);
-				object[key] = Object.deepObserve(object[key],callback,newparts);
+				object[key] = Object.deepObserve(object[key],callback,full,newparts);
 			}
 		});
 		var observed = Object.observe(object,function(changeset) {
 			var changes = [];
-			function recurse(name,rootObject,oldObject,newObject,path) {
+			//function recurse(name,rootObject,oldObject,newObject,path) {
+			function recurse(name,rootObject,oldObject,newObject,path,skey) {
 				if(newObject instanceof Object) {
+					
+					if(full){
+						newObject = Object.deepObserve(newObject,callback,true,parts);
+						//rootObject[path.split('.').pop()] = newObject;
+						rootObject[skey] = newObject;
+					}
+					
 					var newkeys = Object.keys(newObject);
 					newkeys.forEach(function(key) {
 						if(!oldObject || (oldObject[key]!==newObject[key])) {
@@ -243,7 +252,7 @@
 								change = (oldvalue===undefined ? "add" : "update"),
 								keypath = path + "." + key;
 							changes.push({name:name,object:rootObject,type:change,oldValue:oldvalue,newValue:newObject[key],keypath:keypath});
-							recurse(name,rootObject,oldvalue,newObject[key],keypath);
+							recurse(name,rootObject,oldvalue,newObject[key],keypath,key);
 						}
 					});
 				} else if(oldObject instanceof Object) {
@@ -252,17 +261,41 @@
 						var change = (newObject===null ? "update" : "delete"),
 							keypath = path + "." + key;
 						changes.push({name:name,object:rootObject,type:change,oldValue:oldObject[key],newValue:newObject,keypath:keypath});
-						recurse(name,rootObject,oldObject[key],undefined,keypath);
+						//recurse(name,rootObject,oldObject[key],undefined,keypath);
+						recurse(name,rootObject,oldObject[key],undefined,keypath,key);
 					});
 				}
 			}
 			changeset.forEach(function(change) {
+				//var keypath = (parts.length>0 ? parts.join(".") + "." : "") + change.name;change.oldValue
 				var keypath = (parts.length>0 ? parts.join(".") + "." : "") + change.name;
 				changes.push({name:change.name,object:change.object,type:change.type,oldValue:change.oldValue,newValue:change.object[change.name],keypath:keypath});
-				recurse(change.name,change.object,change.oldValue,change.object[change.name],keypath);
+				//recurse(change.name,change.object,change.oldValue,change.object[change.name],keypath);
+				recurse(change.name,change.object,change.oldValue,change.object[change.name],keypath,change.name);
 			});
 			callback(changes);
 		});
 		return observed;
+	};
+
+	Object.fullObserve = function(object,userCallback,strict){
+		var callback = function(changes){
+			var realChanges = [];
+			changes.forEach(function(change){
+				if(!strict){
+					if(change.oldValue===null || change.oldValue===undefined) change.oldValue = '';
+					if(change.newValue===null || change.newValue===undefined) change.newValue = '';
+					if(change.newValue==change.oldValue) return;
+				}
+				else{
+					if(change.newValue===change.oldValue) return;
+				}
+				realChanges.push( change );
+			});
+			if(realChanges.length){
+				userCallback(realChanges);
+			}
+		};
+		return Object.deepObserve(object,callback,true);
 	};
 })();
