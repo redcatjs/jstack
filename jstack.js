@@ -401,7 +401,8 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = Object.fullObserve(controller.data,function(change){
-		console.log('change',change);
+		//console.log('change',change);
+		jstack.dataBinder.triggerUpdate();
 	});
 	
 	$.when.apply($, dependencies).then(function(){
@@ -2199,7 +2200,7 @@ jstack.dataBinder = (function(){
 					input.populateInput(value,{preventValEvent:true});
 				}
 				var defer = $.Deferred();
-				self.triggerUpdate(defer);
+				//self.triggerUpdate(defer);
 				defer.then(function(){
 					input.trigger(eventName,[value]);
 				});

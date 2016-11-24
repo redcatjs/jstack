@@ -83,6 +83,11 @@ jstack.controller = function(controller,element){
  	
 	controller.data = controller.data || {};
 	
+	controller.data = Object.fullObserve(controller.data,function(change){
+		//console.log('change',change);
+		jstack.dataBinder.triggerUpdate();
+	});
+	
 	$.when.apply($, dependencies).then(function(){
 		controller.ready.resolve();
 	});

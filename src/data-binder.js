@@ -242,7 +242,7 @@ jstack.dataBinder = (function(){
 					input.populateInput(value,{preventValEvent:true});
 				}
 				var defer = $.Deferred();
-				self.triggerUpdate(defer);
+				//self.triggerUpdate(defer);
 				defer.then(function(){
 					input.trigger(eventName,[value]);
 				});
@@ -447,7 +447,7 @@ jstack.dataBinder = (function(){
 		},
 		update: function(){
 			var self = this;
-			//console.log('update');
+			console.log('update');
 			self.updateRepeat();
 			self.updateIf();
 			self.updateSwitch();
