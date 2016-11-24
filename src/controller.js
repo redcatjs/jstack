@@ -1,14 +1,24 @@
 jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
-		jstack.controllers[controller.name] = function(){
+		jstack.controllers[controller.name] = function(element){
+			
+			var self = this;
 			
 			$.extend(true,this,controller);
+			
+			
+			this.ready = $.Deferred();
+			this.element = element;
+			element.data('jController',this);
+			
 			
 			this.setDataArguments = [];
 			this.setDataCall = function(){
 				return this.setData.apply( this, this.setDataArguments );
 			};
+			
+			
 			
 		};
 		return jstack.controllers[controller.name];
@@ -17,13 +27,7 @@ jstack.controller = function(controller,element){
 	
 	controller = jstack.controllers[controller] || jstack.config.defaultController;
 	
-	controller = new controller();
-	
-	controller.ready = $.Deferred();
-	
-	controller.element = element;
-	
-	element.data('jController',controller);
+	controller = new controller(element);
 	
 	var name = controller.name;
 	
@@ -84,8 +88,8 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = Object.fullObserve(controller.data,function(change){
-		//console.log('change',change);
 		jstack.dataBinder.triggerUpdate();
+		//controller.dataBinder.triggerUpdate();
 	});
 	
 	$.when.apply($, dependencies).then(function(){
