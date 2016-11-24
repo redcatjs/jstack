@@ -2497,7 +2497,7 @@ jstack.mvc = function(config){
 jstack.viewReady = function(el){
 	if(typeof(arguments[0])=='string'){
 		var selector = '[j-view="'+arguments[0]+'"]';
-		if(typeof(arguments[1]=='object')){
+		if(typeof(arguments[1])=='object'){
 			el = $(arguments[1]).find(selector);
 		}
 		else{
