@@ -301,6 +301,7 @@ jstack.dataBinder = (function(){
 				}
 				return true;
 			};
+			
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
@@ -452,37 +453,6 @@ jstack.dataBinder = (function(){
 			self.updateIf();
 			self.updateSwitch();
 			self.updateController();
-			self.updateOn();			
-		},
-		updateOn: function(){
-			var self = this;
-			$(':attrStartsWith("j-on-")').each(function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-on-');
-				$.each(attrs,function(k,v){
-					var event = k.substr(5);
-					$this.removeAttr(k);
-					$this.on(event,function(e){
-						var controller = self.getControllerObject(this);
-						if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-							throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-						}
-						var method = controller.methods[v];
-						if(typeof(method)!='function'){
-							return;
-						}
-						var r = method.call(controller,e,this);
-						if(r===false){
-							return false;
-						}
-						if(r){
-							$.when(r).then(function(){
-								self.triggerUpdate();
-							});
-						}
-					});
-				});
-			});
 		},
 		updateController: function(){
 			var self = this;

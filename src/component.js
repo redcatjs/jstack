@@ -80,6 +80,7 @@ $('[jquery-component]').each(function(){
 	}
 });
 
+//use j:load event to make loader definition helper
 jstack.loader = function(selector,handler,unloader){
 	$.on('j:load',selector,function(){
 		handler.call(this);
@@ -94,10 +95,43 @@ jstack.loader = function(selector,handler,unloader){
 	});
 };
 
+
+//define preloaders
 jstack.preloader = {
 	':input[name]':function(){
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 	},
 };
+
+//define loaders
+jstack.loader(':attrStartsWith("j-on-")',function(){
+	var $this = $(this);
+	var attrs = $this.attrStartsWith('j-on-');
+	$.each(attrs,function(k,v){
+		var event = k.substr(5);
+		$this.removeAttr(k);
+		$this.on(event,function(e){
+			var controller = jstack.dataBinder.getControllerObject(this);
+			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+			}
+			var method = controller.methods[v];
+			if(typeof(method)!='function'){
+				return;
+			}
+			var r = method.call(controller,e,this);
+			if(r===false){
+				return false;
+			}
+			if(r){
+				$.when(r).then(function(){
+					self.triggerUpdate();
+				});
+			}
+		});
+	});
+});
+
+
 
 })();
