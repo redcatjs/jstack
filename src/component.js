@@ -123,11 +123,6 @@ jstack.loader(':attrStartsWith("j-on-")',function(){
 			if(r===false){
 				return false;
 			}
-			if(r){
-				$.when(r).then(function(){
-					self.triggerUpdate();
-				});
-			}
 		});
 	});
 });
