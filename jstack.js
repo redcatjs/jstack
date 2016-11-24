@@ -739,6 +739,8 @@ $.fn.populateInput = function( value, config ) {
 			}
 		} );
 		if ( !found && config.addMissing ) {
+			var optionValue;
+			var optionText;
 			if(typeof(value)=='object'){
 				optionValue = value.value;
 				optionText = value.text;
@@ -746,7 +748,7 @@ $.fn.populateInput = function( value, config ) {
 			else{
 				optionValue = value;
 			}
-			if(!optionText){
+			if(typeof(optionText)=='undefined'){
 				optionText = optionValue;
 			}
 			if(!optionValue){
