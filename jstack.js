@@ -318,14 +318,24 @@ jstack = new jstackClass();
 jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
-		jstack.controllers[controller.name] = function(){
+		jstack.controllers[controller.name] = function(element){
+			
+			var self = this;
 			
 			$.extend(true,this,controller);
+			
+			
+			this.ready = $.Deferred();
+			this.element = element;
+			element.data('jController',this);
+			
 			
 			this.setDataArguments = [];
 			this.setDataCall = function(){
 				return this.setData.apply( this, this.setDataArguments );
 			};
+			
+			
 			
 		};
 		return jstack.controllers[controller.name];
@@ -334,13 +344,7 @@ jstack.controller = function(controller,element){
 	
 	controller = jstack.controllers[controller] || jstack.config.defaultController;
 	
-	controller = new controller();
-	
-	controller.ready = $.Deferred();
-	
-	controller.element = element;
-	
-	element.data('jController',controller);
+	controller = new controller(element);
 	
 	var name = controller.name;
 	
@@ -401,8 +405,8 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = Object.fullObserve(controller.data,function(change){
-		//console.log('change',change);
 		jstack.dataBinder.triggerUpdate();
+		//controller.dataBinder.triggerUpdate();
 	});
 	
 	$.when.apply($, dependencies).then(function(){
@@ -1595,6 +1599,7 @@ $('[jquery-component]').each(function(){
 	}
 });
 
+//use j:load event to make loader definition helper
 jstack.loader = function(selector,handler,unloader){
 	$.on('j:load',selector,function(){
 		handler.call(this);
@@ -1609,11 +1614,39 @@ jstack.loader = function(selector,handler,unloader){
 	});
 };
 
+
+//define preloaders
 jstack.preloader = {
 	':input[name]':function(){
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 	},
 };
+
+//define loaders
+jstack.loader(':attrStartsWith("j-on-")',function(){
+	var $this = $(this);
+	var attrs = $this.attrStartsWith('j-on-');
+	$.each(attrs,function(k,v){
+		var event = k.substr(5);
+		$this.removeAttr(k);
+		$this.on(event,function(e){
+			var controller = jstack.dataBinder.getControllerObject(this);
+			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+			}
+			var method = controller.methods[v];
+			if(typeof(method)!='function'){
+				return;
+			}
+			var r = method.call(controller,e,this);
+			if(r===false){
+				return false;
+			}
+		});
+	});
+});
+
+
 
 })();
 jstack.route = ( function( w, url ) {
@@ -2200,7 +2233,7 @@ jstack.dataBinder = (function(){
 					input.populateInput(value,{preventValEvent:true});
 				}
 				var defer = $.Deferred();
-				//self.triggerUpdate(defer);
+				self.triggerUpdate(defer);
 				defer.then(function(){
 					input.trigger(eventName,[value]);
 				});
@@ -2259,6 +2292,7 @@ jstack.dataBinder = (function(){
 				}
 				return true;
 			};
+			
 			self.observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
@@ -2409,41 +2443,6 @@ jstack.dataBinder = (function(){
 			self.updateRepeat();
 			self.updateIf();
 			self.updateSwitch();
-			self.updateController();
-			self.updateOn();			
-		},
-		updateOn: function(){
-			var self = this;
-			$(':attrStartsWith("j-on-")').each(function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-on-');
-				$.each(attrs,function(k,v){
-					var event = k.substr(5);
-					$this.removeAttr(k);
-					$this.on(event,function(e){
-						var controller = self.getControllerObject(this);
-						if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-							throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-						}
-						var method = controller.methods[v];
-						if(typeof(method)!='function'){
-							return;
-						}
-						var r = method.call(controller,e,this);
-						if(r===false){
-							return false;
-						}
-						if(r){
-							$.when(r).then(function(){
-								self.triggerUpdate();
-							});
-						}
-					});
-				});
-			});
-		},
-		updateController: function(){
-			var self = this;
 			$('[j-controller]').each(function(){
 				//console.log('input populate');
 				self.modelToInput(this);
