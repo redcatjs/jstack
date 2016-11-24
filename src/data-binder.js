@@ -380,20 +380,17 @@ jstack.dataBinder = (function(){
 		getControllerObject:function(input){
 			return this.getController(input).data('jController');
 		},		
-		update: function(){
+		update: function(element){
 			var self = this;
 			console.log('update');
-			self.updateRepeat();
-			self.updateIf();
-			self.updateSwitch();
-			$('[j-controller]').each(function(){
-				//console.log('input populate');
-				self.modelToInput(this);
-			});
+			self.updateRepeat(element);
+			self.updateIf(element);
+			self.updateSwitch(element);
+			self.modelToInput(element);
 		},
-		updateIf: function(){
+		updateIf: function(element){
 			var self = this;
-			$('[j-if]').each(function(){
+			$('[j-if]',element).each(function(){
 				var $this = $(this);
 				var value = self.getAttrValueEval(this,'j-if');
 				
@@ -417,9 +414,9 @@ jstack.dataBinder = (function(){
 				}
 			});
 		},
-		updateSwitch: function(){
+		updateSwitch: function(element){
 			var self = this;
-			$('[j-switch]').each(function(){
+			$('[j-switch]',element).each(function(){
 				var $this = $(this);
 				var value = self.getAttrValueEval(this,'j-switch');
 				var cases = $this.data('jSwitch');
@@ -461,9 +458,9 @@ jstack.dataBinder = (function(){
 				});
 			});
 		},
-		updateRepeat: function(){
+		updateRepeat: function(element){
 			var self = this;
-			$('[j-repeat]').each(function(){
+			$('[j-repeat]',element).each(function(){
 				var $this = $(this);
 				
 				var parent = $this.parent();
@@ -475,7 +472,7 @@ jstack.dataBinder = (function(){
 				$this.detach();
 			});
 			
-			$('[j-repeat-list]').each(function(){
+			$('[j-repeat-list]',element).each(function(){
 				var $this = $(this);
 				//var data = self.getControllerData(this);
 				var list = $this.data('jRepeatList') || [];

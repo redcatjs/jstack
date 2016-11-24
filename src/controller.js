@@ -19,31 +19,38 @@ jstack.controller = function(controller,element){
 			};
 			
 			
-			self.updateWait = 100;
-			self.updateDeferStateObserver = null;
-			self.updateTimeout = null;
-			self.triggerUpdate = function(){
-				if(self.updateTimeout){
-					clearTimeout(self.updateTimeout);
-				}
-				self.updateTimeout = setTimeout(function(){
-					
-					if(self.updateDeferStateObserver){
-						self.updateDeferStateObserver.then(function(){
-							self.triggerUpdate();
-						});
-						return;
+			this.dataBinder = (function(){
+				var dataBinder = this;
+				this.updateWait = 100;
+				this.updateDeferStateObserver = null;
+				this.updateTimeout = null;
+				this.triggerUpdate = function(){
+					if(this.updateTimeout){
+						clearTimeout(this.updateTimeout);
 					}
-					else{
-						self.updateDeferStateObserver = $.Deferred();
-					}
-					
-					self.update();
-					self.updateDeferStateObserver.resolve();
-					self.updateDeferStateObserver = false;
-					
-				}, self.updateWait);
-			};
+					this.updateTimeout = setTimeout(function(){
+						
+						if(dataBinder.updateDeferStateObserver){
+							dataBinder.updateDeferStateObserver.then(function(){
+								dataBinder.triggerUpdate();
+							});
+							return;
+						}
+						else{
+							dataBinder.updateDeferStateObserver = $.Deferred();
+						}
+						
+						jstack.dataBinder.update(self.element);
+						
+						self.element.trigger('j:mutation');
+						
+						dataBinder.updateDeferStateObserver.resolve();
+						dataBinder.updateDeferStateObserver = false;
+						
+					}, this.updateWait);
+				};
+				return this;
+			})();
 			
 			
 		};
@@ -114,9 +121,7 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = Object.fullObserve(controller.data,function(change){
-		controller.element.trigger('j:mutation');
-		jstack.dataBinder.triggerUpdate();
-		//controller.dataBinder.triggerUpdate();
+		controller.dataBinder.triggerUpdate();
 	});
 	
 	$.when.apply($, dependencies).then(function(){
