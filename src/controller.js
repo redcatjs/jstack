@@ -42,12 +42,20 @@ jstack.controller = function(controller,element){
 					dataBinder.updateDeferStateObserver.resolve();
 					dataBinder.updateDeferStateObserver = false;
 					
+					this.updateTimeout = false;
+					
 				};
 				this.triggerUpdate = function(){
 					if(this.updateTimeout){
-						clearTimeout(this.updateTimeout);
+						if(this.updateTimeout!==true){
+							clearTimeout(this.updateTimeout);
+						}
+						this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
 					}
-					this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
+					else{
+						this.updateTimeout = true;
+						this.runUpdate();
+					}
 				};
 				return this;
 			})();
