@@ -2313,6 +2313,9 @@ jstack.preloader = {
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
+	':attrStartsWith("j-model-")':function(){
+		jstack.dataBinder.loaders.jModelAttr.call(this);
+	},
 };
 
 //define loaders
@@ -3030,6 +3033,7 @@ jstack.dataBinder = (function(){
 			$(':input[j-val]',element).each(self.loaders.inputWithJval);
 			$('[j-var]',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
+			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
 			
 			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
@@ -3200,12 +3204,19 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(6),value);
 				});
 			},
+			jModelAttr: function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-model-');
+				$.each(attrs,function(k,varAttr){
+					var parsed = jstack.dataBinder.textParser(varAttr);
+					var value = jstack.dataBinder.getValueEval($this,parsed);
+					$this.attr(k.substr(8),value);
+				});
+			},
 			textMustache: function(){				
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						//var compiled = jstack.dataBinder.getValueEval(this,parsed);
-						//this.textContent = compiled;
 						$(this).replaceWith('<span j-var="'+parsed.replace(/"/g,"'")+'"></span>');
 					}
 				}

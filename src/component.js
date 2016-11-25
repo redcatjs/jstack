@@ -125,6 +125,9 @@ jstack.preloader = {
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
+	':attrStartsWith("j-model-")':function(){
+		jstack.dataBinder.loaders.jModelAttr.call(this);
+	},
 };
 
 //define loaders
