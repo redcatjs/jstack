@@ -134,10 +134,10 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	}
 	
 	var data = el.data('jModel') || {};
-	if(el.hasAttr('j-model-inherit')){
+	if(el.hasAttr('j-view-inherit')){
 		var parent = el.parent().closest('[j-controller]');
 		if(parent.length){
-			var inheritProp = el.attr('j-model-inherit');
+			var inheritProp = el.attr('j-view-inherit');
 			var parentData = parent.data('jModel') || {};
 			if(inheritProp){
 				data[inheritProp] = parentData;
