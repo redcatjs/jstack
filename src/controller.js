@@ -24,30 +24,30 @@ jstack.controller = function(controller,element){
 				this.updateWait = 100;
 				this.updateDeferStateObserver = null;
 				this.updateTimeout = null;
+				this.runUpdate = function(){						
+					if(dataBinder.updateDeferStateObserver){
+						dataBinder.updateDeferStateObserver.then(function(){
+							dataBinder.triggerUpdate();
+						});
+						return;
+					}
+					else{
+						dataBinder.updateDeferStateObserver = $.Deferred();
+					}
+					
+					jstack.dataBinder.update(self.element);
+					
+					self.element.trigger('j:mutation');
+					
+					dataBinder.updateDeferStateObserver.resolve();
+					dataBinder.updateDeferStateObserver = false;
+					
+				};
 				this.triggerUpdate = function(){
 					if(this.updateTimeout){
 						clearTimeout(this.updateTimeout);
 					}
-					this.updateTimeout = setTimeout(function(){
-						
-						if(dataBinder.updateDeferStateObserver){
-							dataBinder.updateDeferStateObserver.then(function(){
-								dataBinder.triggerUpdate();
-							});
-							return;
-						}
-						else{
-							dataBinder.updateDeferStateObserver = $.Deferred();
-						}
-						
-						jstack.dataBinder.update(self.element);
-						
-						self.element.trigger('j:mutation');
-						
-						dataBinder.updateDeferStateObserver.resolve();
-						dataBinder.updateDeferStateObserver = false;
-						
-					}, this.updateWait);
+					this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
 				};
 				return this;
 			})();
