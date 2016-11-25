@@ -8,7 +8,7 @@ grunt.initConfig({
 		dist: {
 			src: [
 				"src/core.js",
-				"src/observe.js",
+				"src/object-observable.js",
 				"src/controller.js",
 				"src/url.js",
 				"src/uniqid.js",

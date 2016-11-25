@@ -128,9 +128,12 @@ jstack.controller = function(controller,element){
  	
 	controller.data = controller.data || {};
 	
-	controller.data = Object.fullObserve(controller.data,function(change){
+	controller.data = ObjectObservable.create(controller.data);
+	ObjectObservable.observe(controller.data,function(change){
+		//console.log(change);
 		controller.dataBinder.triggerUpdate();
 	});
+	
 	
 	$.when.apply($, dependencies).then(function(){
 		controller.ready.resolve();
