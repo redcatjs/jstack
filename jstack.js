@@ -1657,8 +1657,32 @@ jstack.loader = function(selector,handler,unloader){
 
 //define preloaders
 jstack.preloader = {
+	'[j-if]':function(){
+		jstack.dataBinder.loaders.jIf.call(this);
+	},
+	'[j-switch]':function(){
+		jstack.dataBinder.loaders.jSwitch.call(this);
+	},
+	'[j-repeat]':function(){
+		jstack.dataBinder.loaders.jRepeat.call(this);
+		jstack.dataBinder.loaders.jRepeatList.call($(this).data('parent')[0]);
+	},
+	'[j-repeat-list]':function(){
+		jstack.dataBinder.loaders.jRepeatList.call(this);
+	},
+	
 	':input[name]':function(){
 		jstack.dataBinder.inputToModel(this,'j:default',true);
+		jstack.dataBinder.loaders.inputWithName.call(this);
+	},
+	':input[j-val]':function(){
+		jstack.dataBinder.loaders.inputWithJval.call(this);
+	},
+	'[j-var]':function(){
+		jstack.dataBinder.loaders.jVar.call(this);
+	},
+	':attrStartsWith("j-var-")':function(){
+		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
 };
 
@@ -2196,66 +2220,6 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		modelToInput: function(controller){
-			var self = this;
-			controller = $(controller);
-			controller.find(':input[name]').each(function(){
-				var input = $(this);
-				if(input.closest('[j-unscope]').length) return;
-				var defaultValue = self.getInputVal(this);
-				var value = self.getAttrValue(this,'name',defaultValue);
-				if(input.data('j:populate:prevent')) return;
-				input.populateInput(value,{preventValEvent:true});
-				input.trigger('j:val',[value]);
-			});
-			controller.find(':input[j-val]').each(function(){
-				var el = $(this);
-				var type = el.prop('type');
-				//var value = self.getAttrValueEval(this,'j-val',self.getInputVal(this));
-				var value = self.getAttrValueEval(this,'j-val');
-				var name = el.attr('name');
-				if(typeof(value)=='undefined'){
-					var defaultValue;
-					if(type=="checkbox"||type=="radio"){
-						defaultValue = this.defaultChecked;
-					}
-					else{
-						defaultValue = this.defaultValue;
-					}
-					value = defaultValue;
-				}
-				if(name){
-					self.dotSet(self.getKey(name),self.getScopeValue(this),value);
-				}
-				if(el.data('j:populate:prevent')) return;
-				el.populateInput(value,{preventValEvent:true});
-				el.trigger('j:val',[value]);
-			});
-			controller.find('[j-var]').each(function(){
-				var value = self.getAttrValueEval(this,'j-var');
-				$(this).html(value);
-			});
-			controller.find(':attrStartsWith("j-var-")').each(function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-var-');
-				$.each(attrs,function(k,varAttr){
-					var value = self.getValueEval($this,varAttr);
-					$this.attr(k.substr(6),value);
-					//var match = varAttr.match(/\${\s*[\w\.]+\s*}/g);
-					//if(match){
-						//$.each(match,function(i,x){
-							//var v = x.match(/[\w\.]+/)[0];
-							//var value = self.getValue($this.get(0),v);
-							//if(typeof(value)=='undefined'||value===null||!value){
-								//value = '';
-							//}
-							//varAttr = varAttr.replace(new RegExp("\\$\\{"+v+"\\}",'g'),value);
-						//});
-					//}
-					//$this.attr(k.substr(6),varAttr);
-				});
-			});
-		},
 		inputToModel: function(el,eventName,isDefault){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
@@ -2293,13 +2257,15 @@ jstack.dataBinder = (function(){
 		},
 		eventListener: function(){
 			var self = this;
-			var validNodeEvent = function(n){
+			var validNodeEvent = function(n,excludeRepeat){
 				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 					return false;
 				}
-				var jn = $(n);
-				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
-					return false;
+				if(excludeRepeat){
+					var jn = $(n);
+					if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
+						return false;
+					}
 				}
 				return true;
 			};
@@ -2315,7 +2281,11 @@ jstack.dataBinder = (function(){
 				var eventUnload = $.Event('j:unload');
 				$.each(mutations,function(i,mutation){
 					$.each(mutation.addedNodes,function(ii,node){
+						
+						//self.update($(node).andSelf());
+						
 						var nodes = $(node).add($(node).find('*'));
+						
 						nodes.each(function(iii,n){
 							if(!validNodeEvent(n)) return;
 							
@@ -2324,6 +2294,9 @@ jstack.dataBinder = (function(){
 									callback.call(n);
 								}
 							});
+							
+							if(!$.contains(document.body,n)) return;
+							
 							$.each(eventsLoad,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
 									e.handler.call(n,eventLoad);
@@ -2336,7 +2309,7 @@ jstack.dataBinder = (function(){
 					$.each(mutation.removedNodes,function(ii,node){
 						var nodes = $(node).add($(node).find('*'));
 						nodes.each(function(iii,n){
-							if(!validNodeEvent(n)) return;
+							if(!validNodeEvent(n,true)) return;
 							
 							$.each(eventsUnload,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
@@ -2413,17 +2386,23 @@ jstack.dataBinder = (function(){
 		},		
 		update: function(element){
 			var self = this;
-			console.log('update');
-			self.updateRepeat(element);
-			self.updateIf(element);
-			self.updateSwitch(element);
-			self.modelToInput(element);
+			//console.log('update');
+			
+			$('[j-if]',element).each(self.loaders.jIf);
+			$('[j-switch]',element).each(self.loaders.jSwitch);
+			$('[j-repeat]',element).each(self.loaders.jRepeat);
+			$('[j-repeat-list]',element).each(self.loaders.jRepeatList);
+			
+			$(':input[name]',element).each(self.loaders.inputWithName);
+			$(':input[j-val]',element).each(self.loaders.inputWithJval);
+			$('[j-var]',element).each(self.loaders.jVar);
+			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
+			
 		},
-		updateIf: function(element){
-			var self = this;
-			$('[j-if]',element).each(function(){
+		loaders:{
+			jIf: function(){
 				var $this = $(this);
-				var value = self.getAttrValueEval(this,'j-if');
+				var value = jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
 				if(typeof(contents)=='undefined'){
@@ -2443,13 +2422,10 @@ jstack.dataBinder = (function(){
 						$this.trigger('j-if:false');
 					}
 				}
-			});
-		},
-		updateSwitch: function(element){
-			var self = this;
-			$('[j-switch]',element).each(function(){
+			},
+			jSwitch: function(){
 				var $this = $(this);
-				var value = self.getAttrValueEval(this,'j-switch');
+				var value = jstack.dataBinder.getAttrValueEval(this,'j-switch');
 				var cases = $this.data('jSwitch');
 				if(typeof(cases)=='undefined'){
 					cases = $this.find('[j-case],[j-case-default]');
@@ -2487,11 +2463,8 @@ jstack.dataBinder = (function(){
 						jcase.trigger('j-switch:true');
 					}
 				});
-			});
-		},
-		updateRepeat: function(element){
-			var self = this;
-			$('[j-repeat]',element).each(function(){
+			},
+			jRepeat: function(){
 				var $this = $(this);
 				
 				var parent = $this.parent();
@@ -2499,13 +2472,13 @@ jstack.dataBinder = (function(){
 				var list = parent.data('jRepeatList') || [];
 				list.push(this);
 				parent.data('jRepeatList',list);
-				
+				$this.data('parent',parent);
 				$this.detach();
-			});
-			
-			$('[j-repeat-list]',element).each(function(){
+				
+			},
+			jRepeatList: function(){
 				var $this = $(this);
-				//var data = self.getControllerData(this);
+				//var data = jstack.dataBinder.getControllerData(this);
 				var list = $this.data('jRepeatList') || [];
 				var scopes = [];
 				
@@ -2515,8 +2488,8 @@ jstack.dataBinder = (function(){
 										
 					var attrRepeat = $original.attr('j-repeat');
 					
-					var value = self.getValue($this[0],attrRepeat);
-					//var value = self.getValueEval($this[0],attrRepeat); //add j-repeat-eval in future
+					var value = jstack.dataBinder.getValue($this[0],attrRepeat);
+					//var value = jstack.dataBinder.getValueEval($this[0],attrRepeat); //add j-repeat-eval in future
 					
 					var i = 1;
 					$.each(value,function(k,v){
@@ -2543,7 +2516,53 @@ jstack.dataBinder = (function(){
 						$(this).remove();
 					}
 				});
-			});
+			},
+			
+			inputWithName: function(){
+				var input = $(this);
+				if(input.closest('[j-unscope]').length) return;
+				var defaultValue = jstack.dataBinder.getInputVal(this);
+				var value = jstack.dataBinder.getAttrValue(this,'name',defaultValue);
+				if(input.data('j:populate:prevent')) return;
+				input.populateInput(value,{preventValEvent:true});
+				input.trigger('j:val',[value]);
+			},
+			inputWithJval: function(){
+				var el = $(this);
+				var type = el.prop('type');
+				//var value = jstack.dataBinder.getAttrValueEval(this,'j-val',jstack.dataBinder.getInputVal(this));
+				var value = jstack.dataBinder.getAttrValueEval(this,'j-val');
+				var name = el.attr('name');
+				if(typeof(value)=='undefined'){
+					var defaultValue;
+					if(type=="checkbox"||type=="radio"){
+						defaultValue = this.defaultChecked;
+					}
+					else{
+						defaultValue = this.defaultValue;
+					}
+					value = defaultValue;
+				}
+				if(name){
+					jstack.dataBinder.dotSet(jstack.dataBinder.getKey(name),jstack.dataBinder.getScopeValue(this),value);
+				}
+				if(el.data('j:populate:prevent')) return;
+				el.populateInput(value,{preventValEvent:true});
+				el.trigger('j:val',[value]);
+			},
+			jVar:function(){
+				var value = jstack.dataBinder.getAttrValueEval(this,'j-var');
+				$(this).html(value);
+			},
+			jVarAttr: function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-var-');
+				$.each(attrs,function(k,varAttr){
+					var value = jstack.dataBinder.getValueEval($this,varAttr);
+					$this.attr(k.substr(6),value);
+				});
+			},
+			
 		},
 	};
 	var o = new dataBinder();
@@ -2746,13 +2765,9 @@ jstack.mvc = function(config){
 				
 				processor(ctrl.data);
 				
-				ctrl.dataBinder.runUpdate();
-				
 				if(ctrl.domReady){
 					ctrl.domReady();
 				}
-				
-				//ctrl.dataBinder.runUpdate();
 				
 				ready.resolve(target,ctrl);
 			};

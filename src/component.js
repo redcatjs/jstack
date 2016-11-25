@@ -98,8 +98,32 @@ jstack.loader = function(selector,handler,unloader){
 
 //define preloaders
 jstack.preloader = {
+	'[j-if]':function(){
+		jstack.dataBinder.loaders.jIf.call(this);
+	},
+	'[j-switch]':function(){
+		jstack.dataBinder.loaders.jSwitch.call(this);
+	},
+	'[j-repeat]':function(){
+		jstack.dataBinder.loaders.jRepeat.call(this);
+		jstack.dataBinder.loaders.jRepeatList.call($(this).data('parent')[0]);
+	},
+	'[j-repeat-list]':function(){
+		jstack.dataBinder.loaders.jRepeatList.call(this);
+	},
+	
 	':input[name]':function(){
 		jstack.dataBinder.inputToModel(this,'j:default',true);
+		jstack.dataBinder.loaders.inputWithName.call(this);
+	},
+	':input[j-val]':function(){
+		jstack.dataBinder.loaders.inputWithJval.call(this);
+	},
+	'[j-var]':function(){
+		jstack.dataBinder.loaders.jVar.call(this);
+	},
+	':attrStartsWith("j-var-")':function(){
+		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
 };
 
