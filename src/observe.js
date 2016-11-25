@@ -241,7 +241,6 @@
 					
 					if(full){
 						newObject = Object.deepObserve(newObject,callback,true,parts);
-						//rootObject[path.split('.').pop()] = newObject;
 						rootObject[skey] = newObject;
 					}
 					
