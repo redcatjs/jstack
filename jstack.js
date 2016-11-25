@@ -2916,7 +2916,11 @@ jstack.dataBinder = (function(){
 						var nodes = $(node).add($(node).find('*'));
 						
 						nodes.each(function(iii,n){
-							if(!validNodeEvent(n)) return;
+							
+							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+								jstack.dataBinder.loaders.textMustache(n);
+								return;
+							}
 							
 							$.each(jstack.preloader,function(selector,callback){
 								if($(n).is(selector)){
@@ -3026,6 +3030,11 @@ jstack.dataBinder = (function(){
 			$(':input[j-val]',element).each(self.loaders.inputWithJval);
 			$('[j-var]',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
+			
+			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
+				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
+			}).each(self.loaders.textMustache);
+			
 			
 		},
 		loaders:{
@@ -3191,8 +3200,50 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(6),value);
 				});
 			},
+			textMustache: function(){				
+				if(this.textContent){
+					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
+					if(typeof(parsed)=='string'){
+						//var compiled = jstack.dataBinder.getValueEval(this,parsed);
+						//this.textContent = compiled;
+						$(this).replaceWith('<span j-var="'+parsed.replace(/"/g,"'")+'"></span>');
+					}
+				}
+			},
 			
 		},
+		textParser:function(text,delimiters){//algo token from vue.js :)
+			var defaultTagRE = /\{\{((?:.|\n)+?)\}\}/g;
+			var regexEscapeRE = /[-.*+?^${}()|[\]/\\]/g;
+			var buildRegex = function (delimiters) {
+				var open = delimiters[0].replace(regexEscapeRE, '\\$&');
+				var close = delimiters[1].replace(regexEscapeRE, '\\$&');
+				return new RegExp(open + '((?:.|\\n)+?)' + close, 'g')
+			};
+			
+			var tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE;
+			if (!tagRE.test(text)) {
+				return;
+			}
+			var tokens = [];
+			var lastIndex = tagRE.lastIndex = 0;
+			var match, index;
+			while ((match = tagRE.exec(text))) {
+				index = match.index;
+				// push text token
+				if (index > lastIndex) {
+					tokens.push(JSON.stringify(text.slice(lastIndex, index)));
+				}
+				// tag token
+				var exp = match[1].trim();
+				tokens.push("(" + exp + ")");
+				lastIndex = index + match[0].length;
+			}
+			if (lastIndex < text.length) {
+				tokens.push(JSON.stringify(text.slice(lastIndex)));
+			}
+			return tokens.join('+');
+		}
 	};
 	var o = new dataBinder();
 	o.eventListener();
