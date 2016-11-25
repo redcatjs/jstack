@@ -22,6 +22,7 @@ grunt.initConfig({
 				
 				"src/reflection/core.js",
 				"src/reflection/arguments.js",
+				"src/reflection/is-cyclic.js",
 				
 				"src/jquery/arrayCompare.js",
 				"src/jquery/attrStartsWith.js",
