@@ -75,13 +75,9 @@ jstack.mvc = function(config){
 				
 				processor(ctrl.data);
 				
-				ctrl.dataBinder.runUpdate();
-				
 				if(ctrl.domReady){
 					ctrl.domReady();
 				}
-				
-				//ctrl.dataBinder.runUpdate();
 				
 				ready.resolve(target,ctrl);
 			};

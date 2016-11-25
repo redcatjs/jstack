@@ -165,10 +165,9 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		modelToInput: function(controller){
+		modelToInput: function(element){
 			var self = this;
-			controller = $(controller);
-			controller.find(':input[name]').each(function(){
+			element.find(':input[name]').each(function(){
 				var input = $(this);
 				if(input.closest('[j-unscope]').length) return;
 				var defaultValue = self.getInputVal(this);
@@ -177,7 +176,7 @@ jstack.dataBinder = (function(){
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);
 			});
-			controller.find(':input[j-val]').each(function(){
+			element.find(':input[j-val]').each(function(){
 				var el = $(this);
 				var type = el.prop('type');
 				//var value = self.getAttrValueEval(this,'j-val',self.getInputVal(this));
@@ -200,11 +199,11 @@ jstack.dataBinder = (function(){
 				el.populateInput(value,{preventValEvent:true});
 				el.trigger('j:val',[value]);
 			});
-			controller.find('[j-var]').each(function(){
+			element.find('[j-var]').each(function(){
 				var value = self.getAttrValueEval(this,'j-var');
 				$(this).html(value);
 			});
-			controller.find(':attrStartsWith("j-var-")').each(function(){
+			element.find(':attrStartsWith("j-var-")').each(function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-var-');
 				$.each(attrs,function(k,varAttr){
@@ -293,6 +292,9 @@ jstack.dataBinder = (function(){
 									callback.call(n);
 								}
 							});
+							
+							self.update($(n).andSelf());
+							
 							$.each(eventsLoad,function(type,e){
 								if(e.selector&&$(n).is(e.selector)){
 									e.handler.call(n,eventLoad);
@@ -382,7 +384,7 @@ jstack.dataBinder = (function(){
 		},		
 		update: function(element){
 			var self = this;
-			console.log('update');
+			//console.log('update');
 			self.updateRepeat(element);
 			self.updateIf(element);
 			self.updateSwitch(element);
