@@ -200,76 +200,78 @@ jstack.dataBinder = (function(){
 			}
 			
 		},
-		eventListener: function(){
-			var self = this;
-			var validNodeEvent = function(n,excludeRepeat){
-				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+		validNodeEvent: function(n,excludeRepeat){
+			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+				return false;
+			}
+			if(excludeRepeat){
+				var jn = $(n);
+				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
 					return false;
 				}
-				if(excludeRepeat){
-					var jn = $(n);
-					if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
-						return false;
-					}
-				}
-				return true;
-			};
+			}
+			return true;
+		},
+		loadMutations: function(mutations){
+			var self = this;
+							
+			var events = $._data(document,'events');			
+			var eventsLoad = events['j:load'] || [];
+			var eventLoad = $.Event('j:load');
+			var eventsUnload = events['j:unload'] || [];
+			var eventUnload = $.Event('j:unload');
+			$.each(mutations,function(i,mutation){
+				$.each(mutation.addedNodes,function(ii,node){
+					
+					var nodes = $(node).add($(node).find('*'));
+					
+					nodes.each(function(iii,n){
+						
+						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+							jstack.dataBinder.loaders.textMustache(n);
+							return;
+						}
+						
+						$.each(jstack.preloader,function(selector,callback){
+							if($(n).is(selector)){
+								callback.call(n);
+							}
+						});
+						
+						if(!$.contains(document.body,n)) return;
+						
+						$.each(eventsLoad,function(type,e){
+							if(e.selector&&$(n).is(e.selector)){
+								e.handler.call(n,eventLoad);
+							}
+						});
+						
+					});
+					
+				});
+				$.each(mutation.removedNodes,function(ii,node){
+					var nodes = $(node).add($(node).find('*'));
+					nodes.each(function(iii,n){
+						if(!self.validNodeEvent(n,true)) return;
+						
+						$.each(eventsUnload,function(type,e){
+							if(e.selector&&$(n).is(e.selector)){
+								e.handler.call(n,eventUnload);
+							}
+						});
+						
+					});
+				});
+			});
+			
+		},
+		eventListener: function(){
+			var self = this;
 			
 			var observer = new MutationObserver(function(mutations){
 				//console.log(mutations);
 				//console.log('mutations');
-								
-				var events = $._data(document,'events');			
-				var eventsLoad = events['j:load'] || [];
-				var eventLoad = $.Event('j:load');
-				var eventsUnload = events['j:unload'] || [];
-				var eventUnload = $.Event('j:unload');
-				$.each(mutations,function(i,mutation){
-					$.each(mutation.addedNodes,function(ii,node){
-						
-						//self.update($(node).andSelf());
-						
-						var nodes = $(node).add($(node).find('*'));
-						
-						nodes.each(function(iii,n){
-							
-							if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-								jstack.dataBinder.loaders.textMustache(n);
-								return;
-							}
-							
-							$.each(jstack.preloader,function(selector,callback){
-								if($(n).is(selector)){
-									callback.call(n);
-								}
-							});
-							
-							if(!$.contains(document.body,n)) return;
-							
-							$.each(eventsLoad,function(type,e){
-								if(e.selector&&$(n).is(e.selector)){
-									e.handler.call(n,eventLoad);
-								}
-							});
-							
-						});
-						
-					});
-					$.each(mutation.removedNodes,function(ii,node){
-						var nodes = $(node).add($(node).find('*'));
-						nodes.each(function(iii,n){
-							if(!validNodeEvent(n,true)) return;
-							
-							$.each(eventsUnload,function(type,e){
-								if(e.selector&&$(n).is(e.selector)){
-									e.handler.call(n,eventUnload);
-								}
-							});
-							
-						});
-					});
-				});
-				
+				self.loadMutations(mutations);
 			});
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
