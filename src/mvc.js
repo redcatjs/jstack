@@ -30,7 +30,7 @@ jstack.mvc = function(config){
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
-	var viewReady = $.Deferred();
+	var viewCompilerReady = $.Deferred();
 	var processor;
 	
 	if(jstack.controllers[config.controller]){
@@ -49,13 +49,13 @@ jstack.mvc = function(config){
 				target.attr('j-controller',controller);
 				target.html( processedTemplate );
 			};
-			viewReady.resolve();
+			viewCompilerReady.resolve();
 		} );
 	});
 
 	
 	var ready = $.Deferred();
-	$.when( controllerReady, viewReady ).then( function() {
+	$.when( controllerReady, viewCompilerReady ).then( function() {
 		
 		var ctrl = jstack.controller(config.controller,target);
 		
@@ -78,7 +78,7 @@ jstack.mvc = function(config){
 				if(ctrl.domReady){
 					ctrl.domReady();
 				}
-				
+								
 				ready.resolve(target,ctrl);
 			};
 			
@@ -157,6 +157,8 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		data:data,
 	});
 	mvc.then(function(){
-		ready.resolve();
+		setTimeout(function(){
+			ready.resolve();
+		},0);
 	});
 });
