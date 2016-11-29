@@ -532,7 +532,7 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						$(this).replaceWith('<span j-var="'+parsed.replace(/"/g,"'")+'"></span>');
+						$(this).replaceWith('<span j-var="'+parsed.replace(/'/g,"\\'").replace(/"/g,"'")+'"></span>');
 					}
 				}
 			},
