@@ -339,10 +339,11 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update');
 			
-			$('[j-if]',element).each(self.loaders.jIf);
-			$('[j-switch]',element).each(self.loaders.jSwitch);
 			$('[j-repeat]',element).each(self.loaders.jRepeat);
 			$('[j-repeat-list]',element).each(self.loaders.jRepeatList);
+			
+			$('[j-if]',element).each(self.loaders.jIf);
+			$('[j-switch]',element).each(self.loaders.jSwitch);
 			
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			$(':input[j-val]',element).each(self.loaders.inputWithJval);
