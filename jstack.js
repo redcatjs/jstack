@@ -2307,7 +2307,7 @@ jstack.preloader = {
 	':input[j-val]':function(){
 		jstack.dataBinder.loaders.inputWithJval.call(this);
 	},
-	'[j-var]':function(){
+	':data(j-var)':function(){
 		jstack.dataBinder.loaders.jVar.call(this);
 	},
 	':attrStartsWith("j-var-")':function(){
@@ -2777,8 +2777,8 @@ jstack.dataBinder = (function(){
 				var scopeV = self.getScopeValue(parentEl);
 				return scopeV;
 			};
-			
-			return func(scopeValue, controllerData, el, defaultValue, parent);
+			var value = func(scopeValue, controllerData, el, defaultValue, parent);
+			return value;
 		},
 		getAttrValueEval: function(el,attr,defaultValue){
 			var self = this;
@@ -3034,7 +3034,7 @@ jstack.dataBinder = (function(){
 			
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			$(':input[j-val]',element).each(self.loaders.inputWithJval);
-			$('[j-var]',element).each(self.loaders.jVar);
+			$(':data(j-var)',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
 			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
 			
@@ -3196,7 +3196,7 @@ jstack.dataBinder = (function(){
 				el.trigger('j:val',[value]);
 			},
 			jVar:function(){
-				var value = jstack.dataBinder.getAttrValueEval(this,'j-var');
+				var value = jstack.dataBinder.getValueEval(this,$(this).data('j-var'));
 				$(this).html(value);
 			},
 			jVarAttr: function(){
@@ -3220,7 +3220,8 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						$(this).replaceWith('<span j-var="'+parsed.replace(/'/g,"\\'").replace(/"/g,"'")+'"></span>');
+						var el = $('<span/>').data('j-var',parsed.replace(/'/g,"\\'").replace(/"/g,"'"));
+						$(this).replaceWith(el);
 					}
 				}
 			},

@@ -119,7 +119,7 @@ jstack.preloader = {
 	':input[j-val]':function(){
 		jstack.dataBinder.loaders.inputWithJval.call(this);
 	},
-	'[j-var]':function(){
+	':data(j-var)':function(){
 		jstack.dataBinder.loaders.jVar.call(this);
 	},
 	':attrStartsWith("j-var-")':function(){
