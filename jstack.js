@@ -2199,6 +2199,10 @@ jstack.component = {};
 var loadComponent = function(){
 	var el = this;
 	var component = $(el).attr('j-component');
+	if(!component){
+		console.log('invalid or undefined j-component on element: ',el);
+		return
+	}
 	var config = $(el).dataAttrConfig('j-data-');
 	var paramsData = $(el).attr('j-params-data');
 	var load = function(){
@@ -2826,10 +2830,6 @@ jstack.dataBinder = (function(){
 			
 			params.push("try{ with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;} }catch(jstackException){"+logUndefined+"}");
 			
-			if(forArgs.length){
-				console.log('parentFor',JSON.stringify(params),args);
-			}
-			
 			var func = Function.apply(null,params);
 			
 			var value = func.apply(null,args);
@@ -3273,7 +3273,6 @@ jstack.dataBinder = (function(){
 				var value = jstack.dataBinder.getValueEval(this,myvar);
 				//console.log(myvar,value,this);
 				var forIdList = [];
-				console.log('value',value);
 				$.each(value,function(k){
 					var row = $this.children('[j-for-id="'+k+'"]');
 					if(!row.length){
@@ -3349,7 +3348,7 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(8),value);
 				});
 			},
-			textMustache: function(){				
+			textMustache: function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
@@ -3360,19 +3359,12 @@ jstack.dataBinder = (function(){
 			},
 			
 		},
-		textParser:function(text,delimiters){//algo token from vue.js :)
-			var defaultTagRE = /\{\{((?:.|\n)+?)\}\}/g;
-			var regexEscapeRE = /[-.*+?^${}()|[\]/\\]/g;
-			var buildRegex = function (delimiters) {
-				var open = delimiters[0].replace(regexEscapeRE, '\\$&');
-				var close = delimiters[1].replace(regexEscapeRE, '\\$&');
-				return new RegExp(open + '((?:.|\\n)+?)' + close, 'g')
-			};
-			
-			var tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE;
+		textParser:function(text){
+			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
 			if (!tagRE.test(text)) {
 				return;
 			}
+			console.log(text);
 			var tokens = [];
 			var lastIndex = tagRE.lastIndex = 0;
 			var match, index;

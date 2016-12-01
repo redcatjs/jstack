@@ -656,12 +656,12 @@ jstack.dataBinder = (function(){
 			},
 			
 		},
-		textParser:function(text){//algo token from vue.js :)
-			//var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
-			var tagRE = /\{\{(.*?)\}\}/g;
+		textParser:function(text){
+			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
 			if (!tagRE.test(text)) {
 				return;
 			}
+			console.log(text);
 			var tokens = [];
 			var lastIndex = tagRE.lastIndex = 0;
 			var match, index;
