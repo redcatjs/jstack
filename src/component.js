@@ -6,8 +6,7 @@ var loadComponent = function(){
 	var el = this;
 	var component = $(el).attr('j-component');
 	if(!component){
-		console.log('invalid or undefined j-component on element: ',el);
-		return
+		return;
 	}
 	var config = $(el).dataAttrConfig('j-data-');
 	var paramsData = $(el).attr('j-params-data');
