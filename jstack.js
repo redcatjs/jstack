@@ -2331,6 +2331,9 @@ jstack.preloader = {
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
 	},
+	':attrStartsWith("j-shortcut-model-")':function(){
+		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+	},
 };
 
 //define loaders
@@ -3105,6 +3108,7 @@ jstack.dataBinder = (function(){
 			$(':data(j-var)',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
 			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
+			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
 			
 			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
@@ -3352,6 +3356,20 @@ jstack.dataBinder = (function(){
 					var parsed = jstack.dataBinder.textParser(varAttr);
 					var value = jstack.dataBinder.getValueEval($this,parsed);
 					$this.attr(k.substr(8),value);
+				});
+			},
+			jShrotcutModelAttr: function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-shortcut-model-');
+				$.each(attrs,function(k,varAttr){
+					var value = jstack.dataBinder.getValueEval($this,varAttr);
+					var attr = k.substr(17);
+					if(value){
+						$this.attr(attr,attr);
+					}
+					else{
+						$this.removeAttr(attr);
+					}
 				});
 			},
 			textMustache: function(){

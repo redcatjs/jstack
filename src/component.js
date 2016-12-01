@@ -137,6 +137,9 @@ jstack.preloader = {
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
 	},
+	':attrStartsWith("j-shortcut-model-")':function(){
+		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+	},
 };
 
 //define loaders
