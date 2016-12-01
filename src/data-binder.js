@@ -96,7 +96,14 @@ jstack.dataBinder = (function(){
 			var forParams = [];
 			var forArgs = [];
 			
+			var forCollection = [];
+			if($(el).is('[j-for-id]')){
+				forCollection.push( el );
+			}
 			$(el).parents('[j-for-id]').each(function(){
+				forCollection.push( this );
+			});
+			$(forCollection).each(function(){
 				var parentFor = $(this);
 				var parentForList = parentFor.closest('[j-for-list]');
 				var myvar = parentForList.attr('j-for-var');
@@ -661,7 +668,6 @@ jstack.dataBinder = (function(){
 			if (!tagRE.test(text)) {
 				return;
 			}
-			console.log(text);
 			var tokens = [];
 			var lastIndex = tagRE.lastIndex = 0;
 			var match, index;
