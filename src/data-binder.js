@@ -76,8 +76,6 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
 			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
-			var func = new Function( "$scope, $controller, $this, $default, $parent", "try{ with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;} }catch(jstackException){"+logUndefined+"}" );
-			var controllerData = self.getControllerData(el);
 			
 			var parent;
 			parent = function(depth){
@@ -90,7 +88,52 @@ jstack.dataBinder = (function(){
 				var scopeV = self.getScopeValue(parentEl);
 				return scopeV;
 			};
-			var value = func(scopeValue, controllerData, el, defaultValue, parent);
+			var controllerData = self.getControllerData(el);
+			
+			var params = [ "$scope, $controller, $this, $default, $parent" ];
+			var args = [ scopeValue, controllerData, el, defaultValue, parent ];
+			
+			var forParams = [];
+			var forArgs = [];
+			
+			$(el).parents('[j-for-id]').each(function(){
+				var parentFor = $(this);
+				var parentForList = parentFor.closest('[j-for-list]');
+				var myvar = parentForList.attr('j-for-var');
+				var value = parentForList.attr('j-for-value');
+				var id = parentFor.attr('j-for-id');
+				
+				forParams.push(value);
+				
+				var valueToEval = myvar;
+				valueToEval += jstack.isIntKey(id)?'['+id+']':'.'+id;
+				
+				forArgs.push(self.getValueEval(parentForList,valueToEval));
+				
+				var key = parentFor.attr('j-for-key');
+				if(key){
+					forParams.push(key);
+					forArgs.push(id);
+				}
+			});
+			
+			for(var i=0,l=forParams.length;i<l;i++){
+				params.push(forParams[i]);
+			}
+			for(var i=0,l=forArgs.length;i<l;i++){
+				args.push(forArgs[i]);
+			}
+			
+			
+			params.push("try{ with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;} }catch(jstackException){"+logUndefined+"}");
+			
+			if(forArgs.length){
+				console.log('parentFor',JSON.stringify(params),args);
+			}
+			
+			var func = Function.apply(null,params);
+			
+			var value = func.apply(null,args);
 			return value;
 		},
 		getAttrValueEval: function(el,attr,defaultValue){
@@ -206,7 +249,7 @@ jstack.dataBinder = (function(){
 			}
 			if(excludeRepeat){
 				var jn = $(n);
-				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length){
+				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length || jn.attr('j-for')||jn.closest('[j-for]').length){
 					return false;
 				}
 			}
@@ -342,6 +385,9 @@ jstack.dataBinder = (function(){
 			$('[j-repeat]',element).each(self.loaders.jRepeat);
 			$('[j-repeat-list]',element).each(self.loaders.jRepeatList);
 			
+			$('[j-for]',element).each(self.loaders.jFor);
+			$('[j-for-list]',element).each(self.loaders.jForList);
+			
 			$('[j-if]',element).each(self.loaders.jIf);
 			$('[j-switch]',element).each(self.loaders.jSwitch);
 			
@@ -475,6 +521,77 @@ jstack.dataBinder = (function(){
 					}
 				});
 			},
+			
+			jFor: function(){
+				var $this = $(this);
+				var parent = $this.parent();
+				
+				var attrFor = $this.attr('j-for');
+				attrFor = attrFor.trim();
+				var p = new RegExp('(\\()((?:[a-z][a-z0-9_]*))(,).*?((?:[a-z][a-z0-9_]*))(\\))(\\s+)(in)(\\s+)(([0-9a-zA-Z_$.\\[\\]]]*))',["i"]);
+				var m = p.exec(attrFor);
+				var key, value, myvar;
+				if (m != null){
+					key = m[2];
+					value = m[4];
+					myvar = m[9];
+					parent.attr('');
+				}
+				else{
+					var p = new RegExp('((?:[a-z][a-z0-9_]*))(\\s+)(in)(\\s+)(([0-9a-zA-Z_$.\\[\\]]*))',["i"]);
+					var m = p.exec(attrFor);
+					if (m != null){
+						value = m[1];
+						myvar = m[5];
+					}
+					else{
+						throw new Error('Malformed for clause: '+attrFor);
+					}
+				}
+				
+				parent.attr('j-for-var',myvar);
+				parent.attr('j-for-value',value);
+				if(key){
+					parent.attr('j-for-key',key);
+				}
+				
+				parent.attr('j-for-list','true');
+				parent.data('jForTemplate',this);
+				$this.removeAttr('j-for');
+				$this.data('parent',parent);
+				$this.detach();
+			},
+			jForList: function(){
+				var $this = $(this);
+				
+				//add
+				var template = $this.data('jForTemplate');
+				var myvar = $this.attr('j-for-var');
+				var value = jstack.dataBinder.getValueEval(this,myvar);
+				//console.log(myvar,value,this);
+				var forIdList = [];
+				console.log('value',value);
+				$.each(value,function(k){
+					var row = $this.children('[j-for-id="'+k+'"]');
+					if(!row.length){
+						row = $(template).clone();
+						row.attr('j-for-id',k);
+						row.appendTo($this);
+					}
+					forIdList.push(k);
+				});
+				
+				//remove
+				$this.children('[j-for-id]').each(function(){
+					var forId = $(this).attr('j-for-id');
+					if(forIdList.indexOf(forId)===-1){
+						$(this).remove();
+					}
+				});
+				
+			},
+			
+			
 			
 			inputWithName: function(){
 				var input = $(this);

@@ -111,8 +111,14 @@ jstack.preloader = {
 	'[j-repeat-list]':function(){
 		jstack.dataBinder.loaders.jRepeatList.call(this);
 	},
-	
-	':input[name]':function(){
+	'[j-for]':function(){
+		jstack.dataBinder.loaders.jFor.call(this);
+		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
+	},
+	'[j-for-list]':function(){
+		jstack.dataBinder.loaders.jForList.call(this);
+	},
+	':input[name]':function(){		
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
