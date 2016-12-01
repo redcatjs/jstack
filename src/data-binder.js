@@ -285,7 +285,9 @@ jstack.dataBinder = (function(){
 						
 						$.each(eventsLoad,function(type,e){
 							if(e.selector&&$(n).is(e.selector)){
-								e.handler.call(n,eventLoad);
+								setTimeout(function(){
+									e.handler.call(n,eventLoad);
+								},0);
 							}
 						});
 						
@@ -299,7 +301,9 @@ jstack.dataBinder = (function(){
 						
 						$.each(eventsUnload,function(type,e){
 							if(e.selector&&$(n).is(e.selector)){
-								e.handler.call(n,eventUnload);
+								setTimeout(function(){
+									e.handler.call(n,eventUnload);
+								},0);
 							}
 						});
 						
