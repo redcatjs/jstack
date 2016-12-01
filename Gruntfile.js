@@ -13,6 +13,8 @@ grunt.initConfig({
 				"src/url.js",
 				"src/uniqid.js",
 				
+				"src/std/isPositiveInteger.js",
+				
 				"src/string/camelCase.js",
 				"src/string/lcfirst.js",
 				"src/string/replaceAll.js",
