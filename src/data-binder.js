@@ -403,7 +403,6 @@ jstack.dataBinder = (function(){
 			$('[j-switch]',element).each(self.loaders.jSwitch);
 			
 			$(':input[name]',element).each(self.loaders.inputWithName);
-			$(':input[j-val]',element).each(self.loaders.inputWithJval);
 			$(':data(j-var)',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
 			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
@@ -612,29 +611,6 @@ jstack.dataBinder = (function(){
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);
-			},
-			inputWithJval: function(){
-				var el = $(this);
-				var type = el.prop('type');
-				//var value = jstack.dataBinder.getAttrValueEval(this,'j-val',jstack.dataBinder.getInputVal(this));
-				var value = jstack.dataBinder.getAttrValueEval(this,'j-val');
-				var name = el.attr('name');
-				if(typeof(value)=='undefined'){
-					var defaultValue;
-					if(type=="checkbox"||type=="radio"){
-						defaultValue = this.defaultChecked;
-					}
-					else{
-						defaultValue = this.defaultValue;
-					}
-					value = defaultValue;
-				}
-				if(name){
-					jstack.dataBinder.dotSet(jstack.dataBinder.getKey(name),jstack.dataBinder.getScopeValue(this),value);
-				}
-				if(el.data('j:populate:prevent')) return;
-				el.populateInput(value,{preventValEvent:true});
-				el.trigger('j:val',[value]);
 			},
 			jVar:function(){
 				var value = jstack.dataBinder.getValueEval(this,$(this).data('j-var'));

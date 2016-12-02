@@ -125,9 +125,6 @@ jstack.preloader = {
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
-	':input[j-val]':function(){
-		jstack.dataBinder.loaders.inputWithJval.call(this);
-	},
 	':data(j-var)':function(){
 		jstack.dataBinder.loaders.jVar.call(this);
 	},
