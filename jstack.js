@@ -2870,9 +2870,22 @@ jstack.dataBinder = (function(){
 			;
 		},
 		getScopedInput: function(input){
-			var name = $(input).attr('name');
-			var key = this.getKey(name);
-			return this.getScoped(input,key);
+			var self = this;
+			var $input = $(input);
+			var name = $input.attr('name');
+			var key = self.getKey(name);
+			if(key.substr(-1)=='.'&&$input.is(':checkbox')){
+				var index;
+				var scope = self.getParentScope(input);
+				scope.find(':checkbox[name="'+name+'"]').each(function(i){
+					if(this===input){
+						index = i;
+						return false;
+					}
+				});
+				key += index;
+			}
+			return self.getScoped(input,key);
 		},
 		getScoped: function(input,suffix){
 			if(suffix.substr(0,1)==='.'){
