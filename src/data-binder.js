@@ -51,7 +51,7 @@ jstack.dataBinder = (function(){
 			}, data);
 		},
 		getKey: function(key){
-			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" );
+			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
 		},
 		getValue: function(el,varKey,defaultValue){
 			var self = this;
