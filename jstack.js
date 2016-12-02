@@ -1233,6 +1233,22 @@ jstack.isPositiveInteger = function(n) { 6 // good for all numeric values which 
 jstack.isIntKey = function(n) {
     return n >>> 0 === parseFloat(n);
 };
+jstack.flatObservable = function(){
+	var args = [];
+	for(var i=0,l=arguments.length;i<l;i++){
+		var arg = arguments[i];
+		arg = JSON.parse(JSON.stringify(arg));
+		args.push(arg);
+	}
+	return args;
+};
+jstack.log = function(){
+	
+	console.log((new Error()).stack.split('\n')[1]);
+	
+	var args = jstack.flatObservable.apply(jstack,arguments);
+	console.log.apply(console,args);
+};
 String.prototype.camelCase = function() {
 	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
 };
