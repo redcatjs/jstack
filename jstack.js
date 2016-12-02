@@ -3030,9 +3030,13 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			$(document.body).on('input', ':input[name]', function(e){
-				//console.log('input user');
-				self.inputToModel(this,'j:input');
+			$(document.body).on('input change', ':input[name]', function(e){
+				var value = self.getInputVal(this);
+				if(value!=$(this).data('jHandledValue')){
+					//console.log('input user');
+					$(this).data('jHandledValue',value);
+					self.inputToModel(this,'j:input');
+				}
 			});
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
 				self.inputToModel(this,'j:input');
