@@ -675,7 +675,6 @@ jstack.dataBinder = (function(){
 					var parsed = jstack.dataBinder.textParser(original);
 					if(typeof(parsed)=='string'){
 						var value = jstack.dataBinder.getValueEval($this,parsed);
-						console.log(parsed,value);
 						$this.attr(k,value);
 					}
 				});
