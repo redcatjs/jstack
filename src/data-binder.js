@@ -637,7 +637,6 @@ jstack.dataBinder = (function(){
 				var original = $this.data('j-href');
 				if(!original){
 					original = $this.attr('j-href');
-					console.log(original,this);
 					$this.data('j-href',original);
 				}
 				
@@ -659,7 +658,7 @@ jstack.dataBinder = (function(){
 				var attrs = $this.attrStartsWith('j-model-');
 				$.each(attrs,function(k,varAttr){
 					var parsed = jstack.dataBinder.textParser(varAttr);
-					var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval($this,varAttr) : varAttr;
+					var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval($this,parsed) : varAttr;
 					$this.attr(k.substr(8),value);
 				});
 			},
@@ -676,6 +675,7 @@ jstack.dataBinder = (function(){
 					var parsed = jstack.dataBinder.textParser(original);
 					if(typeof(parsed)=='string'){
 						var value = jstack.dataBinder.getValueEval($this,parsed);
+						console.log(parsed,value);
 						$this.attr(k,value);
 					}
 				});
