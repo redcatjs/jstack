@@ -633,12 +633,18 @@ jstack.dataBinder = (function(){
 			},
 			jHref: function(){
 				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-href-');
-				$.each(attrs,function(k,varAttr){
-					varAttr = jstack.dataBinder.textParser(varAttr);
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
-					$this.attr('href',jstack.route.baseLocation + "#" + value);
-				});
+
+				var original = $this.data('j-href');
+				if(!original){
+					original = $this.attr('j-href');
+					console.log(original,this);
+					$this.data('j-href',original);
+				}
+				
+				var parsed = jstack.dataBinder.textParser(original);
+				var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : original;
+				
+				$this.attr('href',jstack.route.baseLocation + "#" + value);
 			},
 			jVarAttr: function(){
 				var $this = $(this);
@@ -652,8 +658,8 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-model-');
 				$.each(attrs,function(k,varAttr){
-					varAttr = jstack.dataBinder.textParser(varAttr);
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
+					var parsed = jstack.dataBinder.textParser(varAttr);
+					var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval($this,varAttr) : varAttr;
 					$this.attr(k.substr(8),value);
 				});
 			},
@@ -661,12 +667,17 @@ jstack.dataBinder = (function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-data-');
 				$.each(attrs,function(k,varAttr){
-					var original = $this.data(k) || varAttr;
-					$this.data(k,varAttr);
+					var original = $this.data(k);
+					if(!original){
+						original = varAttr;
+						$this.data(k,original);
+					}
 					
 					var parsed = jstack.dataBinder.textParser(original);
-					var value = jstack.dataBinder.getValueEval($this,parsed);
-					$this.attr(k,value);
+					if(typeof(parsed)=='string'){
+						var value = jstack.dataBinder.getValueEval($this,parsed);
+						$this.attr(k,value);
+					}
 				});
 			},
 			jShrotcutModelAttr: function(){

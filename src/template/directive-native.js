@@ -10,11 +10,6 @@ jstack.template.directive( "foreach", function( val, el ) {
 	jstack.template.jmlInject( el, "after", "});" );
 } );
 
-jstack.template.directive( "href", function( val, el ) {
-	href = jstack.route.baseLocation + "#" + val;
-	el.attr( "href", href );
-} );
-
 jstack.template.directive( "src", function( val, el ) {
 	el.attr( "j-loaded-src", val );
 } );
