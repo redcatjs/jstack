@@ -419,6 +419,7 @@ jstack.dataBinder = (function(){
 			$(':data(j-var)',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
 			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
+			$(':attrStartsWith("j-data-")',element).each(self.loaders.jDataAttr);
 			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
 			
 			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
@@ -637,12 +638,21 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(6),value);
 				});
 			},
+			jDataAttr: function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-data-');
+				$.each(attrs,function(k,varAttr){
+					varAttr = jstack.dataBinder.textParser(varAttr);
+					var value = jstack.dataBinder.getValueEval($this,varAttr);
+					$this.attr(k.substr(7),value);
+				});
+			},
 			jModelAttr: function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-model-');
 				$.each(attrs,function(k,varAttr){
-					var parsed = jstack.dataBinder.textParser(varAttr);
-					var value = jstack.dataBinder.getValueEval($this,parsed);
+					varAttr = jstack.dataBinder.textParser(varAttr);
+					var value = jstack.dataBinder.getValueEval($this,varAttr);
 					$this.attr(k.substr(8),value);
 				});
 			},
