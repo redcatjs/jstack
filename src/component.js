@@ -121,6 +121,9 @@ jstack.preloader = {
 	'[j-for-list]':function(){
 		jstack.dataBinder.loaders.jForList.call(this);
 	},
+	'[j-href]':function(){
+		jstack.dataBinder.loaders.jHref.call(this);
+	},
 	':input[name]':function(){		
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 		jstack.dataBinder.loaders.inputWithName.call(this);
@@ -130,6 +133,9 @@ jstack.preloader = {
 	},
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
+	},
+	':attrStartsWith("j-data-")':function(){
+		jstack.dataBinder.loaders.jDataAttr.call(this);
 	},
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
