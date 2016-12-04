@@ -21,7 +21,7 @@
 					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
 				}
 			}
-			var logUndefined = jstack.config.debug?'console.log(tmplException.message);':'';
+			var logUndefined = jstack.config.debug?'console.warn(tmplException.message);':'';
 			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )

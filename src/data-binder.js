@@ -75,7 +75,7 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/[\r\t\n]/g,'');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var logUndefined = jstack.config.debug?'console.log(jstackException.message);':'';
+			var logUndefined = jstack.config.debug?'console.warn(jstackException.message);':'';
 			
 			var parent;
 			parent = function(depth){
