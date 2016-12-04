@@ -2088,11 +2088,6 @@ jstack.template.directive( "foreach", function( val, el ) {
 	jstack.template.jmlInject( el, "after", "});" );
 } );
 
-jstack.template.directive( "href", function( val, el ) {
-	href = jstack.route.baseLocation + "#" + val;
-	el.attr( "href", href );
-} );
-
 jstack.template.directive( "src", function( val, el ) {
 	el.attr( "j-loaded-src", val );
 } );
@@ -2331,6 +2326,9 @@ jstack.preloader = {
 	'[j-for-list]':function(){
 		jstack.dataBinder.loaders.jForList.call(this);
 	},
+	'[j-href]':function(){
+		jstack.dataBinder.loaders.jHref.call(this);
+	},
 	':input[name]':function(){		
 		jstack.dataBinder.inputToModel(this,'j:default',true);
 		jstack.dataBinder.loaders.inputWithName.call(this);
@@ -2340,6 +2338,9 @@ jstack.preloader = {
 	},
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
+	},
+	':attrStartsWith("j-data-")':function(){
+		jstack.dataBinder.loaders.jDataAttr.call(this);
 	},
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
@@ -3132,6 +3133,7 @@ jstack.dataBinder = (function(){
 			
 			$('[j-if]',element).each(self.loaders.jIf);
 			$('[j-switch]',element).each(self.loaders.jSwitch);
+			$('[j-href]',element).each(self.loaders.jHref);
 			
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			$(':data(j-var)',element).each(self.loaders.jVar);
@@ -3348,6 +3350,20 @@ jstack.dataBinder = (function(){
 				var value = jstack.dataBinder.getValueEval(this,$(this).data('j-var'));
 				$(this).html(value);
 			},
+			jHref: function(){
+				var $this = $(this);
+
+				var original = $this.data('j-href');
+				if(!original){
+					original = $this.attr('j-href');
+					$this.data('j-href',original);
+				}
+				
+				var parsed = jstack.dataBinder.textParser(original);
+				var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : original;
+				
+				$this.attr('href',jstack.route.baseLocation + "#" + value);
+			},
 			jVarAttr: function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-var-');
@@ -3356,22 +3372,31 @@ jstack.dataBinder = (function(){
 					$this.attr(k.substr(6),value);
 				});
 			},
-			jDataAttr: function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-data-');
-				$.each(attrs,function(k,varAttr){
-					varAttr = jstack.dataBinder.textParser(varAttr);
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
-					$this.attr(k,value);
-				});
-			},
 			jModelAttr: function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-model-');
 				$.each(attrs,function(k,varAttr){
-					varAttr = jstack.dataBinder.textParser(varAttr);
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
+					var parsed = jstack.dataBinder.textParser(varAttr);
+					var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval($this,parsed) : varAttr;
 					$this.attr(k.substr(8),value);
+				});
+			},
+			jDataAttr: function(){
+				var $this = $(this);
+				var attrs = $this.attrStartsWith('j-data-');
+				$.each(attrs,function(k,varAttr){
+					var original = $this.data(k);
+					if(!original){
+						original = varAttr;
+						$this.data(k,original);
+					}
+					
+					var parsed = jstack.dataBinder.textParser(original);
+					if(typeof(parsed)=='string'){
+						var value = jstack.dataBinder.getValueEval($this,parsed);
+						console.log(parsed,value);
+						$this.attr(k,value);
+					}
 				});
 			},
 			jShrotcutModelAttr: function(){
