@@ -3362,7 +3362,7 @@ jstack.dataBinder = (function(){
 				$.each(attrs,function(k,varAttr){
 					varAttr = jstack.dataBinder.textParser(varAttr);
 					var value = jstack.dataBinder.getValueEval($this,varAttr);
-					$this.attr(k.substr(7),value);
+					$this.attr(k,value);
 				});
 			},
 			jModelAttr: function(){
