@@ -62,6 +62,7 @@ jstack.dataBinder = (function(){
 		getValueEval: function(el,varKey,defaultValue){
 			var self = this;
 			var scopeValue = self.getScopeValue(el);
+			scopeValue = JSON.parse(JSON.stringify(scopeValue)); //clone Proxy
 			if(typeof(varKey)=='undefined'){
 				varKey = 'undefined';
 			}
@@ -103,6 +104,16 @@ jstack.dataBinder = (function(){
 			$(el).parents('[j-for-id]').each(function(){
 				forCollection.push( this );
 			});
+			var addToScope = function(param,arg){
+				//var index = forParams.indexOf(param);
+				//if(index!==-1){
+					//forParams.splice(index,1);
+					//forArgs.splice(index,1);
+				//}
+				//forParams.push(param);
+				//forArgs.push(arg);
+				scopeValue[param] = arg;
+			};
 			$(forCollection).each(function(){
 				var parentFor = $(this);
 				var parentForList = parentFor.closest('[j-for-list]');
@@ -120,12 +131,10 @@ jstack.dataBinder = (function(){
 				var key = parentForList.attr('j-for-key');
 				var index = parentForList.attr('j-for-index');
 				if(index){
-					forParams.push(index);
-					forArgs.push(parentFor.index()+1);
+					addToScope(index,parentFor.index()+1);
 				}
 				if(key){
-					forParams.push(key);
-					forArgs.push(id);
+					addToScope(key,id);
 				}
 			});
 			
@@ -608,6 +617,7 @@ jstack.dataBinder = (function(){
 				$this.removeAttr('j-for');
 				$this.data('parent',parent);
 				$this.detach();
+				
 			},
 			jForList: function(){
 				var $this = $(this);
