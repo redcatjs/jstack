@@ -656,7 +656,6 @@ jstack.dataBinder = (function(){
 				var defaultValue = jstack.dataBinder.getInputVal(this);
 				var key = jstack.dataBinder.getKey( input.attr('name') );
 				var value = jstack.dataBinder.getValue(this,key,defaultValue);
-				console.log(key,value);
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);
