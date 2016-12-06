@@ -66,7 +66,7 @@ jstack.controller = function(controller,element){
 	}
 
 	
-	controller = jstack.controllers[controller] || jstack.config.defaultController;
+	controller = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
 	
 	controller = new controller(element);
 	
