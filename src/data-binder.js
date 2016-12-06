@@ -117,7 +117,7 @@ jstack.dataBinder = (function(){
 				
 				forArgs.push(self.getValueEval(parentForList,valueToEval));
 				
-				var key = parentFor.attr('j-for-key');
+				var key = parentForList.attr('j-for-key');
 				if(key){
 					forParams.push(key);
 					forArgs.push(id);
@@ -286,22 +286,26 @@ jstack.dataBinder = (function(){
 					
 					nodes.each(function(iii,n){
 						
+						var $n = $(n);
+						if($n.parent().closest('[j-for]').length){
+							return;
+						}
+						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							jstack.dataBinder.loaders.textMustache(n);
 							return;
 						}
 						
 						$.each(jstack.preloader,function(selector,callback){
-							if($(n).is(selector)){
+							if($n.is(selector)){
 								callback.call(n);
 							}
 						});
 						
 						if(!$.contains(document.body,n)) return;
-						if(!self.validNodeEvent(n,true)) return;
 						
 						$.each(eventsLoad,function(type,e){
-							if(e.selector&&$(n).is(e.selector)){
+							if(e.selector&&$n.is(e.selector)){
 								setTimeout(function(){
 									e.handler.call(n,eventLoad);
 								},0);
@@ -555,31 +559,43 @@ jstack.dataBinder = (function(){
 				
 				var attrFor = $this.attr('j-for');
 				attrFor = attrFor.trim();
-				var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+				var index, key, value, myvar;
+				
+				var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 				var m = p.exec(attrFor);
-				var key, value, myvar;
 				if (m != null){
-					key = m[2];
-					value = m[4];
-					myvar = m[9];
-					parent.attr('');
+					index = m[2];
+					key = m[4];
+					value = m[6];
+					myvar = m[11];
 				}
 				else{
-					var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+					var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 					var m = p.exec(attrFor);
 					if (m != null){
-						value = m[1];
-						myvar = m[5];
+						key = m[2];
+						value = m[4];
+						myvar = m[9];
 					}
 					else{
-						throw new Error('Malformed for clause: '+attrFor);
+						var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+						var m = p.exec(attrFor);
+						if (m != null){
+							value = m[1];
+							myvar = m[5];
+						}
+						else{
+							throw new Error('Malformed for clause: '+attrFor);
+						}
 					}
 				}
-				console.log(m);
 				parent.attr('j-for-var',myvar);
 				parent.attr('j-for-value',value);
 				if(key){
 					parent.attr('j-for-key',key);
+				}
+				if(typeof(index)!='undefined'){
+					parent.attr('j-for-index',index);
 				}
 				
 				parent.attr('j-for-list','true');
