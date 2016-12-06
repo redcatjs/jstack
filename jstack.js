@@ -2334,10 +2334,6 @@ jstack.preloader = {
 	'[j-href]':function(){
 		jstack.dataBinder.loaders.jHref.call(this);
 	},
-	':input[name]':function(){		
-		jstack.dataBinder.inputToModel(this,'j:default',true);
-		jstack.dataBinder.loaders.inputWithName.call(this);
-	},
 	':data(j-var)':function(){
 		jstack.dataBinder.loaders.jVar.call(this);
 	},
@@ -2352,6 +2348,10 @@ jstack.preloader = {
 	},
 	':attrStartsWith("j-shortcut-model-")':function(){
 		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+	},
+	':input[name]':function(){
+		jstack.dataBinder.inputToModel(this,'j:default',true);
+		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
 };
 
@@ -3159,12 +3159,12 @@ jstack.dataBinder = (function(){
 			$('[j-switch]',element).each(self.loaders.jSwitch);
 			$('[j-href]',element).each(self.loaders.jHref);
 			
-			$(':input[name]',element).each(self.loaders.inputWithName);
 			$(':data(j-var)',element).each(self.loaders.jVar);
 			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
 			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
 			$(':attrStartsWith("j-data-")',element).each(self.loaders.jDataAttr);
 			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
+			$(':input[name]',element).each(self.loaders.inputWithName);
 			
 			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
@@ -3378,7 +3378,9 @@ jstack.dataBinder = (function(){
 				var input = $(this);
 				if(input.closest('[j-unscope]').length) return;
 				var defaultValue = jstack.dataBinder.getInputVal(this);
-				var value = jstack.dataBinder.getAttrValue(this,'name',defaultValue);
+				var key = jstack.dataBinder.getKey( input.attr('name') );
+				var value = jstack.dataBinder.getValue(this,key,defaultValue);
+				console.log(key,value);
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);

@@ -129,10 +129,6 @@ jstack.preloader = {
 	'[j-href]':function(){
 		jstack.dataBinder.loaders.jHref.call(this);
 	},
-	':input[name]':function(){		
-		jstack.dataBinder.inputToModel(this,'j:default',true);
-		jstack.dataBinder.loaders.inputWithName.call(this);
-	},
 	':data(j-var)':function(){
 		jstack.dataBinder.loaders.jVar.call(this);
 	},
@@ -147,6 +143,10 @@ jstack.preloader = {
 	},
 	':attrStartsWith("j-shortcut-model-")':function(){
 		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+	},
+	':input[name]':function(){
+		jstack.dataBinder.inputToModel(this,'j:default',true);
+		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
 };
 
