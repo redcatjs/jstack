@@ -118,6 +118,11 @@ jstack.dataBinder = (function(){
 				forArgs.push(self.getValueEval(parentForList,valueToEval));
 				
 				var key = parentForList.attr('j-for-key');
+				var index = parentForList.attr('j-for-index');
+				if(index){
+					forParams.push(index);
+					forArgs.push(parentFor.index()+1);
+				}
 				if(key){
 					forParams.push(key);
 					forArgs.push(id);
