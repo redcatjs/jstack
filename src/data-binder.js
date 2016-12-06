@@ -265,7 +265,7 @@ jstack.dataBinder = (function(){
 			}
 			if(excludeRepeat){
 				var jn = $(n);
-				if(jn.attr('j-repeat')||jn.closest('[j-repeat]').length || jn.attr('j-for')||jn.closest('[j-for]').length){
+				if(jn.closest('[j-repeat]').length||jn.closest('[j-for]').length){
 					return false;
 				}
 			}
@@ -298,6 +298,7 @@ jstack.dataBinder = (function(){
 						});
 						
 						if(!$.contains(document.body,n)) return;
+						if(!self.validNodeEvent(n,true)) return;
 						
 						$.each(eventsLoad,function(type,e){
 							if(e.selector&&$(n).is(e.selector)){
@@ -554,7 +555,7 @@ jstack.dataBinder = (function(){
 				
 				var attrFor = $this.attr('j-for');
 				attrFor = attrFor.trim();
-				var p = new RegExp('(\\()((?:[a-z][a-z0-9_]*))(,).*?((?:[a-z][a-z0-9_]*))(\\))(\\s+)(in)(\\s+)(([0-9a-zA-Z_$.\\[\\]]]*))',["i"]);
+				var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 				var m = p.exec(attrFor);
 				var key, value, myvar;
 				if (m != null){
@@ -564,7 +565,7 @@ jstack.dataBinder = (function(){
 					parent.attr('');
 				}
 				else{
-					var p = new RegExp('((?:[a-z][a-z0-9_]*))(\\s+)(in)(\\s+)(([0-9a-zA-Z_$.\\[\\]]*))',["i"]);
+					var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 					var m = p.exec(attrFor);
 					if (m != null){
 						value = m[1];
@@ -574,7 +575,7 @@ jstack.dataBinder = (function(){
 						throw new Error('Malformed for clause: '+attrFor);
 					}
 				}
-				
+				console.log(m);
 				parent.attr('j-for-var',myvar);
 				parent.attr('j-for-value',value);
 				if(key){
