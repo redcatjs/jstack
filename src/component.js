@@ -4,12 +4,17 @@ jstack.component = {};
 
 var loadComponent = function(){
 	var el = this;
-	var component = $(el).attr('j-component');
+	var $el = $(el);
+	var component = $el.attr('j-component');
 	if(!component){
 		return;
 	}
-	var config = $(el).dataAttrConfig('j-data-');
-	var paramsData = $(el).attr('j-params-data');
+	if($el.attr('j-component-loaded')){
+		return;
+	}
+	$el.attr('j-component-loaded','true');
+	var config = $el.dataAttrConfig('j-data-');
+	var paramsData = $el.attr('j-params-data');
 	var load = function(){
 		var o;
 		var c = jstack.component[component];
@@ -21,7 +26,7 @@ var loadComponent = function(){
 		else{
 			o = new c(el,config);
 		}
-		$(el).data('j:component',o);			
+		$el.data('j:component',o);			
 	};
 	if(jstack.component[component]){
 		load();
