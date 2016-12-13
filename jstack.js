@@ -1630,6 +1630,9 @@ $.extend( $.expr[ ":" ], {
 		
 		return false;
 	},
+	data: function( elem, i, match ) {
+		return !!$.data( elem, match[ 3 ] );
+	},
 	
 } );
 $.fn.removeClassPrefix = function(prefix) {
