@@ -48,6 +48,7 @@ grunt.initConfig({
 				"src/jquery/outerHTML.js",
 				"src/jquery/loadJml.js",
 				"src/jquery/hasAttr.js",
+				"src/jquery/jComponentReady.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",
