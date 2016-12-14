@@ -1960,6 +1960,28 @@ $.fn.loadJml = function(url,data){
 $.fn.hasAttr = function(attr){
 	return this[0].hasAttribute(attr);
 };
+$.fn.jComponentReady = function(callback){
+	var self = this;
+	var defer = $.Deferred();
+	defer.then(callback);
+	var check = function(){
+		var ok = true;
+		self.each(function(){
+			if(!$(this).data('j.component.loaded')){
+				ok = false;
+				return false;
+			}
+		});
+		if(ok){
+			defer.resolve();
+		}
+	};
+	this.on('j:component:loaded',function(){
+		check();
+	});
+	check();	
+	return defer;
+};
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
 ( function( w, j ) {
@@ -2215,10 +2237,10 @@ var loadComponent = function(){
 	if(!component){
 		return;
 	}
-	if($el.attr('j-component-loaded')){
+	if($el.attr('j-component-handled')){
 		return;
 	}
-	$el.attr('j-component-loaded','true');
+	$el.attr('j-component-handled','true');
 	var config = $el.dataAttrConfig('j-data-');
 	var paramsData = $el.attr('j-params-data');
 	var load = function(){
@@ -2227,12 +2249,22 @@ var loadComponent = function(){
 		if(paramsData){
 			var params = [];
 			params.push(el);
-			 o = new (Function.prototype.bind.apply(c, params));
+			o = new (Function.prototype.bind.apply(c, params));
 		}
 		else{
 			o = new c(el,config);
 		}
 		$el.data('j:component',o);			
+		if(o.deferred){
+			o.deferred.then(function(){
+				$el.data('j.component.loaded',true);
+				$el.trigger('j:component:loaded');
+			});
+		}
+		else{
+			$el.data('j.component.loaded',true);
+			$el.trigger('j:component:loaded');
+		}
 	};
 	if(jstack.component[component]){
 		load();
