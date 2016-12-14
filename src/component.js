@@ -29,10 +29,12 @@ var loadComponent = function(){
 		$el.data('j:component',o);			
 		if(o.deferred){
 			o.deferred.then(function(){
+				$el.data('j.component.loaded',true);
 				$el.trigger('j:component:loaded');
 			});
 		}
 		else{
+			$el.data('j.component.loaded',true);
 			$el.trigger('j:component:loaded');
 		}
 	};
