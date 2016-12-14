@@ -9,10 +9,10 @@ var loadComponent = function(){
 	if(!component){
 		return;
 	}
-	if($el.attr('j-component-loaded')){
+	if($el.attr('j-component-handled')){
 		return;
 	}
-	$el.attr('j-component-loaded','true');
+	$el.attr('j-component-handled','true');
 	var config = $el.dataAttrConfig('j-data-');
 	var paramsData = $el.attr('j-params-data');
 	var load = function(){
@@ -21,12 +21,20 @@ var loadComponent = function(){
 		if(paramsData){
 			var params = [];
 			params.push(el);
-			 o = new (Function.prototype.bind.apply(c, params));
+			o = new (Function.prototype.bind.apply(c, params));
 		}
 		else{
 			o = new c(el,config);
 		}
 		$el.data('j:component',o);			
+		if(o.deferred){
+			o.deferred.then(function(){
+				$el.trigger('j:component:loaded');
+			});
+		}
+		else{
+			$el.trigger('j:component:loaded');
+		}
 	};
 	if(jstack.component[component]){
 		load();
