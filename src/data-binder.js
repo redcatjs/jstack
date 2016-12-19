@@ -90,9 +90,10 @@ jstack.dataBinder = (function(){
 				return scopeV;
 			};
 			var controllerData = self.getControllerData(el);
+			var controller = self.getControllerObject(el);
 			
-			var params = [ "$scope, $controller, $this, $default, $parent" ];
-			var args = [ scopeValue, controllerData, el, defaultValue, parent ];
+			var params = [ "$model, $scope, $controller, $this, $default, $parent" ];
+			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent ];
 			
 			var forParams = [];
 			var forArgs = [];
