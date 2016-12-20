@@ -76,7 +76,9 @@ jstack.mvc = function(config){
 				processor(ctrl.data);
 				
 				if(ctrl.domReady){
-					ctrl.domReady();
+					setTimeout(function(){
+						ctrl.domReady();
+					});
 				}
 								
 				ready.resolve(target,ctrl);
