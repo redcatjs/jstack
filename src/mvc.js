@@ -78,10 +78,10 @@ jstack.mvc = function(config){
 				if(ctrl.domReady){
 					setTimeout(function(){
 						ctrl.domReady();
+						ready.resolve(target,ctrl);
 					});
 				}
 								
-				ready.resolve(target,ctrl);
 			};
 			
 			if(ctrl.setData){
