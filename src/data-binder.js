@@ -321,8 +321,17 @@ jstack.dataBinder = (function(){
 						
 						$.each(eventsLoad,function(type,e){
 							if(e.selector&&$n.is(e.selector)){
+								if($n.data('j:load:state')){
+									return;
+								}
+								$n.data('j:load:state',1);
 								setTimeout(function(){
-									e.handler.call(n,eventLoad);
+									if($n.data('j:load:state')==2){
+										return;
+									}
+									$n.data('j:load:state',3);
+									e.handler.call($n,eventLoad);
+									$n.data('j:load:state',3);
 								},0);
 							}
 						});
