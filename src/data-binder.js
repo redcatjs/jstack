@@ -439,7 +439,7 @@ jstack.dataBinder = (function(){
 			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			
-			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
+			element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
 			}).each(self.loaders.textMustache);
 			
