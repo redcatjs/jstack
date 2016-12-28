@@ -293,7 +293,11 @@ jstack.dataBinder = (function(){
 				
 				$.each(mutation.addedNodes,function(ii,node){
 					
-					var nodes = $(node).add($(node).find('*'));
+					var $node = $(node);
+					var nodes = $node
+						.add($node.find('*'))
+						//.add($node.find('*').contents())
+					;
 					
 					nodes.each(function(iii,n){
 						var $n = $(n);
@@ -311,11 +315,9 @@ jstack.dataBinder = (function(){
 						if(!$.contains(document.body,n)) return;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							//jstack.dataBinder.loaders.textMustache(n);
+							jstack.dataBinder.loaders.textMustache(n);
 							return;
 						}
-						
-						jstack.dataBinder.applyMustach($n);
 						
 						if($n.data('j:load:state')){
 							return;
