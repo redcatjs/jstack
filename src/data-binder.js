@@ -280,7 +280,7 @@ jstack.dataBinder = (function(){
 			}
 			if(excludeRepeat){
 				var jn = $(n);
-				if(jn.closest('[j-repeat]').length||jn.closest('[j-for]').length){
+				if(jn.closest('[j-for]').length){
 					return false;
 				}
 			}
@@ -424,13 +424,11 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update');
 			
-			$('[j-repeat]',element).each(self.loaders.jRepeat);
-			$('[j-repeat-list]',element).each(self.loaders.jRepeatList);
-			
 			$('[j-for]',element).each(self.loaders.jFor);
 			$('[j-for-list]',element).each(self.loaders.jForList);
 			
 			$('[j-if]',element).each(self.loaders.jIf);
+			
 			$('[j-switch]',element).each(self.loaders.jSwitch);
 			$('[j-href]',element).each(self.loaders.jHref);
 			
@@ -509,61 +507,6 @@ jstack.dataBinder = (function(){
 					else{
 						jcase.appendTo($this);
 						jcase.trigger('j-switch:true');
-					}
-				});
-			},
-			jRepeat: function(){
-				console.warning('j-repeat is deprecated use j-for instead');
-				
-				var $this = $(this);
-				
-				var parent = $this.parent();
-				parent.attr('j-repeat-list','true');
-				var list = parent.data('jRepeatList') || [];
-				list.push(this);
-				parent.data('jRepeatList',list);
-				$this.data('parent',parent);
-				$this.detach();
-				
-			},
-			jRepeatList: function(){
-				var $this = $(this);
-				//var data = jstack.dataBinder.getControllerData(this);
-				var list = $this.data('jRepeatList') || [];
-				var scopes = [];
-				
-				//add
-				$.each(list,function(i,original){
-					var $original = $(original);
-										
-					var attrRepeat = $original.attr('j-repeat');
-					
-					var value = jstack.dataBinder.getValue($this[0],attrRepeat);
-					//var value = jstack.dataBinder.getValueEval($this[0],attrRepeat); //add j-repeat-eval in future
-					
-					var i = 1;
-					$.each(value,function(k,v){
-						var scope = attrRepeat+'.'+k;
-						var row = $this.children('[j-scope="'+scope+'"]');
-						if(!row.length){
-							row = $original.clone();
-							row.removeAttr('j-repeat');
-							row.attr('j-scope',scope);
-							row.attr('j-scope-id',k);
-							row.appendTo($this);
-						}
-						row.find('[j-index]').text(i);
-						scopes.push(scope);
-						i++;
-					});
-					
-				});
-				
-				//remove
-				$this.children('[j-scope]').each(function(){
-					var scope = $(this).attr('j-scope');
-					if(scopes.indexOf(scope)===-1){
-						$(this).remove();
 					}
 				});
 			},

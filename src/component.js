@@ -122,13 +122,6 @@ jstack.preloader = {
 	'[j-switch]':function(){
 		jstack.dataBinder.loaders.jSwitch.call(this);
 	},
-	'[j-repeat]':function(){
-		jstack.dataBinder.loaders.jRepeat.call(this);
-		jstack.dataBinder.loaders.jRepeatList.call($(this).data('parent')[0]);
-	},
-	'[j-repeat-list]':function(){
-		jstack.dataBinder.loaders.jRepeatList.call(this);
-	},
 	'[j-for]':function(){
 		jstack.dataBinder.loaders.jFor.call(this);
 		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
