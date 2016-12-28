@@ -311,9 +311,11 @@ jstack.dataBinder = (function(){
 						if(!$.contains(document.body,n)) return;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache(n);
+							//jstack.dataBinder.loaders.textMustache(n);
 							return;
 						}
+						
+						jstack.dataBinder.applyMustach($n);
 						
 						if($n.data('j:load:state')){
 							return;
@@ -439,11 +441,14 @@ jstack.dataBinder = (function(){
 			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			
+			self.applyMustach(element);
+			
+			
+		},
+		applyMustach:function(element){
 			element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
-			}).each(self.loaders.textMustache);
-			
-			
+			}).each(this.loaders.textMustache);
 		},
 		loaders:{
 			jIf: function(){
