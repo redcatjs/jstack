@@ -288,26 +288,17 @@ jstack.dataBinder = (function(){
 		},
 		loadMutations: function(mutations){
 			var self = this;
-							
-			var events = $._data(document,'events');			
-			var eventsLoad = events['j:load'] || [];
-			var eventLoad = $.Event('j:load');
-			var eventsUnload = events['j:unload'] || [];
-			var eventUnload = $.Event('j:unload');
+			
 			$.each(mutations,function(i,mutation){
+				
 				$.each(mutation.addedNodes,function(ii,node){
 					
 					var nodes = $(node).add($(node).find('*'));
 					
 					nodes.each(function(iii,n){
-						
 						var $n = $(n);
-						if($n.parent().closest('[j-for]').length){
-							return;
-						}
 						
-						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache(n);
+						if($n.parent().closest('[j-for]').length){
 							return;
 						}
 						
@@ -319,50 +310,48 @@ jstack.dataBinder = (function(){
 						
 						if(!$.contains(document.body,n)) return;
 						
-						$.each(eventsLoad,function(type,e){
-							if(e.selector&&$n.is(e.selector)){
-								if($n.data('j:load:state')){
-									return;
-								}
-								$n.data('j:load:state',1);
-								setTimeout(function(){
-									if($n.data('j:load:state')==2){
-										return;
-									}
-									$n.data('j:load:state',3);
-									e.handler.call($n,eventLoad);
-									$n.data('j:load:state',3);
-								},0);
+						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+							jstack.dataBinder.loaders.textMustache(n);
+							return;
+						}
+						
+						if($n.data('j:load:state')){
+							return;
+						}
+						$n.data('j:load:state',1);
+						setTimeout(function(){
+							if($n.data('j:load:state')==2){
+								return;
 							}
-						});
+							$n.data('j:load:state',3);
+							$n.trigger('j:load');
+							$n.data('j:load:state',3);
+						},0);
 						
 					});
-					
+
 				});
+				
 				$.each(mutation.removedNodes,function(ii,node){
 					var nodes = $(node).add($(node).find('*'));
 					nodes.each(function(iii,n){
 						if(!self.validNodeEvent(n,true)) return;
-						
-						$.each(eventsUnload,function(type,e){
-							if(e.selector&&$(n).is(e.selector)){
-								setTimeout(function(){
-									e.handler.call(n,eventUnload);
-								},0);
-							}
-						});
-						
+						setTimeout(function(){
+							$(n).trigger('j:unload');
+						},0);
 					});
 				});
 			});
 			
+			
+					
 		},
 		eventListener: function(){
 			var self = this;
 			
 			var observer = new MutationObserver(function(mutations){
-				//console.log(mutations);
 				//console.log('mutations');
+				//console.log(mutations);
 				self.loadMutations(mutations);
 			});
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
@@ -524,6 +513,8 @@ jstack.dataBinder = (function(){
 				});
 			},
 			jRepeat: function(){
+				console.warning('j-repeat is deprecated use j-for instead');
+				
 				var $this = $(this);
 				
 				var parent = $this.parent();
