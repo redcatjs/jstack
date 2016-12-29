@@ -300,6 +300,7 @@ jstack.dataBinder = (function(){
 					;
 					
 					nodes.each(function(iii,n){
+						
 						var $n = $(n);
 						
 						if($n.parent().closest('[j-for]').length){
@@ -331,6 +332,7 @@ jstack.dataBinder = (function(){
 							$n.trigger('j:load');
 							$n.data('j:load:state',3);
 						},0);
+						
 						
 					});
 
@@ -681,7 +683,8 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						var el = $('<span/>').data('j-var',parsed.replace(/'/g,"\\'").replace(/"/g,"'"));
+						var v = parsed.replace(/'/g,"\\'").replace(/"/g,"'");
+						var el = $('<span/>').data('j-var',v);
 						$(this).replaceWith(el);
 					}
 				}
