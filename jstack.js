@@ -2350,13 +2350,6 @@ jstack.preloader = {
 	'[j-switch]':function(){
 		jstack.dataBinder.loaders.jSwitch.call(this);
 	},
-	'[j-repeat]':function(){
-		jstack.dataBinder.loaders.jRepeat.call(this);
-		jstack.dataBinder.loaders.jRepeatList.call($(this).data('parent')[0]);
-	},
-	'[j-repeat-list]':function(){
-		jstack.dataBinder.loaders.jRepeatList.call(this);
-	},
 	'[j-for]':function(){
 		jstack.dataBinder.loaders.jFor.call(this);
 		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
@@ -3037,7 +3030,7 @@ jstack.dataBinder = (function(){
 			}
 			if(excludeRepeat){
 				var jn = $(n);
-				if(jn.closest('[j-repeat]').length||jn.closest('[j-for]').length){
+				if(jn.closest('[j-for]').length){
 					return false;
 				}
 			}
@@ -3045,26 +3038,22 @@ jstack.dataBinder = (function(){
 		},
 		loadMutations: function(mutations){
 			var self = this;
-							
-			var events = $._data(document,'events');			
-			var eventsLoad = events['j:load'] || [];
-			var eventLoad = $.Event('j:load');
-			var eventsUnload = events['j:unload'] || [];
-			var eventUnload = $.Event('j:unload');
+			
 			$.each(mutations,function(i,mutation){
+				
 				$.each(mutation.addedNodes,function(ii,node){
 					
-					var nodes = $(node).add($(node).find('*'));
+					var $node = $(node);
+					var nodes = $node
+						.add($node.find('*'))
+						//.add($node.find('*').contents())
+					;
 					
 					nodes.each(function(iii,n){
 						
 						var $n = $(n);
-						if($n.parent().closest('[j-for]').length){
-							return;
-						}
 						
-						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache(n);
+						if($n.parent().closest('[j-for]').length){
 							return;
 						}
 						
@@ -3076,50 +3065,49 @@ jstack.dataBinder = (function(){
 						
 						if(!$.contains(document.body,n)) return;
 						
-						$.each(eventsLoad,function(type,e){
-							if(e.selector&&$n.is(e.selector)){
-								if($n.data('j:load:state')){
-									return;
-								}
-								$n.data('j:load:state',1);
-								setTimeout(function(){
-									if($n.data('j:load:state')==2){
-										return;
-									}
-									$n.data('j:load:state',3);
-									e.handler.call($n,eventLoad);
-									$n.data('j:load:state',3);
-								},0);
+						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+							jstack.dataBinder.loaders.textMustache(n);
+							return;
+						}
+						
+						if($n.data('j:load:state')){
+							return;
+						}
+						$n.data('j:load:state',1);
+						setTimeout(function(){
+							if($n.data('j:load:state')==2){
+								return;
 							}
-						});
+							$n.data('j:load:state',3);
+							$n.trigger('j:load');
+							$n.data('j:load:state',3);
+						},0);
+						
 						
 					});
-					
+
 				});
+				
 				$.each(mutation.removedNodes,function(ii,node){
 					var nodes = $(node).add($(node).find('*'));
 					nodes.each(function(iii,n){
 						if(!self.validNodeEvent(n,true)) return;
-						
-						$.each(eventsUnload,function(type,e){
-							if(e.selector&&$(n).is(e.selector)){
-								setTimeout(function(){
-									e.handler.call(n,eventUnload);
-								},0);
-							}
-						});
-						
+						setTimeout(function(){
+							$(n).trigger('j:unload');
+						},0);
 					});
 				});
 			});
 			
+			
+					
 		},
 		eventListener: function(){
 			var self = this;
 			
 			var observer = new MutationObserver(function(mutations){
-				//console.log(mutations);
 				//console.log('mutations');
+				//console.log(mutations);
 				self.loadMutations(mutations);
 			});
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
@@ -3192,13 +3180,11 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update');
 			
-			$('[j-repeat]',element).each(self.loaders.jRepeat);
-			$('[j-repeat-list]',element).each(self.loaders.jRepeatList);
-			
 			$('[j-for]',element).each(self.loaders.jFor);
 			$('[j-for-list]',element).each(self.loaders.jForList);
 			
 			$('[j-if]',element).each(self.loaders.jIf);
+			
 			$('[j-switch]',element).each(self.loaders.jSwitch);
 			$('[j-href]',element).each(self.loaders.jHref);
 			
@@ -3209,11 +3195,14 @@ jstack.dataBinder = (function(){
 			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
 			$(':input[name]',element).each(self.loaders.inputWithName);
 			
-			var textNodes = element.find('*').contents().add(element.contents()).filter(function() {
+			self.applyMustach(element);
+			
+			
+		},
+		applyMustach:function(element){
+			element.find('*').contents().add(element.contents()).filter(function() {
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
-			}).each(self.loaders.textMustache);
-			
-			
+			}).each(this.loaders.textMustache);
 		},
 		loaders:{
 			jIf: function(){
@@ -3277,59 +3266,6 @@ jstack.dataBinder = (function(){
 					else{
 						jcase.appendTo($this);
 						jcase.trigger('j-switch:true');
-					}
-				});
-			},
-			jRepeat: function(){
-				var $this = $(this);
-				
-				var parent = $this.parent();
-				parent.attr('j-repeat-list','true');
-				var list = parent.data('jRepeatList') || [];
-				list.push(this);
-				parent.data('jRepeatList',list);
-				$this.data('parent',parent);
-				$this.detach();
-				
-			},
-			jRepeatList: function(){
-				var $this = $(this);
-				//var data = jstack.dataBinder.getControllerData(this);
-				var list = $this.data('jRepeatList') || [];
-				var scopes = [];
-				
-				//add
-				$.each(list,function(i,original){
-					var $original = $(original);
-										
-					var attrRepeat = $original.attr('j-repeat');
-					
-					var value = jstack.dataBinder.getValue($this[0],attrRepeat);
-					//var value = jstack.dataBinder.getValueEval($this[0],attrRepeat); //add j-repeat-eval in future
-					
-					var i = 1;
-					$.each(value,function(k,v){
-						var scope = attrRepeat+'.'+k;
-						var row = $this.children('[j-scope="'+scope+'"]');
-						if(!row.length){
-							row = $original.clone();
-							row.removeAttr('j-repeat');
-							row.attr('j-scope',scope);
-							row.attr('j-scope-id',k);
-							row.appendTo($this);
-						}
-						row.find('[j-index]').text(i);
-						scopes.push(scope);
-						i++;
-					});
-					
-				});
-				
-				//remove
-				$this.children('[j-scope]').each(function(){
-					var scope = $(this).attr('j-scope');
-					if(scopes.indexOf(scope)===-1){
-						$(this).remove();
 					}
 				});
 			},
@@ -3497,7 +3433,8 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						var el = $('<span/>').data('j-var',parsed.replace(/'/g,"\\'").replace(/"/g,"'"));
+						var v = parsed.replace(/'/g,"\\'").replace(/"/g,"'");
+						var el = $('<span/>').data('j-var',v);
 						$(this).replaceWith(el);
 					}
 				}
