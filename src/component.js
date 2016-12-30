@@ -112,8 +112,7 @@ jstack.loader = function(selector,handler,unloader){
 		handler.call(this);
 	});
 };
-
-
+			
 //define preloaders
 jstack.preloader = {
 	'[j-for]':function(){
@@ -138,17 +137,20 @@ jstack.preloader = {
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
-	':attrStartsWith("j-data-")':function(){
-		jstack.dataBinder.loaders.jDataAttr.call(this);
-	},
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
+	},
+	':attrStartsWith("j-data-")':function(){
+		jstack.dataBinder.loaders.jDataAttr.call(this);
 	},
 	':attrStartsWith("j-shortcut-model-")':function(){
 		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
 	},
 	':input[name]':function(){
-		jstack.dataBinder.inputToModel(this,'j:default',true);
+		if(!$(this).data('j:firstload')){
+			$(this).data('j:firstload',true);
+			jstack.dataBinder.inputToModel(this,'j:default',true);
+		}
 		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
 };

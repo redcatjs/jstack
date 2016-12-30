@@ -76,7 +76,7 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/[\r\t\n]/g,'');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var logUndefined = jstack.config.debug?'console.warn(jstackException.message, "expression: "+$expression, $this);':'';
+			var logUndefined = jstack.config.debug?'console.warn(jstackException.message, ", expression: "+$expression, "element", $this);':'';
 			
 			var parent;
 			parent = function(depth){
@@ -118,6 +118,9 @@ jstack.dataBinder = (function(){
 			$(forCollection).each(function(){
 				var parentFor = $(this);
 				var parentForList = parentFor.closest('[j-for-list]');
+				
+				if(!parentForList.length) return;
+				
 				var myvar = parentForList.attr('j-for-var');
 				var value = parentForList.attr('j-for-value');
 				var id = parentFor.attr('j-for-id');
@@ -430,24 +433,11 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update');
 			
-			$('[j-for]',element).each(self.loaders.jFor);
-			$('[j-for-list]',element).each(self.loaders.jForList);
-			
-			$('[j-if]',element).each(self.loaders.jIf);
-			
-			$('[j-switch]',element).each(self.loaders.jSwitch);
-			$('[j-href]',element).each(self.loaders.jHref);
-			
-			$(':data(j-var)',element).each(self.loaders.jVar);
-			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
-			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
-			$(':attrStartsWith("j-data-")',element).each(self.loaders.jDataAttr);
-			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
-			$(':input[name]',element).each(self.loaders.inputWithName);
+			$.each(jstack.preloader,function(selector,callback){
+				$(selector,element).each(callback);
+			});
 			
 			self.applyMustach(element);
-			
-			
 		},
 		applyMustach:function(element){
 			element.find('*').contents().add(element.contents()).filter(function() {
@@ -458,6 +448,7 @@ jstack.dataBinder = (function(){
 			jIf: function(){
 				var $this = $(this);
 				
+				
 				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
@@ -467,6 +458,8 @@ jstack.dataBinder = (function(){
 				}
 				
 				$this.data('jIfState',value);
+				$this.attr('jIfState',value?'1':'0');
+				
 				
 				if(value){
 					if($this.is(':empty')){
@@ -578,6 +571,9 @@ jstack.dataBinder = (function(){
 			jForList: function(){
 				var $this = $(this);
 				
+				if($this.attr('[j-if]')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
+					return;
+				}
 				
 				//add
 				var template = $this.data('jForTemplate');
