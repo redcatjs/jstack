@@ -2340,22 +2340,21 @@ jstack.loader = function(selector,handler,unloader){
 		handler.call(this);
 	});
 };
-
-
+			
 //define preloaders
 jstack.preloader = {
-	'[j-if]':function(){
-		jstack.dataBinder.loaders.jIf.call(this);
-	},
-	'[j-switch]':function(){
-		jstack.dataBinder.loaders.jSwitch.call(this);
-	},
 	'[j-for]':function(){
 		jstack.dataBinder.loaders.jFor.call(this);
 		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
 	},
 	'[j-for-list]':function(){
 		jstack.dataBinder.loaders.jForList.call(this);
+	},
+	'[j-if]':function(){
+		jstack.dataBinder.loaders.jIf.call(this);
+	},
+	'[j-switch]':function(){
+		jstack.dataBinder.loaders.jSwitch.call(this);
 	},
 	'[j-href]':function(){
 		jstack.dataBinder.loaders.jHref.call(this);
@@ -2366,17 +2365,20 @@ jstack.preloader = {
 	':attrStartsWith("j-var-")':function(){
 		jstack.dataBinder.loaders.jVarAttr.call(this);
 	},
-	':attrStartsWith("j-data-")':function(){
-		jstack.dataBinder.loaders.jDataAttr.call(this);
-	},
 	':attrStartsWith("j-model-")':function(){
 		jstack.dataBinder.loaders.jModelAttr.call(this);
+	},
+	':attrStartsWith("j-data-")':function(){
+		jstack.dataBinder.loaders.jDataAttr.call(this);
 	},
 	':attrStartsWith("j-shortcut-model-")':function(){
 		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
 	},
 	':input[name]':function(){
-		jstack.dataBinder.inputToModel(this,'j:default',true);
+		if(!$(this).data('j:firstload')){
+			$(this).data('j:firstload',true);
+			jstack.dataBinder.inputToModel(this,'j:default',true);
+		}
 		jstack.dataBinder.loaders.inputWithName.call(this);
 	},
 };
@@ -2826,7 +2828,7 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/[\r\t\n]/g,'');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var logUndefined = jstack.config.debug?'console.warn(jstackException.message);':'';
+			var logUndefined = jstack.config.debug?'console.warn(jstackException.message, ", expression: "+$expression, "element", $this);':'';
 			
 			var parent;
 			parent = function(depth){
@@ -2842,8 +2844,8 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$model, $scope, $controller, $this, $default, $parent" ];
-			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent ];
+			var params = [ "$model, $scope, $controller, $this, $default, $parent, $expression" ];
+			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent, varKey ];
 			
 			var forParams = [];
 			var forArgs = [];
@@ -2868,6 +2870,9 @@ jstack.dataBinder = (function(){
 			$(forCollection).each(function(){
 				var parentFor = $(this);
 				var parentForList = parentFor.closest('[j-for-list]');
+				
+				if(!parentForList.length) return;
+				
 				var myvar = parentForList.attr('j-for-var');
 				var value = parentForList.attr('j-for-value');
 				var id = parentFor.attr('j-for-id');
@@ -3180,24 +3185,11 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update');
 			
-			$('[j-for]',element).each(self.loaders.jFor);
-			$('[j-for-list]',element).each(self.loaders.jForList);
-			
-			$('[j-if]',element).each(self.loaders.jIf);
-			
-			$('[j-switch]',element).each(self.loaders.jSwitch);
-			$('[j-href]',element).each(self.loaders.jHref);
-			
-			$(':data(j-var)',element).each(self.loaders.jVar);
-			$(':attrStartsWith("j-var-")',element).each(self.loaders.jVarAttr);
-			$(':attrStartsWith("j-model-")',element).each(self.loaders.jModelAttr);
-			$(':attrStartsWith("j-data-")',element).each(self.loaders.jDataAttr);
-			$(':attrStartsWith("j-shortcut-model-")',element).each(self.loaders.jShrotcutModelAttr);
-			$(':input[name]',element).each(self.loaders.inputWithName);
+			$.each(jstack.preloader,function(selector,callback){
+				$(selector,element).each(callback);
+			});
 			
 			self.applyMustach(element);
-			
-			
 		},
 		applyMustach:function(element){
 			element.find('*').contents().add(element.contents()).filter(function() {
@@ -3207,13 +3199,19 @@ jstack.dataBinder = (function(){
 		loaders:{
 			jIf: function(){
 				var $this = $(this);
-				var value = jstack.dataBinder.getAttrValueEval(this,'j-if');
+				
+				
+				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
 				if(typeof(contents)=='undefined'){
 					contents = $this.contents();
 					$this.data('jIf',contents);
 				}
+				
+				$this.data('jIfState',value);
+				$this.attr('jIfState',value?'1':'0');
+				
 				
 				if(value){
 					if($this.is(':empty')){
@@ -3324,6 +3322,10 @@ jstack.dataBinder = (function(){
 			},
 			jForList: function(){
 				var $this = $(this);
+				
+				if($this.attr('[j-if]')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
+					return;
+				}
 				
 				//add
 				var template = $this.data('jForTemplate');
