@@ -434,7 +434,10 @@ jstack.dataBinder = (function(){
 			//console.log('update');
 			
 			$.each(jstack.preloader,function(selector,callback){
-				$(selector,element).each(callback);
+				$(selector,element).each(function(){
+					if(!$.contains(document.body,this)) return;
+					callback.call(this);
+				});
 			});
 			
 			self.applyMustach(element);
