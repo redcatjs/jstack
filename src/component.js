@@ -116,18 +116,18 @@ jstack.loader = function(selector,handler,unloader){
 
 //define preloaders
 jstack.preloader = {
-	'[j-if]':function(){
-		jstack.dataBinder.loaders.jIf.call(this);
-	},
-	'[j-switch]':function(){
-		jstack.dataBinder.loaders.jSwitch.call(this);
-	},
 	'[j-for]':function(){
 		jstack.dataBinder.loaders.jFor.call(this);
 		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
 	},
 	'[j-for-list]':function(){
 		jstack.dataBinder.loaders.jForList.call(this);
+	},
+	'[j-if]':function(){
+		jstack.dataBinder.loaders.jIf.call(this);
+	},
+	'[j-switch]':function(){
+		jstack.dataBinder.loaders.jSwitch.call(this);
 	},
 	'[j-href]':function(){
 		jstack.dataBinder.loaders.jHref.call(this);
