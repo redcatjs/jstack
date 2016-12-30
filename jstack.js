@@ -3203,16 +3203,21 @@ jstack.dataBinder = (function(){
 				
 				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
+				
 				var contents = $this.data('jIf');
-				if(typeof(contents)=='undefined'){
+				
+				if(!$this.is(':empty')){
 					contents = $this.contents();
 					$this.data('jIf',contents);
 				}
 				
+				
+				if($this.data('jIfState')===value){
+					return;
+				}
+				
 				$this.data('jIfState',value);
-				$this.attr('jIfState',value?'1':'0');
-				
-				
+								
 				if(value){
 					if($this.is(':empty')){
 						contents.appendTo($this);
@@ -3323,7 +3328,7 @@ jstack.dataBinder = (function(){
 			jForList: function(){
 				var $this = $(this);
 				
-				if($this.attr('[j-if]')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
+				if($this.attr('j-if')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
 					return;
 				}
 				
@@ -3331,7 +3336,6 @@ jstack.dataBinder = (function(){
 				var template = $this.data('jForTemplate');
 				var myvar = $this.attr('j-for-var');
 				var value = jstack.dataBinder.getValueEval(this,myvar);
-				//console.log(myvar,value,this);
 				var forIdList = [];
 				$.each(value,function(k){
 					var row = $this.children('[j-for-id="'+k+'"]');
