@@ -76,7 +76,7 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/[\r\t\n]/g,'');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var logUndefined = jstack.config.debug?'console.warn(jstackException.message);':'';
+			var logUndefined = jstack.config.debug?'console.warn(jstackException.message, "expression: "+$expression, $this);':'';
 			
 			var parent;
 			parent = function(depth){
@@ -92,8 +92,8 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$model, $scope, $controller, $this, $default, $parent" ];
-			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent ];
+			var params = [ "$model, $scope, $controller, $this, $default, $parent, $expression" ];
+			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent, varKey ];
 			
 			var forParams = [];
 			var forArgs = [];
@@ -457,6 +457,7 @@ jstack.dataBinder = (function(){
 		loaders:{
 			jIf: function(){
 				var $this = $(this);
+				
 				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
@@ -576,6 +577,7 @@ jstack.dataBinder = (function(){
 			},
 			jForList: function(){
 				var $this = $(this);
+				
 				
 				//add
 				var template = $this.data('jForTemplate');
