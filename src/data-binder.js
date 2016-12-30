@@ -457,13 +457,15 @@ jstack.dataBinder = (function(){
 		loaders:{
 			jIf: function(){
 				var $this = $(this);
-				var value = jstack.dataBinder.getAttrValueEval(this,'j-if');
+				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
 				
 				var contents = $this.data('jIf');
 				if(typeof(contents)=='undefined'){
 					contents = $this.contents();
 					$this.data('jIf',contents);
 				}
+				
+				$this.data('jIfState',value);
 				
 				if(value){
 					if($this.is(':empty')){
