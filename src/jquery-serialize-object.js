@@ -4,6 +4,7 @@
  * @link https://github.com/macek/jquery-serialize-object
  * @license BSD
  * @version 2.5.0
+ * @patched by surikat
  */
 (function(root, factory) {
 
@@ -31,7 +32,7 @@
     validate: /^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,
     key:      /[a-z0-9_]+|(?=\[\])/gi,
     push:     /^$/,
-    fixed:    /^\d+$/,
+    //fixed:    /^\d+$/, //surikat
     named:    /^[a-z0-9_]+$/i
   };
 
@@ -60,13 +61,15 @@
         }
 
         // foo[n]
-        else if (patterns.fixed.test(k)) {
+        //else if (patterns.fixed.test(k)) { //surikat
+          //value = build([], k, value);
+        //}
+        else if (k==0) { //surikat
           value = build([], k, value);
         }
-
         // foo; foo[bar]
         else if (patterns.named.test(k)) {
-          value = build([], k, value);
+          value = build({}, k, value);
         }
       }
 
