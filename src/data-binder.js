@@ -367,7 +367,8 @@ jstack.dataBinder = (function(){
 			
 			$(document.body).on('input change', ':input[name]', function(e){
 				var value = self.getInputVal(this);
-				if(value!=$(this).data('jHandledValue')){
+				var handled = $(this).data('jHandledValue');
+				if(typeof(handled)=='undefined'||value!=handled){
 					//console.log('input user');
 					$(this).data('jHandledValue',value);
 					self.inputToModel(this,'j:input');
