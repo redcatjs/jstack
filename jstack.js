@@ -3444,25 +3444,25 @@ jstack.dataBinder = (function(){
 				var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 				var m = p.exec(attrFor);
 				if (m != null){
-					index = m[2];
-					key = m[4];
+					index = m[2].trim();
+					key = m[4].trim();
 					value = m[6];
-					myvar = m[11];
+					myvar = m[11].trim();
 				}
 				else{
 					var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 					var m = p.exec(attrFor);
 					if (m != null){
-						key = m[2];
+						key = m[2].trim();
 						value = m[4];
-						myvar = m[9];
+						myvar = m[9].trim();
 					}
 					else{
 						var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 						var m = p.exec(attrFor);
 						if (m != null){
 							value = m[1];
-							myvar = m[5];
+							myvar = m[5].trim();
 						}
 						else{
 							throw new Error('Malformed for clause: '+attrFor);
