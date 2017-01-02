@@ -76,7 +76,6 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/[\r\t\n]/g,'');
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
-			var logUndefined = jstack.config.debug?'console.warn(jstackException.message, ", expression: "+$expression, "element", $this);':'';
 			
 			var parent;
 			parent = function(depth){
@@ -92,8 +91,8 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$model, $scope, $controller, $this, $default, $parent, $expression" ];
-			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent, varKey ];
+			var params = [ "$model, $scope, $controller, $this, $default, $parent" ];
+			var args = [ controllerData, scopeValue, controller, el, defaultValue, parent ];
 			
 			var forParams = [];
 			var forArgs = [];
@@ -150,11 +149,19 @@ jstack.dataBinder = (function(){
 			}
 			
 			
-			params.push("try{ with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;} }catch(jstackException){"+logUndefined+"}");
+			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}");
 			
-			var func = Function.apply(null,params);
+			var value;
+			try{
+				var func = Function.apply(null,params);
+				value = func.apply(null,args);
+			}
+			catch(jstackException){
+				if(jstack.config.debug){
+					console.warn(jstackException.message, ", expression: "+varKey, "element", el);
+				}
+			}
 			
-			var value = func.apply(null,args);
 			return value;
 		},
 		getAttrValueEval: function(el,attr,defaultValue){
