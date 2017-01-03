@@ -2133,6 +2133,7 @@ $.fn.jComponentReady = function(callback){
 }));
 //from https://github.com/jayedul/html-minifier-prettifier
 $.prettifyHTML = function(el){
+	el = $(el);
 	if(el.parent().length>0 && el.parent().data('assign')){
 		el.data('assign', el.parent().data('assign')+1);
 	}
@@ -2149,7 +2150,7 @@ $.prettifyHTML = function(el){
 			$(this).before('\n'+tbc);
 			$(this).prepend('\t');
 			$(this).append('\n'+tbc);
-			prettify($(this));				
+			$.prettifyHTML($(this));				
 		});
 	}
 	else{
@@ -2203,7 +2204,7 @@ jstack.template.templateVarSubstitutions = {};
 				if ( jstack.config.debug ) {
 					console.log( e );
 					console.log( compile );
-					console.log( $.prettifyHTML(html) );
+					console.log( html );
 				}
 			}
 		}
