@@ -3528,7 +3528,7 @@ jstack.dataBinder = (function(){
 				//add
 				var template = $this.data('jForTemplate');
 				var myvar = $this.attr('j-for-var');
-				var value = jstack.dataBinder.getValueEval(this,myvar);
+				var value = jstack.dataBinder.getValueEval(this,myvar,[]);
 				var forIdList = [];
 				$.each(value,function(k){
 					var row = $this.children('[j-for-id="'+k+'"]');
