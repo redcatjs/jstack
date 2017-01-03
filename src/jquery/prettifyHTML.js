@@ -17,7 +17,7 @@ $.prettifyHTML = function(el){
 			$(this).before('\n'+tbc);
 			$(this).prepend('\t');
 			$(this).append('\n'+tbc);
-			prettify($(this));				
+			$.prettifyHTML($(this));				
 		});
 	}
 	else{
