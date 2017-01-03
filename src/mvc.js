@@ -47,7 +47,12 @@ jstack.mvc = function(config){
 				var processedTemplate = templateProcessor( data );
 				target.data('jModel',data);
 				target.attr('j-controller',controller);
-				target.html( processedTemplate );
+				if(target.hasAttr('j-view-append')){
+					target.append( processedTemplate );
+				}
+				else{
+					target.html( processedTemplate );
+				}
 			};
 			viewCompilerReady.resolve();
 		} );
