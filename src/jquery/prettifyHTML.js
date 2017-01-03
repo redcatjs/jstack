@@ -1,5 +1,6 @@
 //from https://github.com/jayedul/html-minifier-prettifier
 $.prettifyHTML = function(el){
+	el = $(el);
 	if(el.parent().length>0 && el.parent().data('assign')){
 		el.data('assign', el.parent().data('assign')+1);
 	}
