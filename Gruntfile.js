@@ -50,6 +50,7 @@ grunt.initConfig({
 				"src/jquery/hasAttr.js",
 				"src/jquery/jComponentReady.js",
 				"src/jquery/jquery-serialize-object.js",
+				"src/jquery/prettifyHTML.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",
