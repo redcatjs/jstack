@@ -2160,7 +2160,7 @@ $.prettifyHTML = function(el){
 		}
 		el.prepend('\n'+tbc);
 	}
-	return el;
+	return el.outerHTML();
 };
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
