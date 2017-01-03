@@ -47,7 +47,7 @@ jstack.mvc = function(config){
 				var processedTemplate = templateProcessor( data );
 				target.data('jModel',data);
 				target.attr('j-controller',controller);
-				if(target.hasAttr('j-view-append')){
+				if(Boolean(target.attr('j-view-append'))){
 					target.append( processedTemplate );
 				}
 				else{
