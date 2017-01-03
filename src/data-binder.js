@@ -317,6 +317,8 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						
+						if(!$.contains(document.body,n)) return;
+						
 						$.each(jstack.preloader,function(selector,callback){
 							if($n.is(selector)){
 								callback.call(n);
