@@ -39,7 +39,7 @@
 				if ( jstack.config.debug ) {
 					console.log( e );
 					console.log( compile );
-					console.log( $.prettifyHTML(html) );
+					console.log( html );
 				}
 			}
 		}
