@@ -441,7 +441,7 @@ jstack.dataBinder = (function(){
 		},		
 		update: function(element){
 			var self = this;
-			//console.log('update');
+			//console.log('update',element);
 			
 			$.each(jstack.preloader,function(selector,callback){
 				$(selector,element).each(function(){
