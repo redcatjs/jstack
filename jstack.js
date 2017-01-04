@@ -930,10 +930,10 @@ jstack.controller = function(controller,element){
 				this.updateWait = 100;
 				this.updateDeferStateObserver = null;
 				this.updateTimeout = null;
-				this.runUpdate = function(){						
+				this.runUpdate = function(element){						
 					if(dataBinder.updateDeferStateObserver){
 						dataBinder.updateDeferStateObserver.then(function(){
-							dataBinder.triggerUpdate();
+							dataBinder.triggerUpdate(element);
 						});
 						return;
 					}
@@ -941,7 +941,7 @@ jstack.controller = function(controller,element){
 						dataBinder.updateDeferStateObserver = $.Deferred();
 					}
 					
-					jstack.dataBinder.update(self.element);
+					jstack.dataBinder.update(element);
 					
 					self.element.trigger('j:mutation');
 					
@@ -951,7 +951,7 @@ jstack.controller = function(controller,element){
 					this.updateTimeout = false;
 					
 				};
-				this.triggerUpdate = function(){
+				this.triggerUpdate = function(element){
 					if(this.updateTimeout){
 						if(this.updateTimeout!==true){
 							clearTimeout(this.updateTimeout);
@@ -960,7 +960,7 @@ jstack.controller = function(controller,element){
 					}
 					else{
 						this.updateTimeout = true;
-						this.runUpdate();
+						this.runUpdate(element);
 					}
 				};
 				return this;
@@ -1035,9 +1035,10 @@ jstack.controller = function(controller,element){
 	controller.data = controller.data || {};
 	
 	controller.data = ObjectObservable.create(controller.data);
+	
 	ObjectObservable.observe(controller.data,function(change){
 		//console.log(change);
-		controller.dataBinder.triggerUpdate();
+		controller.dataBinder.triggerUpdate(controller.element);
 	});
 	
 	
@@ -3373,7 +3374,7 @@ jstack.dataBinder = (function(){
 		},		
 		update: function(element){
 			var self = this;
-			//console.log('update');
+			//console.log('update',element);
 			
 			$.each(jstack.preloader,function(selector,callback){
 				$(selector,element).each(function(){
