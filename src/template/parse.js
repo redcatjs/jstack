@@ -22,15 +22,16 @@
 				}
 			}
 			var logUndefined = jstack.config.debug?'console.warn(tmplException.message+" in "+tmplString,tmplObj);':'';
-			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + html
+			var expression = html
 				.replace( /[\r\t\n]/g, " " )
 				.replace( reg1, "\t" )
 				.split( "'" ).join( "\\'" )
 				.split( "\t" ).join( "'" )
 				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ "+logUndefined+" }; tmplString += '" )
 				.split( separatorStart ).join( "';" )
-				.split( separatorEnd ).join( "tmplString += '" ) +
-				"';} return tmplString;";
+				.split( separatorEnd ).join( "tmplString += '" )
+			;
+			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + expression + "';} return tmplString;";
 			try {
 				fn = new Function( "tmplObj", compile );
 				if ( id ) cache[ id ] = fn;
