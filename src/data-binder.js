@@ -305,9 +305,9 @@ jstack.dataBinder = (function(){
 					
 					var $node = $(node);
 					var nodes = $node
+						.add($node.contents())
 						.add($node.find('*'))
-						//.add($node.contents())
-						//.add($node.find('*').contents())
+						.add($node.find('*').contents())
 					;
 					
 					//console.log(nodes);
