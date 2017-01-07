@@ -467,7 +467,7 @@ jstack.dataBinder = (function(){
 				
 				var contents = $this.data('jIf');
 				
-				if(!$this.is(':empty')){
+				if(!$this.is(':empty')||typeof(contents)=='undefined'){
 					contents = $this.contents();
 					$this.data('jIf',contents);
 				}
