@@ -306,8 +306,11 @@ jstack.dataBinder = (function(){
 					var $node = $(node);
 					var nodes = $node
 						.add($node.find('*'))
+						//.add($node.contents())
 						//.add($node.find('*').contents())
 					;
+					
+					//console.log(nodes);
 					
 					nodes.each(function(iii,n){
 						
@@ -319,6 +322,7 @@ jstack.dataBinder = (function(){
 						
 						if(!$.contains(document.body,n)) return;
 						
+						
 						$.each(jstack.preloader,function(selector,callback){
 							if($n.is(selector)){
 								callback.call(n);
@@ -328,7 +332,7 @@ jstack.dataBinder = (function(){
 						if(!$.contains(document.body,n)) return;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache(n);
+							jstack.dataBinder.loaders.textMustache.call(n);
 							return;
 						}
 						
