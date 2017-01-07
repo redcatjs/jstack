@@ -313,6 +313,7 @@ jstack.dataBinder = (function(){
 					//console.log(nodes);
 					
 					nodes.each(function(iii,n){
+						if(!$.contains(document.body,n)) return;
 						
 						var $n = $(n);
 						
@@ -320,8 +321,10 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						
-						if(!$.contains(document.body,n)) return;
-						
+						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+							jstack.dataBinder.loaders.textMustache.call(n);
+							return;
+						}
 						
 						$.each(jstack.preloader,function(selector,callback){
 							if($n.is(selector)){
@@ -331,10 +334,6 @@ jstack.dataBinder = (function(){
 						
 						if(!$.contains(document.body,n)) return;
 						
-						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache.call(n);
-							return;
-						}
 						
 						if($n.data('j:load:state')){
 							return;
