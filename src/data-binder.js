@@ -423,8 +423,11 @@ jstack.dataBinder = (function(){
 		getController:function(input){
 			var controller = $(input).closest('[j-controller]');
 			if(!controller.length){
-				var o = jstack.controller('',$(document.body));
-				o.dataBinder.triggerUpdate(controller);
+				var controller = $(document.body);
+				if(!controller.data('jModel')){
+					controller.data('jModel',{});
+				}
+				var o = jstack.controller('',controller);
 			}
 			return controller;
 		},
