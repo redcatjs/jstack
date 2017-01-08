@@ -2,7 +2,9 @@ $.walkTheDOM = function(node, func){
 	func(node);
 	node = node.firstChild;
 	while(node){
-		this.walkTheDOM(node, func);
+		if(this.walkTheDOM(node, func)===false){
+			break;
+		}
 		node = node.nextSibling;
 	}
 };
@@ -12,7 +14,7 @@ $.fn.walkTheDom = function(func){
 		$.walkTheDOM(this,function(node){
 			r.add(node);
 			if(func){
-				func.call(node);
+				return func.call(node);
 			}
 		});
 	});
