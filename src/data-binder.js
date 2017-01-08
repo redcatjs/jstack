@@ -303,16 +303,7 @@ jstack.dataBinder = (function(){
 				
 				$.each(mutation.addedNodes,function(ii,node){
 					
-					var $node = $(node);
-					var nodes = $node
-						.add($node.contents())
-						.add($node.find('*'))
-						.add($node.find('*').contents())
-					;
-					
-					//console.log(nodes);
-					
-					nodes.each(function(iii,n){
+					$.walkTheDOM(node,function(n){
 						if(!$.contains(document.body,n)) return;
 						
 						var $n = $(n);
@@ -325,6 +316,8 @@ jstack.dataBinder = (function(){
 							jstack.dataBinder.loaders.textMustache.call(n);
 							return;
 						}
+						
+						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
 						$.each(jstack.preloader,function(selector,callback){
 							if($n.is(selector)){
@@ -354,8 +347,7 @@ jstack.dataBinder = (function(){
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
-					var nodes = $(node).add($(node).find('*'));
-					nodes.each(function(iii,n){
+					$.walkTheDOM(node,function(n){
 						if(!self.validNodeEvent(n,true)) return;
 						setTimeout(function(){
 							$(n).trigger('j:unload');
@@ -456,7 +448,7 @@ jstack.dataBinder = (function(){
 			self.applyMustach(element);
 		},
 		applyMustach:function(element){
-			element.find('*').contents().add(element.contents()).filter(function() {
+			$(element).walkTheDOM().filter(function(){
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
 			}).each(this.loaders.textMustache);
 		},
