@@ -3379,14 +3379,11 @@ jstack.dataBinder = (function(){
 		getController:function(input){
 			var controller = $(input).closest('[j-controller]');
 			if(!controller.length){
-				controller = $(document.body);
-				controller.attr('j-controller','');
+				var controller = $(document.body);
 				if(!controller.data('jModel')){
-					var o = jstack.controller('body',controller);
-					o.dataBinder.triggerUpdate(controller);
-					controller.data('jController',o);
 					controller.data('jModel',{});
 				}
+				var o = jstack.controller('',controller);
 			}
 			return controller;
 		},
