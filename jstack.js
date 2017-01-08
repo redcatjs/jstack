@@ -2163,6 +2163,28 @@ $.prettifyHTML = function(el){
 	}
 	return el.outerHTML();
 };
+$.walkTheDOM = function(node, func){
+	func(node);
+	node = node.firstChild;
+	while(node){
+		if(this.walkTheDOM(node, func)===false){
+			break;
+		}
+		node = node.nextSibling;
+	}
+};
+$.fn.walkTheDOM = function(func){
+	var r = $();
+	this.each(function(){
+		$.walkTheDOM(this,function(node){
+			r.add(node);
+			if(func){
+				return func.call(node);
+			}
+		});
+	});
+	return r;
+};
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
 ( function( w, j ) {
@@ -3237,16 +3259,7 @@ jstack.dataBinder = (function(){
 				
 				$.each(mutation.addedNodes,function(ii,node){
 					
-					var $node = $(node);
-					var nodes = $node
-						.add($node.contents())
-						.add($node.find('*'))
-						.add($node.find('*').contents())
-					;
-					
-					//console.log(nodes);
-					
-					nodes.each(function(iii,n){
+					$.walkTheDOM(node,function(n){
 						if(!$.contains(document.body,n)) return;
 						
 						var $n = $(n);
@@ -3259,6 +3272,8 @@ jstack.dataBinder = (function(){
 							jstack.dataBinder.loaders.textMustache.call(n);
 							return;
 						}
+						
+						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
 						$.each(jstack.preloader,function(selector,callback){
 							if($n.is(selector)){
@@ -3288,8 +3303,7 @@ jstack.dataBinder = (function(){
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
-					var nodes = $(node).add($(node).find('*'));
-					nodes.each(function(iii,n){
+					$.walkTheDOM(node,function(n){
 						if(!self.validNodeEvent(n,true)) return;
 						setTimeout(function(){
 							$(n).trigger('j:unload');
@@ -3390,7 +3404,7 @@ jstack.dataBinder = (function(){
 			self.applyMustach(element);
 		},
 		applyMustach:function(element){
-			element.find('*').contents().add(element.contents()).filter(function() {
+			$(element).walkTheDOM().filter(function(){
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
 			}).each(this.loaders.textMustache);
 		},
