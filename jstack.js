@@ -3382,6 +3382,9 @@ jstack.dataBinder = (function(){
 				controller = $(document.body);
 				controller.attr('j-controller','');
 				if(!controller.data('jModel')){
+					var o = jstack.controller('body',controller);
+					o.dataBinder.triggerUpdate(controller);
+					controller.data('jController',o);
 					controller.data('jModel',{});
 				}
 			}
@@ -3575,8 +3578,10 @@ jstack.dataBinder = (function(){
 				var input = $(this);
 				if(input.closest('[j-unscope]').length) return;
 				var defaultValue = jstack.dataBinder.getInputVal(this);
+				
 				var key = jstack.dataBinder.getKey( input.attr('name') );
 				var value = jstack.dataBinder.getValue(this,key,defaultValue);
+				
 				if(input.data('j:populate:prevent')) return;
 				input.populateInput(value,{preventValEvent:true});
 				input.trigger('j:val',[value]);
