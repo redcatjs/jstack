@@ -8,7 +8,7 @@ $.walkTheDOM = function(node, func){
 		node = node.nextSibling;
 	}
 };
-$.fn.walkTheDom = function(func){
+$.fn.walkTheDOM = function(func){
 	var r = $();
 	this.each(function(){
 		$.walkTheDOM(this,function(node){
