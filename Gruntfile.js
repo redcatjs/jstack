@@ -52,6 +52,7 @@ grunt.initConfig({
 				"src/jquery/jquery-serialize-object.js",
 				"src/jquery/prettifyHTML.js",
 				"src/jquery/walkTheDom.js",
+				"src/jquery/jModel.js",
 				
 				"src/template/core.js",
 				"src/template/parse.js",
