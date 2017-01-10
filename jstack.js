@@ -3653,8 +3653,7 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						var v = parsed.replace(/'/g,"\\'").replace(/"/g,"'");
-						var el = $('<span/>').data('j-var',v);
+						var el = $('<span/>').data('j-var',parsed);
 						$(this).replaceWith(el);
 					}
 				}
