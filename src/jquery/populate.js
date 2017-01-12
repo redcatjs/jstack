@@ -1,6 +1,6 @@
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
-		addMissing: false,
+		addMissing: this.hasAttr('j-add-missing'),
 		preventValEvent: false,
 		push: false,
 	},config);
@@ -70,6 +70,7 @@ $.fn.populateInput = function( value, config ) {
 				}
 			}
 		} );
+		
 		if ( !found && config.addMissing ) {
 			var optionValue;
 			var optionText;
@@ -185,7 +186,6 @@ $.fn.populateInput = function( value, config ) {
 };
 $.fn.populateForm = function( data, config ) {
 	config = $.extend({
-		addMissing: false,
 		not: false,
 		notContainer: false
 	},config);
