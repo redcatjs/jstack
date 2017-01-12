@@ -1669,9 +1669,92 @@ $.fn.val = function() {
 	}
 	return returnValue;
 };
+(function(){
+
+var populateSelect = function( input, value, config ) {
+	var isSelect2 = input.hasClass('select2-hidden-accessible');
+	if(input[0].hasAttribute('data-preselect')&&!isSelect2){
+		if(config.push){
+			var v = input.data('preselect') || [];
+			if(typeof(v)!='object'){
+				v = [v];
+			}
+			if(v.indexOf(value)===-1){
+				v.push(value);
+			}
+			input.data('preselect',v);
+		}
+		else{
+			input.data('preselect',value);
+		}
+		return;
+	}
+	
+	//if(input.hasClass('select2-hidden-accessible')){
+		//if(config.push){
+			//var v = input.val();
+			//if(v===null){
+				//v = [];
+			//}
+			//if(typeof(v)!='object'){
+				//v = [v];
+			//}
+			//if(v.indexOf(value)===-1){
+				//v.push(value);
+			//}
+			//console.log(input,value);
+			//setValue(input,value);
+		//}
+		//else{
+			//setValue(input,value);
+		//}
+		//if(!config.preventValEvent){
+			//input.trigger('change');
+		//}
+		//return;
+	//}
+	
+	var found = false;
+	$( "option", input ).each( function() {
+		if ( $( this ).val() == value ) {
+			$( this ).prop( "selected", true );
+			found = true;
+		}
+		else{
+			if(!config.push){
+				$( this ).prop( "selected", false );
+			}
+		}
+	} );
+	
+	if ( !found && config.addMissing && typeof(value)!='undefined' && value!==null ) {
+		var optionValue;
+		var optionText;
+		if($.type(value)=='object'){
+			optionValue = value.value;
+			optionText = value.text;
+		}
+		else{
+			optionValue = value;
+		}
+		if(typeof(optionText)=='undefined'){
+			optionText = optionValue;
+		}
+		if(!optionValue){
+			optionValue = optionText;
+		}
+		input.append( '<option value="' + optionValue + '" selected="selected">' + optionText + "</option>" );
+	}
+	
+	if(isSelect2&&!config.preventValEvent){
+		input.trigger('change');
+	}
+	
+};
+
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
-		addMissing: false,
+		addMissing: this.hasAttr('j-add-missing'),
 		preventValEvent: false,
 		push: false,
 	},config);
@@ -1686,101 +1769,22 @@ $.fn.populateInput = function( value, config ) {
 			input.val(val);
 		};
 	}
-	var populateSelect = function( input, value ) {
-		var isSelect2 = input.hasClass('select2-hidden-accessible');
-		if(input[0].hasAttribute('data-preselect')&&!isSelect2){
-			if(config.push){
-				var v = input.data('preselect') || [];
-				if(typeof(v)!='object'){
-					v = [v];
-				}
-				if(v.indexOf(value)===-1){
-					v.push(value);
-				}
-				input.data('preselect',v);
-			}
-			else{
-				input.data('preselect',value);
-			}
-			return;
-		}
-		
-		//if(input.hasClass('select2-hidden-accessible')){
-			//if(config.push){
-				//var v = input.val();
-				//if(v===null){
-					//v = [];
-				//}
-				//if(typeof(v)!='object'){
-					//v = [v];
-				//}
-				//if(v.indexOf(value)===-1){
-					//v.push(value);
-				//}
-				//console.log(input,value);
-				//setValue(input,value);
-			//}
-			//else{
-				//setValue(input,value);
-			//}
-			//if(!config.preventValEvent){
-				//input.trigger('change');
-			//}
-			//return;
-		//}
-		
-		var found = false;
-		$( "option", input ).each( function() {
-			if ( $( this ).val() == value ) {
-				$( this ).prop( "selected", true );
-				found = true;
-			}
-			else{
-				if(!config.push){
-					$( this ).prop( "selected", false );
-				}
-			}
-		} );
-		if ( !found && config.addMissing ) {
-			var optionValue;
-			var optionText;
-			if(typeof(value)=='object'){
-				optionValue = value.value;
-				optionText = value.text;
-			}
-			else{
-				optionValue = value;
-			}
-			if(typeof(optionText)=='undefined'){
-				optionText = optionValue;
-			}
-			if(!optionValue){
-				optionValue = optionText;
-			}
-			input.append( '<option value="' + optionValue + '" selected="selected">' + optionText + "</option>" );
-		}
-		
-		if(isSelect2&&!config.preventValEvent){
-			input.trigger('change');
-		}
-		
-	};
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
 		if ( input.is( "select" ) ) {
 			if ( value instanceof Array ) {
 				if(input.attr('name').substr(-2)=='[]'||input.prop('multiple')){
-					populateSelect( input, value );
+					populateSelect( input, value, config );
 				}
 				else{
 					for ( var i = 0, l = value.length; i < l; i++ ) {
-						populateSelect( input, value[ i ] );
+						populateSelect( input, value[ i ], config );
 					}
 				}
 			}
 			else {
-				populateSelect( input, value );
+				populateSelect( input, value, config );
 			}
 		}
 		else if ( input.is( "textarea" ) ) {
@@ -1856,7 +1860,6 @@ $.fn.populateInput = function( value, config ) {
 };
 $.fn.populateForm = function( data, config ) {
 	config = $.extend({
-		addMissing: false,
 		not: false,
 		notContainer: false
 	},config);
@@ -1940,6 +1943,8 @@ $.fn.populateReset = function(){
 		}
 	});
 };
+
+})();
 $.fn.outerHTML = function(){
 	if (this.length){
 		var div = $('<tmpl style="display:none;"></tmpl>');
