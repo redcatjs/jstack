@@ -71,7 +71,7 @@ $.fn.populateInput = function( value, config ) {
 			}
 		} );
 		
-		if ( !found && config.addMissing ) {
+		if ( !found && config.addMissing && typeof(value)!='undefined' && value!==null ) {
 			var optionValue;
 			var optionText;
 			if($.type(value)=='object'){
