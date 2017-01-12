@@ -1,3 +1,5 @@
+(function(){
+
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
 		addMissing: this.hasAttr('j-add-missing'),
@@ -269,3 +271,5 @@ $.fn.populateReset = function(){
 		}
 	});
 };
+
+})();
