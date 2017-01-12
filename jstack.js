@@ -1996,6 +1996,45 @@ $.fn.jComponentReady = function(callback){
  * @version 2.5.0
  * @patched by surikat
  */
+
+//surikat
+var rCRLF = /\r?\n/g,
+	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
+	rsubmittable = /^(?:input|select|textarea|keygen)/i,
+	rcheckableType = ( /^(?:checkbox|radio)$/i );
+jQuery.fn.serializeArrayWithEmpty = function() {
+	return this.map( function() {
+
+		// Can add propHook for "elements" to filter or add form elements
+		var elements = jQuery.prop( this, "elements" );
+		return elements ? jQuery.makeArray( elements ) : this;
+	} )
+	.filter( function() {
+		var type = this.type;
+
+		// Use .is( ":disabled" ) so that fieldset[disabled] works
+		return this.name && !jQuery( this ).is( ":disabled" ) &&
+			rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type ) &&
+			( this.checked || !rcheckableType.test( type ) );
+	} )
+	.map( function( i, elem ) {
+		var val = jQuery( this ).val();
+
+		if ( val == null ) {
+			//return null;
+			val = ''; //surikat
+		}
+
+		if ( jQuery.isArray( val ) ) {
+			return jQuery.map( val, function( val ) {
+				return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+			} );
+		}
+
+		return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+	} ).get();
+}; 
+
 (function(root, factory) {
 
   // AMD
@@ -2118,13 +2157,15 @@ $.fn.jComponentReady = function(callback){
 
   FormSerializer.serializeObject = function serializeObject() {
     return new FormSerializer($, this).
-      addPairs(this.serializeArray()).
+      //addPairs(this.serializeArray()).
+      addPairs(this.serializeArrayWithEmpty()). //surikat
       serialize();
   };
 
   FormSerializer.serializeJSON = function serializeJSON() {
     return new FormSerializer($, this).
-      addPairs(this.serializeArray()).
+      //addPairs(this.serializeArray()).
+      addPairs(this.serializeArrayWithEmpty()). //surikat
       serializeJSON();
   };
 
