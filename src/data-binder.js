@@ -319,9 +319,9 @@ jstack.dataBinder = (function(){
 						
 						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
-						$.each(jstack.preloader,function(selector,callback){
-							if($n.is(selector)){
-								callback.call(n);
+						$.each(jstack.preloader,function(iii,pair){
+							if($n.is(pair.selector)){
+								pair.callback.call(n);
 							}
 						});
 						
@@ -438,10 +438,10 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update',element);
 			
-			$.each(jstack.preloader,function(selector,callback){
-				$(selector,element).each(function(){
+			$.each(jstack.preloader,function(i,pair){
+				$(pair.selector,element).each(function(){
 					if(!$.contains(document.body,this)) return;
-					callback.call(this);
+					pair.callback.call(this);
 				});
 			});
 			

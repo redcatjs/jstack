@@ -114,46 +114,79 @@ jstack.loader = function(selector,handler,unloader){
 };
 			
 //define preloaders
-jstack.preloader = {
-	'[j-for]':function(){
-		jstack.dataBinder.loaders.jFor.call(this);
-		jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
+jstack.preloader = [
+	{
+		selector:'[j-for]',
+		callback:function(){
+			jstack.dataBinder.loaders.jFor.call(this);
+			jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
+		},
 	},
-	'[j-for-list]':function(){
-		jstack.dataBinder.loaders.jForList.call(this);
+	{
+		selector:'[j-for-list]',
+		callback:function(){
+			jstack.dataBinder.loaders.jForList.call(this);
+		},
 	},
-	'[j-if]':function(){
-		jstack.dataBinder.loaders.jIf.call(this);
+	{
+		selector:'[j-if]',
+		callback:function(){
+			jstack.dataBinder.loaders.jIf.call(this);
+		},
 	},
-	'[j-switch]':function(){
-		jstack.dataBinder.loaders.jSwitch.call(this);
+	{
+		selector:'[j-switch]',
+		callback:function(){
+			jstack.dataBinder.loaders.jSwitch.call(this);
+		},
 	},
-	'[j-href]':function(){
-		jstack.dataBinder.loaders.jHref.call(this);
+	{
+		selector:'[j-href]',
+		callback:function(){
+			jstack.dataBinder.loaders.jHref.call(this);
+		},
 	},
-	':data(j-var)':function(){
-		jstack.dataBinder.loaders.jVar.call(this);
+	{
+		selector:':data(j-var)',
+		callback:function(){
+			jstack.dataBinder.loaders.jVar.call(this);
+		},
 	},
-	':attrStartsWith("j-var-")':function(){
-		jstack.dataBinder.loaders.jVarAttr.call(this);
+	{
+		selector:':attrStartsWith("j-var-")',
+		callback:function(){
+			jstack.dataBinder.loaders.jVarAttr.call(this);
+		},
 	},
-	':attrStartsWith("j-model-")':function(){
-		jstack.dataBinder.loaders.jModelAttr.call(this);
+	{
+		selector:':attrStartsWith("j-model-")',
+		callback:function(){
+			jstack.dataBinder.loaders.jModelAttr.call(this);
+		},
 	},
-	':attrStartsWith("j-data-")':function(){
-		jstack.dataBinder.loaders.jDataAttr.call(this);
+	{
+		selector:':attrStartsWith("j-data-")',
+		callback:function(){
+			jstack.dataBinder.loaders.jDataAttr.call(this);
+		},
 	},
-	':attrStartsWith("j-shortcut-model-")':function(){
-		jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+	{
+		selector:':attrStartsWith("j-shortcut-model-")',
+		callback:function(){
+			jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+		},
 	},
-	':input[name]':function(){
-		if(!$(this).data('j:firstload')){
-			$(this).data('j:firstload',true);
-			jstack.dataBinder.inputToModel(this,'j:default',true);
-		}
-		jstack.dataBinder.loaders.inputWithName.call(this);
+	{
+		selector:':input[name]',
+		callback:function(){
+			if(!$(this).data('j:firstload')){
+				$(this).data('j:firstload',true);
+				jstack.dataBinder.inputToModel(this,'j:default',true);
+			}
+			jstack.dataBinder.loaders.inputWithName.call(this);
+		},
 	},
-};
+];
 
 //define loaders
 jstack.loader(':attrStartsWith("j-on-")',function(){
