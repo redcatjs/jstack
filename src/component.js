@@ -116,6 +116,15 @@ jstack.loader = function(selector,handler,unloader){
 //define preloaders
 jstack.preloader = [
 	{
+		selector:':input[name]',
+		callback: function(){
+			if(!$(this).data('j:firstload')){
+				$(this).data('j:firstload',true);
+				jstack.dataBinder.inputToModel(this,'j:default',true);
+			}
+		},
+	},
+	{
 		selector:'[j-for]',
 		callback:function(){
 			jstack.dataBinder.loaders.jFor.call(this);
