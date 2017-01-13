@@ -369,7 +369,7 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
-			var inputToModel = function(e){
+			$(document.body).on('input change', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
 					return;
 				
@@ -387,8 +387,7 @@ jstack.dataBinder = (function(){
 				$(this).data('jHandledValue',value);
 				
 				self.inputToModel(this,'j:input');
-			};
-			$(document.body).on('input change', ':input[name]', inputToModel);
+			});
 			
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
 				self.inputToModel(this,'j:input');
