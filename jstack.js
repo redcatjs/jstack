@@ -3318,14 +3318,13 @@ jstack.dataBinder = (function(){
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
 			
-			var performInputToModel = function(value){
+			var performInputToModel = function(){
 				var key = self.getScopedInput(el);
-				value = self.dotSet(key,data,value,isDefault);
 				if(filteredValue!=value){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				
+				value = self.dotSet(key,data,value,isDefault);
 				input.trigger(eventName,[value]);
 				
 			};
@@ -3334,13 +3333,14 @@ jstack.dataBinder = (function(){
 			var filteredValue = self.filter(el,value);
 			
 			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
-				filteredValue.then(function(value){
-					performInputToModel(value);
+				filteredValue.then(function(val){
+					filteredValue = val;
+					performInputToModel();
 				});
 				return;
 			}
 			else{
-				performInputToModel(filteredValue);
+				performInputToModel();
 			}
 			
 		},
@@ -3430,14 +3430,25 @@ jstack.dataBinder = (function(){
 			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
 			
 			$(document.body).on('input change', ':input[name]', function(e){
+				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
+					return;
+				
 				var value = self.getInputVal(this);
-				var handled = $(this).data('jHandledValue');
-				if(typeof(handled)=='undefined'||value!=handled){
-					//console.log('input user');
-					$(this).data('jHandledValue',value);
-					self.inputToModel(this,'j:input');
+				
+				if(e.type=='change'){
+					var handled = $(this).data('jHandledValue');
+					if(typeof(handled)!='undefined'&&value==handled){
+						return;
+					}
 				}
+				
+				//console.log('input user',e);
+				
+				$(this).data('jHandledValue',value);
+				
+				self.inputToModel(this,'j:input');
 			});
+			
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
 				self.inputToModel(this,'j:input');
 			});
