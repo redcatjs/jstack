@@ -258,14 +258,13 @@ jstack.dataBinder = (function(){
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
 			
-			var performInputToModel = function(value){
+			var performInputToModel = function(){
 				var key = self.getScopedInput(el);
-				value = self.dotSet(key,data,value,isDefault);
 				if(filteredValue!=value){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				
+				value = self.dotSet(key,data,value,isDefault);
 				input.trigger(eventName,[value]);
 				
 			};
@@ -274,13 +273,14 @@ jstack.dataBinder = (function(){
 			var filteredValue = self.filter(el,value);
 			
 			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
-				filteredValue.then(function(value){
-					performInputToModel(value);
+				filteredValue.then(function(val){
+					filteredValue = val;
+					performInputToModel();
 				});
 				return;
 			}
 			else{
-				performInputToModel(filteredValue);
+				performInputToModel();
 			}
 			
 		},
