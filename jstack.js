@@ -1715,14 +1715,32 @@ var populateSelect = function( input, value, config ) {
 	//}
 	
 	var found = false;
-	$( "option", input ).each( function() {
-		if ( $( this ).val() == value ) {
-			$( this ).prop( "selected", true );
-			found = true;
+	var optFirstTagName = 'option';
+	input.children().each(function(i){
+		var opt = $(this);
+		if(opt.is('option')){
+			if (opt.val() == value){
+				opt.prop('selected', true);
+				found = true;
+			}
+			else{
+				if(!config.push){
+					opt.prop('selected', false);
+				}
+			}
 		}
 		else{
-			if(!config.push){
-				$( this ).prop( "selected", false );
+			if(i==0){
+				optFirstTagName = opt[0].tagName.toLowerCase();
+			}
+			if(opt.attr('value') == value) {
+				opt.attr('selected', 'selected');
+				found = true;
+			}
+			else{
+				if(!config.push){
+					opt.removeAttr('selected');
+				}
 			}
 		}
 	} );
@@ -1743,7 +1761,7 @@ var populateSelect = function( input, value, config ) {
 		if(!optionValue){
 			optionValue = optionText;
 		}
-		input.append( '<option value="' + optionValue + '" selected="selected">' + optionText + "</option>" );
+		input.append( '<'+optFirstTagName+' value="' + optionValue + '" selected="selected">' + optionText + '</'+optFirstTagName+'>' );
 	}
 	
 	if(isSelect2&&!config.preventValEvent){
@@ -1772,9 +1790,9 @@ $.fn.populateInput = function( value, config ) {
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		if ( input.is( "select" ) ) {
+		if ( input.is( 'select, [j-select]' ) ) {
 			if ( value instanceof Array ) {
-				if(input.attr('name').substr(-2)=='[]'||input.prop('multiple')){
+				if(input.attr('name').substr(-2)=='[]'||input.hasAttr('multiple')){
 					populateSelect( input, value, config );
 				}
 				else{
@@ -2627,7 +2645,7 @@ jstack.loader = function(selector,handler,unloader){
 //define preloaders
 jstack.preloader = [
 	{
-		selector:':input[name],[j-input]',
+		selector:':input[name],[j-input],[j-select]',
 		callback: function(){
 			if(!$(this).data('j:firstload')){
 				$(this).data('j:firstload',true);
@@ -2697,7 +2715,7 @@ jstack.preloader = [
 		},
 	},
 	{
-		selector:':input[name],[j-input]',
+		selector:':input[name],[j-input],[j-select]',
 		callback:function(){
 			if(!$(this).data('j:firstload')){
 				$(this).data('j:firstload',true);
@@ -3299,10 +3317,10 @@ jstack.dataBinder = (function(){
 			return scope;
 		},
 		getters: {
-			SELECT: function(element){
+			select: function(element){
 				return $( element ).val();
 			},
-			INPUT: function(element) {
+			input: function(element) {
 				var type = $( element ).prop('type');
 				if ( type=="checkbox" || type=="radio" ) {
 					return $( element ).prop( "checked" ) ? $( element ).val() : null;
@@ -3314,15 +3332,41 @@ jstack.dataBinder = (function(){
 					return $( element ).val();
 				}
 			},
-			TEXTAREA: function(element){
+			textarea: function(element){
 				return $( element ).val();
-			}
+			},
+			jselect: function(el){
+				el = $(el);
+				var multiple = el.hasAttr('multiple');
+				var data = el.data('preselect');
+				if(!data){
+					if(multiple){
+						data = [];
+					}
+					el.children().each(function(){
+						if($(this).hasAttr('selected')){
+							var val = $(this).attr('value');
+							if(multiple){
+								data.push(val);
+							}
+							else{
+								data = val;
+								return false;
+							}
+						}
+					});
+				}
+				return data;
+			},
 		},
 		defaultGetter: function(element){
 			return $( element ).html();
 		},
 		getInputVal: function(element){
-			var elementType = element.tagName;
+			var elementType = element.tagName.toLowerCase();
+			if(elementType!='select'&&$(element).hasAttr('j-select')){
+				elementType = 'jselect';
+			}
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
