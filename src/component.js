@@ -156,7 +156,7 @@ jstack.preloader = [
 		},
 	},
 	{
-		selector:':data(j-var)',
+		selector:':data(j-var),[data-j-var]',
 		callback:function(){
 			jstack.dataBinder.loaders.jVar.call(this);
 		},

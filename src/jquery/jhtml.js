@@ -9,8 +9,9 @@ $.fn.jExposeVar = function(onOrigin){
 		}
 		all.each(function(){
 			var span = $(this);
-			span.attr('j-var',span.data('j-var'));
+			span.attr('data-j-var',span.data('j-var'));
 			span.removeData('j-var');
+			span.empty();
 		});
 		collection.push(el);
 	});
