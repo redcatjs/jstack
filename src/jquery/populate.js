@@ -44,14 +44,32 @@ var populateSelect = function( input, value, config ) {
 	//}
 	
 	var found = false;
-	$( "option", input ).each( function() {
-		if ( $( this ).val() == value ) {
-			$( this ).prop( "selected", true );
-			found = true;
+	var optFirstTagName = 'option';
+	input.children().each(function(i){
+		var opt = $(this);
+		if(opt.is('option')){
+			if (opt.val() == value){
+				opt.prop('selected', true);
+				found = true;
+			}
+			else{
+				if(!config.push){
+					opt.prop('selected', false);
+				}
+			}
 		}
 		else{
-			if(!config.push){
-				$( this ).prop( "selected", false );
+			if(i==0){
+				optFirstTagName = opt[0].tagName.toLowerCase();
+			}
+			if(opt.attr('value') == value) {
+				opt.attr('selected', 'selected');
+				found = true;
+			}
+			else{
+				if(!config.push){
+					opt.removeAttr('selected');
+				}
 			}
 		}
 	} );
@@ -72,7 +90,7 @@ var populateSelect = function( input, value, config ) {
 		if(!optionValue){
 			optionValue = optionText;
 		}
-		input.append( '<option value="' + optionValue + '" selected="selected">' + optionText + "</option>" );
+		input.append( '<'+optFirstTagName+' value="' + optionValue + '" selected="selected">' + optionText + '</'+optFirstTagName+'>' );
 	}
 	
 	if(isSelect2&&!config.preventValEvent){
@@ -101,9 +119,9 @@ $.fn.populateInput = function( value, config ) {
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		if ( input.is( "select" ) ) {
+		if ( input.is( 'select, [j-select]' ) ) {
 			if ( value instanceof Array ) {
-				if(input.attr('name').substr(-2)=='[]'||input.prop('multiple')){
+				if(input.attr('name').substr(-2)=='[]'||input.hasAttr('multiple')){
 					populateSelect( input, value, config );
 				}
 				else{

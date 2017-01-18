@@ -222,10 +222,10 @@ jstack.dataBinder = (function(){
 			return scope;
 		},
 		getters: {
-			SELECT: function(element){
+			select: function(element){
 				return $( element ).val();
 			},
-			INPUT: function(element) {
+			input: function(element) {
 				var type = $( element ).prop('type');
 				if ( type=="checkbox" || type=="radio" ) {
 					return $( element ).prop( "checked" ) ? $( element ).val() : null;
@@ -237,15 +237,41 @@ jstack.dataBinder = (function(){
 					return $( element ).val();
 				}
 			},
-			TEXTAREA: function(element){
+			textarea: function(element){
 				return $( element ).val();
-			}
+			},
+			jselect: function(el){
+				el = $(el);
+				var multiple = el.hasAttr('multiple');
+				var data = el.data('preselect');
+				if(!data){
+					if(multiple){
+						data = [];
+					}
+					el.children().each(function(){
+						if($(this).hasAttr('selected')){
+							var val = $(this).attr('value');
+							if(multiple){
+								data.push(val);
+							}
+							else{
+								data = val;
+								return false;
+							}
+						}
+					});
+				}
+				return data;
+			},
 		},
 		defaultGetter: function(element){
 			return $( element ).html();
 		},
 		getInputVal: function(element){
-			var elementType = element.tagName;
+			var elementType = element.tagName.toLowerCase();
+			if(elementType!='select'&&$(element).hasAttr('j-select')){
+				elementType = 'jselect';
+			}
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
