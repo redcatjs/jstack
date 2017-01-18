@@ -2627,7 +2627,7 @@ jstack.loader = function(selector,handler,unloader){
 //define preloaders
 jstack.preloader = [
 	{
-		selector:':input[name]',
+		selector:':input[name],[j-input]',
 		callback: function(){
 			if(!$(this).data('j:firstload')){
 				$(this).data('j:firstload',true);
@@ -2697,7 +2697,7 @@ jstack.preloader = [
 		},
 	},
 	{
-		selector:':input[name]',
+		selector:':input[name],[j-input]',
 		callback:function(){
 			if(!$(this).data('j:firstload')){
 				$(this).data('j:firstload',true);
