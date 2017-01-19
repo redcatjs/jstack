@@ -2680,6 +2680,7 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jFor.call(this);
 			jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
+			return false;
 		},
 	},
 	{
@@ -3339,8 +3340,11 @@ jstack.dataBinder = (function(){
 			return scope;
 		},
 		getters: {
-			select: function(element){
-				return $( element ).val();
+			select: function(el){
+				el = $(el);
+				if(el.children('option[value]').length){
+					return el.val();
+				}
 			},
 			input: function(element) {
 				var type = $( element ).prop('type');
@@ -3396,10 +3400,12 @@ jstack.dataBinder = (function(){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
 			
+			
 			var self = this;
 			
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
+			
 			
 			var performInputToModel = function(){
 				var key = self.getScopedInput(el);
@@ -3415,12 +3421,12 @@ jstack.dataBinder = (function(){
 			var value = self.getInputVal(el);
 			var filteredValue = self.filter(el,value);
 			
+			
 			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
 				filteredValue.then(function(val){
 					filteredValue = val;
 					performInputToModel();
 				});
-				return;
 			}
 			else{
 				performInputToModel();
@@ -3464,7 +3470,7 @@ jstack.dataBinder = (function(){
 						
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
-								pair.callback.call(n);
+								return pair.callback.call(n);
 							}
 						});
 						
