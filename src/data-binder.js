@@ -224,7 +224,9 @@ jstack.dataBinder = (function(){
 		getters: {
 			select: function(el){
 				el = $(el);
-				return el.val();
+				if(el.children('option[value]').length){
+					return el.val();
+				}
 			},
 			input: function(element) {
 				var type = $( element ).prop('type');
