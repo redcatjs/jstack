@@ -129,6 +129,7 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jFor.call(this);
 			jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
+			return false;
 		},
 	},
 	{
