@@ -3754,7 +3754,7 @@ jstack.dataBinder = (function(){
 						row.attr('j-for-id',k);
 						row.appendTo($this);
 					}
-					forIdList.push(k);
+					forIdList.push(k.toString());
 				});
 				
 				//remove
