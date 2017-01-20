@@ -2,6 +2,15 @@ $.walkTheDOM = function(node, func){
 	if(func(node)===false){
 		return false;
 	}
+	
+	var children = node.childNodes;
+	for(var i = 0, l = children.length; i < l; i++){
+		if(this.walkTheDOM(children[i], func)===false){
+			return false;
+		}
+	}
+	
+	/*
 	node = node.firstChild;
 	while(node){
 		if(this.walkTheDOM(node, func)===false){
@@ -9,6 +18,7 @@ $.walkTheDOM = function(node, func){
 		}
 		node = node.nextSibling;
 	}
+	*/
 };
 $.fn.walkTheDOM = function(func){
 	var r = $();
