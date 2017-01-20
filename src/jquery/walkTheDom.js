@@ -1,8 +1,12 @@
 $.walkTheDOM = function(node, func){
-	func(node);
+	if(func(node)===false){
+		return false;
+	}
 	node = node.firstChild;
 	while(node){
-		this.walkTheDOM(node, func);
+		if(this.walkTheDOM(node, func)===false){
+			return false;
+		}
 		node = node.nextSibling;
 	}
 };
