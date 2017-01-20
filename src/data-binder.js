@@ -465,6 +465,7 @@ jstack.dataBinder = (function(){
 		},
 		getController:function(input){
 			var controller = $(input).closest('[j-controller]');
+			
 			if(!controller.length){
 				var controller = $(document.body);
 				if(!controller.data('jModel')){
@@ -472,6 +473,15 @@ jstack.dataBinder = (function(){
 				}
 				var o = jstack.controller('',controller);
 			}
+			
+			if(!controller.data('jController')){
+				if(!controller.data('jModel')){
+					controller.data('jModel',{});
+				}
+				jstack.controller('',controller);
+			}
+			
+			
 			return controller;
 		},
 		getControllerObject:function(input){
