@@ -2,9 +2,7 @@ $.walkTheDOM = function(node, func){
 	func(node);
 	node = node.firstChild;
 	while(node){
-		if(this.walkTheDOM(node, func)===false){
-			break;
-		}
+		this.walkTheDOM(node, func);
 		node = node.nextSibling;
 	}
 };
