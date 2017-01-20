@@ -2228,13 +2228,14 @@ $.prettifyHTML = function(el){
 	return el.outerHTML();
 };
 $.walkTheDOM = function(node, func){
-	func(node);
-	node = node.firstChild;
-	while(node){
-		if(this.walkTheDOM(node, func)===false){
-			break;
+	if(func(node)===false){
+		return false;
+	}
+	var children = node.childNodes;
+	for(var i = 0, l = children.length; i < l; i++){
+		if(this.walkTheDOM(children[i], func)===false){
+			return false;
 		}
-		node = node.nextSibling;
 	}
 };
 $.fn.walkTheDOM = function(func){
@@ -3453,6 +3454,7 @@ jstack.dataBinder = (function(){
 				$.each(mutation.addedNodes,function(ii,node){
 					
 					$.walkTheDOM(node,function(n){
+						
 						if(!$.contains(document.body,n)) return;
 						
 						var $n = $(n);
@@ -3788,8 +3790,11 @@ jstack.dataBinder = (function(){
 				input.trigger('j:val',[value]);
 			},
 			jVar:function(){
-				var value = jstack.dataBinder.getValueEval(this,$(this).data('j-var'));
-				$(this).html(value);
+				var el = $(this);
+				var value = jstack.dataBinder.getValueEval(this,el.data('j-var'));
+				if(el.html()!=value){
+					el.html(value);
+				}
 			},
 			jHref: function(){
 				var $this = $(this);
