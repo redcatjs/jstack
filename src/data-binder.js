@@ -335,6 +335,7 @@ jstack.dataBinder = (function(){
 				$.each(mutation.addedNodes,function(ii,node){
 					
 					$.walkTheDOM(node,function(n){
+						
 						if(!$.contains(document.body,n)) return;
 						
 						var $n = $(n);
@@ -670,8 +671,11 @@ jstack.dataBinder = (function(){
 				input.trigger('j:val',[value]);
 			},
 			jVar:function(){
-				var value = jstack.dataBinder.getValueEval(this,$(this).data('j-var'));
-				$(this).html(value);
+				var el = $(this);
+				var value = jstack.dataBinder.getValueEval(this,el.data('j-var'));
+				if(el.html()!=value){
+					el.html(value);
+				}
 			},
 			jHref: function(){
 				var $this = $(this);
