@@ -664,7 +664,9 @@ jstack.dataBinder = (function(){
 					}
 				});
 				
-				
+				if($(template).hasAttr('j-freeze')){
+					$this.removeAttr('j-for-list');
+				}
 				
 			},
 			
