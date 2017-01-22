@@ -3613,7 +3613,7 @@ jstack.dataBinder = (function(){
 			$.each(jstack.preloader,function(i,pair){
 				$(pair.selector,element).each(function(){
 					if(!$.contains(document.body,this)) return;
-					pair.callback.call(this);
+					return pair.callback.call(this);
 				});
 			});
 			
@@ -3878,8 +3878,19 @@ jstack.dataBinder = (function(){
 				if(this.textContent){
 					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
 					if(typeof(parsed)=='string'){
-						var el = $('<span/>').data('j-var',parsed);
-						$(this).replaceWith(el);
+						var $this = $(this);
+						var el;
+						var parent = $this.parent();
+						if(parent.is('option')){
+							parent.data('j-var',parsed);
+							$this.remove();
+							jstack.dataBinder.loaders.jVar.call(parent);
+						}
+						else{
+							el = $('<span/>');
+							el.data('j-var',parsed);
+							$this.replaceWith(el);
+						}
 					}
 				}
 			},
