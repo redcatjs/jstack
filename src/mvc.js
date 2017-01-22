@@ -40,12 +40,9 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.template.get(templatePath).then(function(html){
-		var cacheId = config.view + "#" + config.controller;
-		
-		var templateProcessor = jstack.template.parse( $('<tmpl>'+html+'</tmpl>'), null, cacheId );		
+	jstack.template.get(templatePath).then(function(html){		
 		processor = function(data){
-			var processedTemplate = templateProcessor( data );
+			var processedTemplate = jstack.template.parse( html );
 			target.data('jModel',data);
 			target.attr('j-controller',controller);
 			if(Boolean(target.attr('j-view-append'))){
