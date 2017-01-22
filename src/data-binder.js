@@ -738,14 +738,20 @@ jstack.dataBinder = (function(){
 			jShrotcutModelAttr: function(){
 				var $this = $(this);
 				var attrs = $this.attrStartsWith('j-shortcut-model-');
+				var propAttrs = ['selected','checked'];
 				$.each(attrs,function(k,varAttr){
 					var value = jstack.dataBinder.getValueEval($this,varAttr);
 					var attr = k.substr(17);
-					if(value){
-						$this.attr(attr,attr);
+					if(propAttrs.indexOf(attr)!==-1){
+						$this.prop(attr,value);
 					}
-					else{
-						$this.removeAttr(attr);
+					else{						
+						if(value){
+							$this.attr(attr,attr);
+						}
+						else{
+							$this.removeAttr(attr);
+						}
 					}
 				});
 			},
