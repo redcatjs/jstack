@@ -664,7 +664,6 @@ jstack.dataBinder = (function(){
 					}
 				});
 				
-				
 			},
 			
 			
@@ -766,7 +765,7 @@ jstack.dataBinder = (function(){
 						if(parent.is('option')){
 							parent.data('j-var',parsed);
 							$this.remove();
-							jstack.dataBinder.jVar.call(parent);
+							jstack.dataBinder.loaders.jVar.call(parent);
 						}
 						else{
 							el = $('<span/>');
