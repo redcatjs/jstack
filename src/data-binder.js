@@ -494,7 +494,7 @@ jstack.dataBinder = (function(){
 			$.each(jstack.preloader,function(i,pair){
 				$(pair.selector,element).each(function(){
 					if(!$.contains(document.body,this)) return;
-					pair.callback.call(this);
+					return pair.callback.call(this);
 				});
 			});
 			
@@ -663,6 +663,8 @@ jstack.dataBinder = (function(){
 						$(this).remove();
 					}
 				});
+				
+				
 				
 			},
 			
