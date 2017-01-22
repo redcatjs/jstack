@@ -11,9 +11,7 @@ jstack.jml = function( url, data ) {
 	if ( !data ) data = {};
 	jstack.template.get( url ).then( function( html ) {
 		var el = $('<tmpl>'+html+'</tmpl>');
-		jstack.template.compile( el, cacheId, templatesPath ).then( function( templateProcessor ) {
-			defer.resolve( templateProcessor( data ) );
-		} );
+		defer.resolve( jstack.template.parse( el, data, cacheId ) );
 	} );
 	
 	return defer;

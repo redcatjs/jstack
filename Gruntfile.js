@@ -58,9 +58,6 @@ grunt.initConfig({
 				
 				"src/template/core.js",
 				"src/template/parse.js",
-				"src/template/compile.js",
-				"src/template/directive.js",
-				"src/template/directive-native.js",
 				"src/template/get.js",
 				"src/template/jml.js",
 				

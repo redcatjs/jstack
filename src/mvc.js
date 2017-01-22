@@ -42,20 +42,20 @@ jstack.mvc = function(config){
 	
 	jstack.template.get(templatePath).then(function(html){
 		var cacheId = config.view + "#" + config.controller;
-		jstack.template.compile($('<tmpl>'+html+'</tmpl>'),cacheId,templatesPath).then(function(templateProcessor){
-			processor = function(data){
-				var processedTemplate = templateProcessor( data );
-				target.data('jModel',data);
-				target.attr('j-controller',controller);
-				if(Boolean(target.attr('j-view-append'))){
-					target.append( processedTemplate );
-				}
-				else{
-					target.html( processedTemplate );
-				}
-			};
-			viewCompilerReady.resolve();
-		} );
+		
+		var templateProcessor = jstack.template.parse( $('<tmpl>'+html+'</tmpl>'), null, cacheId );		
+		processor = function(data){
+			var processedTemplate = templateProcessor( data );
+			target.data('jModel',data);
+			target.attr('j-controller',controller);
+			if(Boolean(target.attr('j-view-append'))){
+				target.append( processedTemplate );
+			}
+			else{
+				target.html( processedTemplate );
+			}
+		};
+		viewCompilerReady.resolve();
 	});
 
 	
