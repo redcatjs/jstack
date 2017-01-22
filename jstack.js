@@ -2307,184 +2307,13 @@ $.fn.jhtml = function(onOrigin){
 };
 jstack.template = {};
 jstack.template.templateVarSubstitutions = {};
-( function( w, j ) {
+(function(){
 
-	var separatorStart = "<%";
-	var separatorEnd = "%>";
-	var separatorStartE = "<\%";
-	var separatorEndE = "\%>";
-
-	var cache = {};
-	var reg1 = eval( "/'(?=[^" + separatorEndE + "]*" + separatorEndE + ")/g" );
-	var reg2 = eval( "/" + separatorStartE + "=(.+?)" + separatorEndE + "/g" );
-	
-	j.template.parse = function( html, data, id ) {
-		var fn;
-		if ( id && cache[ id ] ) {
-			fn = cache[ id ];
-		} else {
-			var substitutions = j.template.templateVarSubstitutions;
-			html = html.html();
-			for ( var k in substitutions ) {
-				if ( substitutions.hasOwnProperty( k ) ) {
-					html = html.replace( new RegExp(k, 'g'), separatorStart + substitutions[ k ] + separatorEnd );
-				}
-			}
-			var logUndefined = jstack.config.debug?'console.warn(tmplException.message+" in $1", "context : "+tmplString+" $1",tmplObj);':'';
-			var expression = html
-				.replace( /[\r\t\n]/g, " " )
-				.replace( reg1, "\t" )
-				.split( "'" ).join( "\\'" )
-				.split( "\t" ).join( "'" )
-				.replace( reg2, "'; try{ tmplString += $1 }catch(tmplException){ "+logUndefined+" }; tmplString += '" )
-				.split( separatorStart ).join( "';" )
-				.split( separatorEnd ).join( "tmplString += '" )
-			;
-			var compile = "var tmplString=''; with(tmplObj){ tmplString += '" + expression + "';} return tmplString;";
-			try {
-				fn = new Function( "tmplObj", compile );
-				if ( id ) cache[ id ] = fn;
-			}
-			catch ( e ) {
-				if ( jstack.config.debug ) {
-					console.log( e );
-					console.log( compile );
-					console.log( html );
-				}
-			}
-		}
-		return data ? fn( data ) : fn;
-	};
-
-} )( window, jstack );
-jstack.template.compile = function( el, cacheId, templatesPath ) {
-	var defer = $.Deferred();
-	$.when.apply( $, jstack.template.directiveCompile( el, templatesPath ) ).then( function() {
-		var templateProcessor = function( data ) {
-			return jstack.template.directiveCompileLoaded( $( "<tmpl>" + jstack.template.parse( el, data, cacheId ) + "</tmpl>" ) ).contents();
-		};
-		defer.resolve( templateProcessor );
-	} );
-	return defer;
-};
-jstack.template.directives = {};
-jstack.template.directive = function( id, fn ) {
-	if ( fn ) {
-		jstack.template.directives[ id ] = fn;
-	}
-	return jstack.template.directives[ id ];
-};
-jstack.template.directiveCompileLoaded = function( el ) {
-	el.find( "*" ).each( function() {
-		var self = $( this );
-		$.each( this.attributes, function() {
-			var key = this.name;
-			if ( key.substr( 0, 9 ) == "j-loaded-" ) {
-				self.attr( key.substr( 9 ), this.value );
-				self.removeAttr( key );
-			}
-		} );
-	} );
-	return el;
-};
-jstack.template.directiveCompile = function( el, templatesPath ) {
-	var deferreds = [];
-	$.each( jstack.template.directives, function( k, d ) {
-		el.find( "[j-" + k + "]," + k + "[j]" ).each( function() {
-			var ctag = this.tagName == k.toUpperCase();
-			var self = $( this );
-			var val = ctag ? self.attr( "j" ) : self.attr( "j-" + k );
-			var deferred = d( val, self, templatesPath );
-			if ( deferred ) {
-				deferreds.push( deferred );
-			}
-			if ( ctag ) {
-				self.removeAttr( "j" );
-				if ( deferred ) {
-					deferred.then( function() {
-						self.replaceWith( self.html() );
-					} );
-				} else {
-					self.replaceWith( self.html() );
-				}
-			} else {
-				self.removeAttr( "j-" + k );
-			}
-		} );
-	} );
-	return deferreds;
+jstack.template.parse = function(html){
+	return html;
 };
 
-jstack.template.jmlInject = function( el, jq, snippet ) {
-	return el.each( function() {
-		var $this = $( this );
-		var uid = jstack.uniqid( "tmpl" );
-		jstack.template.templateVarSubstitutions[ uid ] = snippet;
-		$this[ jq ]( uid );
-	} );
-};
-jstack.template.directive( "foreach", function( val, el ) {
-	var sp;
-	if ( val.indexOf( " as " ) !== -1 ) {
-		sp = val.split( " as " );
-		jstack.template.jmlInject( el, "before", "$.each(" + sp[ 0 ] + ", function(i," + sp[ 1 ] + "){" );
-	} else {
-		sp = val.split( " in " );
-		jstack.template.jmlInject( el, "before", "$.each(" + sp[ 1 ] + ", function(" + sp[ 0 ] + "){" );
-	}
-	jstack.template.jmlInject( el, "after", "});" );
-} );
-
-jstack.template.directive( "src", function( val, el ) {
-	el.attr( "j-loaded-src", val );
-} );
-
-jstack.template.directive( "include", function( val, el, templatesPath ) {
-	var ext = val.split( "." ).pop();
-	var include = templatesPath + val;
-	if ( ext != "jml" ) {
-		include += ".jml";
-	}
-	var deferred = $.Deferred();
-	jstack.template.get( include ).then( function( html ) {
-		var inc = $( "<tmpl>" + html + "</tmpl>" );
-		$.when.apply( $, jstack.template.directiveCompile( inc, templatesPath ) ).then( function() {
-			el.html( inc.contents() );
-			deferred.resolve();
-		} );
-	} );
-	return deferred;
-} );
-
-jstack.template.directive( "extend", function( val, el, templatesPath ) {
-	var extend = templatesPath + val;
-	var ext = val.split( "." ).pop();
-	if ( ext != "jml" && ext != "xjml" ) {
-		extend += ".xjml";
-	}
-	var deferred = $.Deferred();
-	jstack.template.get( extend ).then( function( html ) {
-		var inc = $( "<tmpl>" + html + "</tmpl>" );
-		$.when.apply( $, jstack.template.directiveCompile( inc, templatesPath ) ).then( function() {
-			el.find( ">*" ).each( function() {
-				var $this = $( this );
-				var selector = $this.attr( "selector" );
-				if ( !selector ) selector = $this.attr( "j" );
-				var method = this.tagName.toLowerCase();
-				var contents = $this.contents();
-				var target = inc.find( selector );
-				if ( contents.length ) {
-					target[ method ]( $this.contents() );
-				} else {
-					target[ method ]();
-				}
-			} );
-			el.replaceWith( inc.contents() );
-			deferred.resolve();
-		} );
-	} );
-	return deferred;
-} );
+})();
 (function(){
 	var templates = {};
 	var requests = {};
@@ -2530,24 +2359,12 @@ jstack.template.directive( "extend", function( val, el, templatesPath ) {
 	};
 
 })();
-jstack.jml = function( url, data ) {
-	var cacheId = url;
+jstack.jml = function( url ) {
 	var defer = $.Deferred();
-	var templatesPath = url.split('/');
-	templatesPath.pop();
-	templatesPath = templatesPath.join('/')+'/';
-	
-	templatesPath = jstack.config.templatesPath+templatesPath;
 	url = jstack.config.templatesPath+url;
-	
-	if ( !data ) data = {};
 	jstack.template.get( url ).then( function( html ) {
-		var el = $('<tmpl>'+html+'</tmpl>');
-		jstack.template.compile( el, cacheId, templatesPath ).then( function( templateProcessor ) {
-			defer.resolve( templateProcessor( data ) );
-		} );
+		defer.resolve( jstack.template.parse( html ) );
 	} );
-	
 	return defer;
 };
 (function(){
@@ -4086,22 +3903,19 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.template.get(templatePath).then(function(html){
-		var cacheId = config.view + "#" + config.controller;
-		jstack.template.compile($('<tmpl>'+html+'</tmpl>'),cacheId,templatesPath).then(function(templateProcessor){
-			processor = function(data){
-				var processedTemplate = templateProcessor( data );
-				target.data('jModel',data);
-				target.attr('j-controller',controller);
-				if(Boolean(target.attr('j-view-append'))){
-					target.append( processedTemplate );
-				}
-				else{
-					target.html( processedTemplate );
-				}
-			};
-			viewCompilerReady.resolve();
-		} );
+	jstack.template.get(templatePath).then(function(html){		
+		processor = function(data){
+			var processedTemplate = jstack.template.parse( html );
+			target.data('jModel',data);
+			target.attr('j-controller',controller);
+			if(Boolean(target.attr('j-view-append'))){
+				target.append( processedTemplate );
+			}
+			else{
+				target.html( processedTemplate );
+			}
+		};
+		viewCompilerReady.resolve();
 	});
 
 	
