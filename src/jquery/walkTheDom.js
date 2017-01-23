@@ -4,6 +4,7 @@ $.walkTheDOM = function(node, func){
 	}
 	var children = node.childNodes;
 	for(var i = 0, l = children.length; i < l; i++){
+		if(!children[i]) continue;
 		if(this.walkTheDOM(children[i], func)===false){
 			return false;
 		}
