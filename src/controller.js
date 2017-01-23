@@ -16,50 +16,7 @@ jstack.controller = function(controller,element){
 			this.setDataArguments = [];
 			this.setDataCall = function(){
 				return this.setData.apply( this, this.setDataArguments );
-			};
-			
-			
-			this.dataBinder = (function(){
-				var dataBinder = this;
-				this.updateWait = 100;
-				this.updateDeferStateObserver = null;
-				this.updateTimeout = null;
-				this.runUpdate = function(element){						
-					if(dataBinder.updateDeferStateObserver){
-						dataBinder.updateDeferStateObserver.then(function(){
-							dataBinder.triggerUpdate(element);
-						});
-						return;
-					}
-					else{
-						dataBinder.updateDeferStateObserver = $.Deferred();
-					}
-					
-					jstack.dataBinder.update(element);
-					
-					self.element.trigger('j:mutation');
-					
-					dataBinder.updateDeferStateObserver.resolve();
-					dataBinder.updateDeferStateObserver = false;
-					
-					this.updateTimeout = false;
-					
-				};
-				this.triggerUpdate = function(element){
-					if(this.updateTimeout){
-						if(this.updateTimeout!==true){
-							clearTimeout(this.updateTimeout);
-						}
-						this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
-					}
-					else{
-						this.updateTimeout = true;
-						this.runUpdate(element);
-					}
-				};
-				return this;
-			})();
-			
+			};			
 			
 		};
 		return jstack.controllers[controller.name];
@@ -132,7 +89,7 @@ jstack.controller = function(controller,element){
 	
 	ObjectObservable.observe(controller.data,function(change){
 		//console.log(change);
-		controller.dataBinder.triggerUpdate(controller.element);
+		jstack.dataBinder.update();
 	});
 	
 	

@@ -354,6 +354,42 @@ jstack.dataBinder = (function(){
 			});
 			
 		},
+		
+		updateTimeout: null,
+		updateDeferStateObserver: null,
+		updateWait: 100,
+		update: function(){
+			if(this.updateTimeout){
+				if(this.updateTimeout!==true){
+					clearTimeout(this.updateTimeout);
+				}
+				this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
+			}
+			else{
+				this.updateTimeout = true;
+				this.runUpdate();
+			}
+		},
+		runUpdate: function(element){
+			var self = this;
+			if(this.updateDeferStateObserver){
+				this.updateDeferStateObserver.then(function(){
+					self.update();
+				});
+				return;
+			}
+			else{
+				this.updateDeferStateObserver = $.Deferred();
+			}
+			
+			//console.log('update');
+			this.runWatchers();
+			
+			this.updateDeferStateObserver.resolve();
+			this.updateDeferStateObserver = false;
+			this.updateTimeout = false;
+		},
+		
 		loadMutations: function(mutations){
 			var self = this;
 			//console.log(mutations);
@@ -504,21 +540,6 @@ jstack.dataBinder = (function(){
 		},
 		getControllerObject:function(input){
 			return this.getController(input).data('jController');
-		},		
-		update: function(element){
-			var self = this;
-			//console.log('update',element);
-			
-			self.runWatchers();
-			
-			//$.each(jstack.preloader,function(i,pair){
-				//$(pair.selector,element).each(function(){
-					//if(!document.body.contains(this)) return;
-					//return pair.callback.call(this);
-				//});
-			//});
-			
-			//self.applyMustach(element);
 		},
 		applyMustach:function(element){
 			$(element).walkTheDOM().filter(function(){
