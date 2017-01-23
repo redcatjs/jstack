@@ -120,7 +120,7 @@ jstack.dataBinder = (function(){
 				
 				if(!parentForList.length) return;
 				
-				var myvar = parentForList.attr('j-for-var');
+				var myvar = parentForList.attr('j-for-list');
 				var value = parentForList.attr('j-for-value');
 				var id = parentFor.attr('j-for-id');
 				
@@ -659,7 +659,7 @@ jstack.dataBinder = (function(){
 						}
 					}
 				}
-				parent.attr('j-for-var',myvar);
+				parent.attr('j-for-list',myvar);
 				parent.attr('j-for-value',value);
 				if(key){
 					parent.attr('j-for-key',key);
@@ -668,7 +668,6 @@ jstack.dataBinder = (function(){
 					parent.attr('j-for-index',index);
 				}
 				
-				parent.attr('j-for-list','true');
 				parent.data('jForTemplate',this);
 				$this.removeAttr('j-for');
 				$this.data('parent',parent);
@@ -684,7 +683,7 @@ jstack.dataBinder = (function(){
 				
 				//add
 				var template = $this.data('jForTemplate');
-				var myvar = $this.attr('j-for-var');
+				var myvar = $this.attr('j-for-list');
 				var value = jstack.dataBinder.getValueEval(this,myvar);
 				var forIdList = [];
 				$.each(value,function(k){
