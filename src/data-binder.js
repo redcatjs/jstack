@@ -327,13 +327,38 @@ jstack.dataBinder = (function(){
 			}
 			return true;
 		},
+		watchers: {},
+		addWatcher: function(level, selector,callback,element){
+			var a = [ selector, callback, element ];
+			if(!this.watchers[level]){
+				this.watchers[level] = [];
+			}
+			if(this.watchers[level].indexOf(a)===-1){
+				this.watchers[level].push( a );
+			}
+		},
+		runWatchers: function(){
+			//console.log(this.watchers);
+			$.each(this.watchers,function(level,w){				
+				for(var i = 0, l=w.length;i<l;i++){
+					var a = w[i];
+					var selector = a[0];
+					var callback = a[1];
+					var element = a[2];
+					if( ( selector!==Node.TEXT_NODE && !$(element).is(selector) ) || !document.body.contains(element)){
+						w.splice(i,1);
+						return;
+					}
+					callback.call(element);
+				}
+			});
+			
+		},
 		loadMutations: function(mutations){
 			var self = this;
-			
+			//console.log(mutations);
 			$.each(mutations,function(i,mutation){
-				
 				$.each(mutation.addedNodes,function(ii,node){
-					
 					$.walkTheDOM(node,function(n){
 						
 						if(!document.body.contains(n)) return;
@@ -349,16 +374,13 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						
-						if(n.nodeType!=Node.ELEMENT_NODE) return;
-						
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
-								return pair.callback.call(n);
+								var c = pair.callback;
+								self.addWatcher(iii, pair.selector, c, n);
+								c.call(n);
 							}
 						});
-						
-						if(!document.body.contains(n)) return;
-						
 						
 						if($n.data('j:load:state')){
 							return;
@@ -373,9 +395,7 @@ jstack.dataBinder = (function(){
 							$n.data('j:load:state',3);
 						},0);
 						
-						
 					});
-
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
@@ -387,8 +407,6 @@ jstack.dataBinder = (function(){
 					});
 				});
 			});
-			
-			
 					
 		},
 		eventListener: function(){
@@ -399,7 +417,7 @@ jstack.dataBinder = (function(){
 				//console.log(mutations);
 				self.loadMutations(mutations);
 			});
-			observer.observe(document, { subtree: true, childList: true, attribute: false, characterData: true });
+			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
 			
 			$(document.body).on('input change', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
@@ -491,14 +509,16 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log('update',element);
 			
-			$.each(jstack.preloader,function(i,pair){
-				$(pair.selector,element).each(function(){
-					if(!document.body.contains(this)) return;
-					return pair.callback.call(this);
-				});
-			});
+			self.runWatchers();
 			
-			self.applyMustach(element);
+			//$.each(jstack.preloader,function(i,pair){
+				//$(pair.selector,element).each(function(){
+					//if(!document.body.contains(this)) return;
+					//return pair.callback.call(this);
+				//});
+			//});
+			
+			//self.applyMustach(element);
 		},
 		applyMustach:function(element){
 			$(element).walkTheDOM().filter(function(){
