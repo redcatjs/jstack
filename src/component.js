@@ -128,16 +128,8 @@ jstack.preloader = [
 		selector:'[j-for]',
 		callback:function(){
 			jstack.dataBinder.loaders.jFor.call(this);
-			//jstack.dataBinder.loaders.jForList.call($(this).data('parent')[0]);
 		},
 	},
-	//{
-		//selector:'[j-for-list]',
-		//callback:function(){
-			//console.log(this);
-			//jstack.dataBinder.loaders.jForList.call(this);
-		//},
-	//},
 	{
 		selector:'[j-if]',
 		callback:function(){
