@@ -2305,19 +2305,10 @@ $.fn.jExposeVar = function(onOrigin){
 $.fn.jhtml = function(onOrigin){
 	return this.jExposeVar(onOrigin).html();
 };
-jstack.template = {};
-jstack.template.templateVarSubstitutions = {};
-(function(){
-
-jstack.template.parse = function(html){
-	return html;
-};
-
-})();
 (function(){
 	var templates = {};
 	var requests = {};
-	jstack.template.get = function( templatePath ) {
+	jstack.getTemplate = function( templatePath ) {
 		if ( !requests[ templatePath ] ) {
 			if ( $js.dev ) {
 				var ts = ( new Date().getTime() ).toString();
@@ -2329,27 +2320,7 @@ jstack.template.parse = function(html){
 			$.ajax( {
 				url:url,
 				cache:true,
-				success:function( tpl ) {
-					var substitutions = {};
-					var html = "";
-					var sp = tpl.split( "<%" );
-					for ( var i = 0, l = sp.length; i < l; i++ ) {
-						if ( i ) {
-							var sp2 = sp[ i ].split( "%>" );
-							for ( var i2 = 0, l2 = sp2.length; i2 < l2; i2++ ) {
-								if ( i2 % 2 ) {
-									html += sp2[ i2 ];
-								} else {
-									var uid = jstack.uniqid( "tmpl" );
-									html += uid;
-									substitutions[ uid ] = sp2[ i2 ];
-								}
-							}
-						} else {
-							html += sp[ i ];
-						}
-					}
-					$.extend( jstack.template.templateVarSubstitutions, substitutions );
+				success:function( html ) {
 					templates[ templatePath ] = html;
 					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
 				}
@@ -2362,8 +2333,8 @@ jstack.template.parse = function(html){
 jstack.jml = function( url ) {
 	var defer = $.Deferred();
 	url = jstack.config.templatesPath+url;
-	jstack.template.get( url ).then( function( html ) {
-		defer.resolve( jstack.template.parse( html ) );
+	jstack.getTemplate( url ).then( function( html ) {
+		defer.resolve( html );
 	} );
 	return defer;
 };
@@ -3272,7 +3243,7 @@ jstack.dataBinder = (function(){
 					
 					$.walkTheDOM(node,function(n){
 						
-						if(!$.contains(document.body,n)) return;
+						if(!document.body.contains(n)) return;
 						
 						var $n = $(n);
 						
@@ -3293,7 +3264,7 @@ jstack.dataBinder = (function(){
 							}
 						});
 						
-						if(!$.contains(document.body,n)) return;
+						if(!document.body.contains(n)) return;
 						
 						
 						if($n.data('j:load:state')){
@@ -3429,7 +3400,7 @@ jstack.dataBinder = (function(){
 			
 			$.each(jstack.preloader,function(i,pair){
 				$(pair.selector,element).each(function(){
-					if(!$.contains(document.body,this)) return;
+					if(!document.body.contains(this)) return;
 					return pair.callback.call(this);
 				});
 			});
@@ -3903,16 +3874,16 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.template.get(templatePath).then(function(html){		
+	jstack.getTemplate(templatePath).then(function(html){		
 		processor = function(data){
-			var processedTemplate = jstack.template.parse( html );
 			target.data('jModel',data);
 			target.attr('j-controller',controller);
+			
 			if(Boolean(target.attr('j-view-append'))){
-				target.append( processedTemplate );
+				target.append( html );
 			}
 			else{
-				target.html( processedTemplate );
+				target.html( html );
 			}
 		};
 		viewCompilerReady.resolve();
