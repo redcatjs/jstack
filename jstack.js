@@ -3271,7 +3271,9 @@ jstack.dataBinder = (function(){
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
 								var c = pair.callback;
-								self.addWatcher(n, c, pair.selector, iii);
+								if(!n.hasAttribute('j-static')){
+									self.addWatcher(n, c, pair.selector, iii);
+								}
 								if(!document.body.contains(n)) return;
 								c.call(n);
 							}
