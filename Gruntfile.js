@@ -56,9 +56,7 @@ grunt.initConfig({
 				"src/jquery/jModel.js",
 				"src/jquery/jhtml.js",
 				
-				"src/template/core.js",
-				"src/template/parse.js",
-				"src/template/get.js",
+				"src/template/getTemplate.js",
 				"src/template/jml.js",
 				
 				"src/component.js",
