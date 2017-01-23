@@ -675,7 +675,7 @@ jstack.dataBinder = (function(){
 				$this.data('parent',parent);
 				$this.detach();
 				
-				jstack.dataBinder.addWatcher(parent[0],jstack.dataBinder.loaders.jForList);
+				jstack.dataBinder.addWatcher(parent[0],jstack.dataBinder.loaders.jForList,1);
 				jstack.dataBinder.loaders.jForList.call(parent[0]);
 				
 			},
