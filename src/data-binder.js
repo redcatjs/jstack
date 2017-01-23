@@ -328,8 +328,9 @@ jstack.dataBinder = (function(){
 			return true;
 		},
 		watchers: {},
-		addWatcher: function(level, selector,callback,element){
-			var a = [ selector, callback, element ];
+		addWatcher: function(element,callback,selector,level){
+			if(!level) level = 0;
+			var a = [ element, callback, selector ];
 			if(!this.watchers[level]){
 				this.watchers[level] = [];
 			}
@@ -342,10 +343,10 @@ jstack.dataBinder = (function(){
 			$.each(this.watchers,function(level,w){				
 				for(var i = 0, l=w.length;i<l;i++){
 					var a = w[i];
-					var selector = a[0];
+					var element = a[0];
 					var callback = a[1];
-					var element = a[2];
-					if( ( selector!==Node.TEXT_NODE && !$(element).is(selector) ) || !document.body.contains(element)){
+					var selector = a[2];
+					if( ( selector && selector!==Node.TEXT_NODE && !$(element).is(selector) ) || !document.body.contains(element)){
 						w.splice(i,1);
 						return;
 					}
@@ -413,7 +414,8 @@ jstack.dataBinder = (function(){
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
 								var c = pair.callback;
-								self.addWatcher(iii, pair.selector, c, n);
+								self.addWatcher(n, c, pair.selector, iii);
+								if(!document.body.contains(n)) return;
 								c.call(n);
 							}
 						});
@@ -672,6 +674,9 @@ jstack.dataBinder = (function(){
 				$this.removeAttr('j-for');
 				$this.data('parent',parent);
 				$this.detach();
+				
+				jstack.dataBinder.addWatcher(parent[0],jstack.dataBinder.loaders.jForList);
+				jstack.dataBinder.loaders.jForList.call(parent[0]);
 				
 			},
 			jForList: function(){
