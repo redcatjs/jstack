@@ -336,7 +336,7 @@ jstack.dataBinder = (function(){
 					
 					$.walkTheDOM(node,function(n){
 						
-						if(!$.contains(document.body,n)) return;
+						if(!document.body.contains(n)) return;
 						
 						var $n = $(n);
 						
@@ -357,7 +357,7 @@ jstack.dataBinder = (function(){
 							}
 						});
 						
-						if(!$.contains(document.body,n)) return;
+						if(!document.body.contains(n)) return;
 						
 						
 						if($n.data('j:load:state')){
@@ -493,7 +493,7 @@ jstack.dataBinder = (function(){
 			
 			$.each(jstack.preloader,function(i,pair){
 				$(pair.selector,element).each(function(){
-					if(!$.contains(document.body,this)) return;
+					if(!document.body.contains(this)) return;
 					return pair.callback.call(this);
 				});
 			});
