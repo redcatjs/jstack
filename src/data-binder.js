@@ -394,67 +394,6 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log(mutations);
 			
-			/*
-			$.each(mutations,function(i,mutation){
-				
-				$.each(mutation.addedNodes,function(ii,node){
-					
-					$.walkTheDOM(node,function(n){
-						
-						if(!$.contains(document.body,n)) return;
-						
-						var $n = $(n);
-						
-						if($n.parent().closest('[j-for]').length){
-							return;
-						}
-						
-						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache.call(n);
-							return;
-						}
-						
-						if(n.nodeType!=Node.ELEMENT_NODE) return;
-						
-						$.each(jstack.preloader,function(iii,pair){
-							if($n.is(pair.selector)){
-								return pair.callback.call(n);
-							}
-						});
-						
-						if(!$.contains(document.body,n)) return;
-						
-						
-						if($n.data('j:load:state')){
-							return;
-						}
-						$n.data('j:load:state',1);
-						setTimeout(function(){
-							if($n.data('j:load:state')==2){
-								return;
-							}
-							$n.data('j:load:state',3);
-							$n.trigger('j:load');
-							$n.data('j:load:state',3);
-						},0);
-						
-						
-					},true);
-
-				});
-				
-				$.each(mutation.removedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
-						if(!self.validNodeEvent(n,true)) return;
-						setTimeout(function(){
-							$(n).trigger('j:unload');
-						},0);
-					});
-				});
-			});
-			return;
-			*/
-			
 			var stack = {100:[]};
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
@@ -473,14 +412,16 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						
-						$.each(jstack.preloader,function(iii,pair){
+						if(n.nodeType!=Node.ELEMENT_NODE) return;
+						
+						$.each(self.compilers,function(iii,pair){
 							if($n.is(pair.selector)){
-								if( !n.hasAttribute('j-static') && pair.watcher ){
-									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], iii);
-								}
 								if(!stack[iii]) stack[iii] = [];
 								stack[iii].push([n,pair]);
-								pair.callback.call(n);
+								//if( !n.hasAttribute('j-static') && pair.watcher ){
+									//self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], iii);
+								//}
+								//pair.callback.call(n);
 							}
 						});
 						
@@ -502,7 +443,7 @@ jstack.dataBinder = (function(){
 						};
 						
 						stack[100].push([n,{callback:jloadCallback}]);
-						jloadCallback.call(n);
+						//jloadCallback.call(n);
 						
 					});
 				});
@@ -517,20 +458,20 @@ jstack.dataBinder = (function(){
 				//});
 			});
 			
-			//$.each(stack,function(level,w){				
-				//for(var i = 0, l=w.length;i<l;i++){
-					//var a = w[i];
-					//var n = a[0];
-					//var pair = a[1];
-					//if(pair.selector&&!$(n).is(pair.selector)){
-						//return;
-					//}
-					//if( !n.hasAttribute('j-static') && pair.watcher ){
-						//self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], level);
-					//}
-					//pair.callback.call(n);
-				//}
-			//});
+			$.each(stack,function(level,w){				
+				for(var i = 0, l=w.length;i<l;i++){
+					var a = w[i];
+					var n = a[0];
+					var pair = a[1];
+					if(pair.selector&&!$(n).is(pair.selector)){
+						return;
+					}
+					if( !n.hasAttribute('j-static') && pair.watcher ){
+						self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], level);
+					}
+					pair.callback.call(n);
+				}
+			});
 		},
 		eventListener: function(){
 			var self = this;
@@ -633,6 +574,112 @@ jstack.dataBinder = (function(){
 				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
 			}).each(this.loaders.textMustache);
 		},
+		
+		compilers:[
+			{
+				selector:'[j-for]',
+				callback:function(){
+					jstack.dataBinder.loaders.jFor.call(this);
+				},
+			},
+			{
+				selector:'[j-if]',
+				callback:function(){
+					jstack.dataBinder.loaders.jIf.call(this);
+					
+					//this.removeAttribute('j-if');
+				},
+				watcher: 'jIf',
+			},
+			{
+				selector:'[j-switch]',
+				callback:function(){
+					jstack.dataBinder.loaders.jSwitch.call(this);
+					
+					//this.removeAttribute('j-switch');
+				},
+				watcher: 'jSwitch',
+			},
+			{
+				selector:'[j-href]',
+				callback:function(){
+					jstack.dataBinder.loaders.jHref.call(this);
+					
+					this.removeAttribute('j-href');
+				},
+			},
+			{
+				selector:':data(j-var)',
+				callback:function(){
+					jstack.dataBinder.loaders.jVar.call(this);
+					
+					//$(this).removeData('j-var');
+				},
+				watcher: 'jVar',
+			},
+			{
+				selector:'[data-j-var]',
+				callback:function(){
+					jstack.dataBinder.loaders.jVar.call(this);
+					
+					//this.removeAttribute('data-j-var');
+				},
+				watcher: 'jVar',
+			},
+			{
+				selector:':attrStartsWith("j-var-")',
+				callback:function(){
+					jstack.dataBinder.loaders.jVarAttr.call(this);
+					
+					//var $this = $(this);
+					//var attrs = $this.attrStartsWith('j-var-');
+					//$.each(attrs,function(k){
+						//$this.removeAttr(k);
+					//});
+				},
+				watcher: 'jVarAttr',
+			},
+			{
+				selector:':attrStartsWith("j-model-")',
+				callback:function(){
+					jstack.dataBinder.loaders.jModelAttr.call(this);
+					
+					//var $this = $(this);
+					//var attrs = $this.attrStartsWith('j-model-');
+					//$.each(attrs,function(k){
+						//$this.removeAttr(k);
+					//});
+				},
+				watcher: 'jModelAttr',
+			},
+			{
+				selector:':attrStartsWith("j-data-")',
+				callback:function(){
+					jstack.dataBinder.loaders.jDataAttr.call(this);
+				},
+				watcher: 'jDataAttr',
+			},
+			{
+				selector:':attrStartsWith("j-shortcut-model-")',
+				callback:function(){
+					jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+					
+					var $this = $(this);
+					var attrs = $this.attrStartsWith('j-shortcut-model-');
+					$.each(attrs,function(k){
+						$this.removeAttr(k);
+					});
+				},
+				watcher: 'jShrotcutModelAttr',
+			},
+			{
+				selector:':input[name],[j-input],[j-select]',
+				callback:function(){
+					jstack.dataBinder.loaders.inputWithName.call(this);
+				},
+				watcher: 'inputWithName',
+			},
+		],
 		loaders:{
 			jIf: function(){
 				var $this = $(this);
