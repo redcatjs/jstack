@@ -350,6 +350,7 @@ jstack.dataBinder = (function(){
 						w.splice(i,1);
 						return;
 					}
+					//console.log(selector);
 					callback.call(element);
 				}
 			});
@@ -394,6 +395,7 @@ jstack.dataBinder = (function(){
 		loadMutations: function(mutations){
 			var self = this;
 			//console.log(mutations);
+			var stack = {100:[]};
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -417,25 +419,32 @@ jstack.dataBinder = (function(){
 								if(!n.hasAttribute('j-static')){
 									self.addWatcher(n, c, pair.selector, iii);
 								}
-								if(!document.body.contains(n)) return;
-								c.call(n);
+								if(!stack[iii]) stack[iii] = [];
+								stack[iii].push([n,c,pair.selector]);
+								//c.call(n);
 							}
 						});
 						
 						if($n.data('j:load:state')){
 							return;
 						}
-						$n.data('j:load:state',1);
-						setTimeout(function(){
-							if($n.data('j:load:state')==2){
-								return;
-							}
-							$n.data('j:load:state',3);
-							$n.trigger('j:load');
-							$n.data('j:load:state',3);
-						},0);
 						
-					});
+						var jloadCallback = function(){
+							var $n = $(this);
+							$n.data('j:load:state',1);
+							setTimeout(function(){
+								if($n.data('j:load:state')==2){
+									return;
+								}
+								$n.data('j:load:state',3);
+								$n.trigger('j:load');
+								$n.data('j:load:state',3);
+							},0);
+						};
+						
+						stack[100].push([n,jloadCallback]);
+						
+					},true);
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
@@ -447,7 +456,16 @@ jstack.dataBinder = (function(){
 					});
 				});
 			});
-					
+			
+			$.each(stack,function(level,w){				
+				for(var i = 0, l=w.length;i<l;i++){
+					var a = w[i];
+					var n = a[0];
+					var c = a[1];
+					var s = a[2];
+					c.call(n);
+				}
+			});
 		},
 		eventListener: function(){
 			var self = this;
