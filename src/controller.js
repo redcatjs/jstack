@@ -66,7 +66,7 @@ jstack.controller = function(controller,element){
 				
 				var el = this.element;
 				el.data('jModel',this.data);
-				el.attr('j-controller',this);
+				el.attr('j-controller',this.name);
 				if(Boolean(el.attr('j-view-append'))){
 					el.append( html );
 				}
