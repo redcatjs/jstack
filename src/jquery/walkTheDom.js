@@ -9,7 +9,7 @@ $.walkTheDOM = function(node, func, reverse){
 			return false;
 		}
 	}
-	if(!reverse&&func(node)===false){
+	if(reverse&&func(node)===false){
 		return false;
 	}
 };
