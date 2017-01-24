@@ -418,12 +418,11 @@ jstack.dataBinder = (function(){
 						
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
-								var c = pair.callback;
-								if(!n.hasAttribute('j-static')){
-									self.addWatcher(n, c, pair.selector, iii);
+								if( !n.hasAttribute('j-static') && pair.watcher ){
+									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], pair.selector, iii);
 								}
 								if(!stack[iii]) stack[iii] = [];
-								stack[iii].push([n,c,pair.selector]);
+								stack[iii].push([n,pair]);
 								//c.call(n);
 							}
 						});
@@ -464,9 +463,8 @@ jstack.dataBinder = (function(){
 				for(var i = 0, l=w.length;i<l;i++){
 					var a = w[i];
 					var n = a[0];
-					var c = a[1];
-					var s = a[2];
-					c.call(n);
+					var pair = a[1];
+					pair.callback.call(n);
 				}
 			});
 		},

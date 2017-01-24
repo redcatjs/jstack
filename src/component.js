@@ -134,49 +134,92 @@ jstack.preloader = [
 		selector:'[j-if]',
 		callback:function(){
 			jstack.dataBinder.loaders.jIf.call(this);
+			this.removeAttribute('j-if');
 		},
+		watcher: 'jIf',
 	},
 	{
 		selector:'[j-switch]',
 		callback:function(){
 			jstack.dataBinder.loaders.jSwitch.call(this);
+			this.removeAttribute('j-switch');
 		},
+		watcher: 'jSwitch',
 	},
 	{
 		selector:'[j-href]',
 		callback:function(){
 			jstack.dataBinder.loaders.jHref.call(this);
+			this.removeAttribute('j-href');
 		},
 	},
 	{
-		selector:':data(j-var),[data-j-var]',
+		selector:':data(j-var)',
 		callback:function(){
 			jstack.dataBinder.loaders.jVar.call(this);
+			$(this).removeData('j-var');
 		},
+		watcher: 'jVar',
+	},
+	{
+		selector:'[data-j-var]',
+		callback:function(){
+			jstack.dataBinder.loaders.jVar.call(this);
+			this.removeAttribute('data-j-var');
+		},
+		watcher: 'jVar',
 	},
 	{
 		selector:':attrStartsWith("j-var-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jVarAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-var-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jVarAttr',
 	},
 	{
 		selector:':attrStartsWith("j-model-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jModelAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-model-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jModelAttr',
 	},
 	{
 		selector:':attrStartsWith("j-data-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jDataAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-data-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jDataAttr',
 	},
 	{
 		selector:':attrStartsWith("j-shortcut-model-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-shortcut-model-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jShrotcutModelAttr',
 	},
 	{
 		selector:':input[name],[j-input],[j-select]',
@@ -187,6 +230,7 @@ jstack.preloader = [
 			}
 			jstack.dataBinder.loaders.inputWithName.call(this);
 		},
+		watcher: 'inputWithName',
 	},
 ];
 
