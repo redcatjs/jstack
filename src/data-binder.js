@@ -579,7 +579,85 @@ jstack.dataBinder = (function(){
 			{
 				selector:'[j-for]',
 				callback:function(){
-					jstack.dataBinder.loaders.jFor.call(this);
+					
+					var el = this;
+					var $this = $(this);
+					var jfor = $('<!--j:for-->');
+					var jforClose = $('<!--/j:for-->');
+					$this.replaceWith(jfor);
+					jforClose.insertAfter(jfor);
+					
+					var attrFor = $this.attr('j-for');
+					$this.removeAttr('j-for');
+					attrFor = attrFor.trim();
+					var index, key, value, myvar;
+					
+					var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+					var m = p.exec(attrFor);
+					if (m != null){
+						index = m[2].trim();
+						key = m[4].trim();
+						value = m[6];
+						myvar = m[11].trim();
+					}
+					else{
+						var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+						var m = p.exec(attrFor);
+						if (m != null){
+							key = m[2].trim();
+							value = m[4];
+							myvar = m[9].trim();
+						}
+						else{
+							var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+							var m = p.exec(attrFor);
+							if (m != null){
+								value = m[1];
+								myvar = m[5].trim();
+							}
+							else{
+								throw new Error('Malformed for clause: '+attrFor);
+							}
+						}
+					}
+					
+					var currentData;
+					
+					var getData = function(){
+						return jstack.dataBinder.getValueEval(jfor,myvar);
+					};
+					
+					var render = function(){
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						var forIdList = [];
+						var collection = jfor.commentChildren();
+						
+						//add
+						$.each(data,function(k){
+							var row = collection.filter('[j-for-id="'+k+'"]');
+							if(!row.length){
+								row = $this.clone();
+								row.attr('j-for-id',k);
+								row.insertBefore(jforClose);
+							}
+							forIdList.push(k.toString());
+						});
+						
+						//remove
+						collection.each(function(){
+							var forId = $(this).attr('j-for-id');
+							if(forIdList.indexOf(forId)===-1){
+								$(this).remove();
+							}
+						});
+					};
+					
+					return render;
+					
+					
 				},
 			},
 			{
@@ -756,95 +834,6 @@ jstack.dataBinder = (function(){
 					}
 				});
 			},
-			
-			jFor: function(){
-				var $this = $(this);
-				var parent = $this.parent();
-				
-				var attrFor = $this.attr('j-for');
-				attrFor = attrFor.trim();
-				var index, key, value, myvar;
-				
-				var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-				var m = p.exec(attrFor);
-				if (m != null){
-					index = m[2].trim();
-					key = m[4].trim();
-					value = m[6];
-					myvar = m[11].trim();
-				}
-				else{
-					var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-					var m = p.exec(attrFor);
-					if (m != null){
-						key = m[2].trim();
-						value = m[4];
-						myvar = m[9].trim();
-					}
-					else{
-						var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
-						var m = p.exec(attrFor);
-						if (m != null){
-							value = m[1];
-							myvar = m[5].trim();
-						}
-						else{
-							throw new Error('Malformed for clause: '+attrFor);
-						}
-					}
-				}
-				parent.attr('j-for-list',myvar);
-				parent.attr('j-for-value',value);
-				if(key){
-					parent.attr('j-for-key',key);
-				}
-				if(typeof(index)!='undefined'){
-					parent.attr('j-for-index',index);
-				}
-				
-				parent.data('jForTemplate',this);
-				$this.removeAttr('j-for');
-				$this.data('parent',parent);
-				$this.detach();
-				
-				jstack.dataBinder.addWatcher(parent[0],jstack.dataBinder.loaders.jForList,1);
-				jstack.dataBinder.loaders.jForList.call(parent[0]);
-				
-			},
-			jForList: function(){
-				var $this = $(this);
-				
-				if($this.attr('j-if')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
-					return;
-				}
-				
-				//add
-				var template = $this.data('jForTemplate');
-				var myvar = $this.attr('j-for-list');
-				var value = jstack.dataBinder.getValueEval(this,myvar);
-				var forIdList = [];
-				$.each(value,function(k){
-					var row = $this.children('[j-for-id="'+k+'"]');
-					if(!row.length){
-						row = $(template).clone();
-						row.attr('j-for-id',k);
-						row.appendTo($this);
-					}
-					forIdList.push(k.toString());
-				});
-				
-				//remove
-				$this.children('[j-for-id]').each(function(){
-					var forId = $(this).attr('j-for-id');
-					if(forIdList.indexOf(forId)===-1){
-						$(this).remove();
-					}
-				});
-				
-			},
-			
-			
-			
 			inputWithName: function(){
 				var input = $(this);
 				if(input.closest('[j-unscope]').length) return;
