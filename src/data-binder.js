@@ -335,8 +335,9 @@ jstack.dataBinder = (function(){
 				this.watchers[level] = [];
 			}
 			var dkey = 'j:watcher:'+selector;
-			if(element.data(dkey)) return;
-			element.data(dkey,a);
+			var el = $(element);
+			if(el.data(dkey)) return;
+			el.data(dkey,a);
 			//if(this.watchers[level].indexOf(a)!==-1) return;
 			this.watchers[level].push( a );
 		},
