@@ -47,20 +47,10 @@ jstack.mvc = function(config){
 		var ctrl = jstack.controller(config.controller,target);
 		
 		$.when(viewReady, ctrl.ready).then(function(view){
-			
 			var html = view[0];
-			
-			var setDataReturn = ctrl.setDataCall();
-			if(setDataReturn===false){
-				return;
-			}
-			
-			setTimeout(function(){
-				ctrl.render(html);
-				ready.resolve(target,ctrl);
-			});
-			
-		});
+			ctrl.render(html);
+			ready.resolve(target,ctrl);
+		});		
 		
 	});
 

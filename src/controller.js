@@ -19,7 +19,14 @@ jstack.controller = function(controller,element){
 					}
 				}
 			}
-
+			
+			element.find(':input[name],[j-input],[j-select]').each(function(){
+				var key = jstack.dataBinder.getScopedInput(this);
+				var val = jstack.dataBinder.getInputVal(this);
+				jstack.dataBinder.dotSet(key,data,val,true);
+				
+			});
+			
 			var defaults = {
 				domReady: function(){},
 				setData: function(){},
@@ -45,14 +52,18 @@ jstack.controller = function(controller,element){
 			this.setDataArguments = [];
 			this.setDataCall = function(){
 				var r = this.setData.apply( this, this.setDataArguments );
-				if($.type(r)=='object'&&r!==ctrl.data){
+				if(r==false){
+					this.noRender = true;
+				}
+				else if($.type(r)=='object'&&r!==ctrl.data){
 					$.extend(this.data,r);
 				}
 				this.startDataObserver();
-				return r;
 			};			
 			
 			this.render = function(html){
+				if(this.noRender) return;
+				
 				var el = this.element;
 				el.data('jModel',this.data);
 				el.attr('j-controller',this);
@@ -129,15 +140,9 @@ jstack.controller = function(controller,element){
 			dependencies.push(resolveDeferred);
 		}
 	}
-
-	element.find(':input[name],[j-input],[j-select]').each(function(){
-		var key = jstack.dataBinder.getScopedInput(this);
-		var val = jstack.dataBinder.getInputVal(this);
-		jstack.dataBinder.dotSet(key,controller.data,val,true);
-		
-	});
 	
 	$.when.apply($, dependencies).then(function(){
+		controller.setDataCall();
 		controller.ready.resolve();
 	});
 	
