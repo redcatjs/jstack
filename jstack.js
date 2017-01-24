@@ -2184,8 +2184,8 @@ $.prettifyHTML = function(el){
 	}
 	return el.outerHTML();
 };
-$.walkTheDOM = function(node, func){
-	if(func(node)===false){
+$.walkTheDOM = function(node, func, reverse){
+	if(!reverse&&func(node)===false){
 		return false;
 	}
 	var children = node.childNodes;
@@ -2194,6 +2194,9 @@ $.walkTheDOM = function(node, func){
 		if(this.walkTheDOM(children[i], func)===false){
 			return false;
 		}
+	}
+	if(!reverse&&func(node)===false){
+		return false;
 	}
 };
 $.fn.walkTheDOM = function(func){
@@ -2432,49 +2435,92 @@ jstack.preloader = [
 		selector:'[j-if]',
 		callback:function(){
 			jstack.dataBinder.loaders.jIf.call(this);
+			this.removeAttribute('j-if');
 		},
+		watcher: 'jIf',
 	},
 	{
 		selector:'[j-switch]',
 		callback:function(){
 			jstack.dataBinder.loaders.jSwitch.call(this);
+			this.removeAttribute('j-switch');
 		},
+		watcher: 'jSwitch',
 	},
 	{
 		selector:'[j-href]',
 		callback:function(){
 			jstack.dataBinder.loaders.jHref.call(this);
+			this.removeAttribute('j-href');
 		},
 	},
 	{
-		selector:':data(j-var),[data-j-var]',
+		selector:':data(j-var)',
 		callback:function(){
 			jstack.dataBinder.loaders.jVar.call(this);
+			$(this).removeData('j-var');
 		},
+		watcher: 'jVar',
+	},
+	{
+		selector:'[data-j-var]',
+		callback:function(){
+			jstack.dataBinder.loaders.jVar.call(this);
+			this.removeAttribute('data-j-var');
+		},
+		watcher: 'jVar',
 	},
 	{
 		selector:':attrStartsWith("j-var-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jVarAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-var-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jVarAttr',
 	},
 	{
 		selector:':attrStartsWith("j-model-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jModelAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-model-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jModelAttr',
 	},
 	{
 		selector:':attrStartsWith("j-data-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jDataAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-data-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jDataAttr',
 	},
 	{
 		selector:':attrStartsWith("j-shortcut-model-")',
 		callback:function(){
 			jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
+			
+			var $this = $(this);
+			var attrs = $this.attrStartsWith('j-shortcut-model-');
+			$.each(attrs,function(k){
+				$this.removeAttr(k);
+			});
 		},
+		watcher: 'jShrotcutModelAttr',
 	},
 	{
 		selector:':input[name],[j-input],[j-select]',
@@ -2485,6 +2531,7 @@ jstack.preloader = [
 			}
 			jstack.dataBinder.loaders.inputWithName.call(this);
 		},
+		watcher: 'inputWithName',
 	},
 ];
 
@@ -3191,9 +3238,12 @@ jstack.dataBinder = (function(){
 			if(!this.watchers[level]){
 				this.watchers[level] = [];
 			}
-			if(this.watchers[level].indexOf(a)===-1){
-				this.watchers[level].push( a );
-			}
+			var dkey = 'j:watcher:'+selector;
+			var el = $(element);
+			if(el.data(dkey)) return;
+			el.data(dkey,a);
+			//if(this.watchers[level].indexOf(a)!==-1) return;
+			this.watchers[level].push( a );
 		},
 		runWatchers: function(){
 			//console.log(this.watchers);
@@ -3253,7 +3303,6 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log(mutations);
 			var stack = {100:[]};
-			var stack2 = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -3267,20 +3316,17 @@ jstack.dataBinder = (function(){
 						}
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							//jstack.dataBinder.loaders.textMustache.call(n);
-							stack2.push([n,jstack.dataBinder.loaders.textMustache]);
+							jstack.dataBinder.loaders.textMustache.call(n);
 							return;
 						}
 						
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
-								var c = pair.callback;
-								if(!n.hasAttribute('j-static')){
-									self.addWatcher(n, c, pair.selector, iii);
+								if( !n.hasAttribute('j-static') && pair.watcher ){
+									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], pair.selector, iii);
 								}
 								if(!stack[iii]) stack[iii] = [];
-								stack[iii].push([n,c,pair.selector]);
-								stack2.push([n,c,pair.selector]);
+								stack[iii].push([n,pair]);
 								//c.call(n);
 							}
 						});
@@ -3303,9 +3349,8 @@ jstack.dataBinder = (function(){
 						};
 						
 						stack[100].push([n,jloadCallback]);
-						stack2.push([n,jloadCallback]);
 						
-					});
+					},true);
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
@@ -3318,22 +3363,14 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
-			//$.each(stack,function(level,w){				
-				//for(var i = 0, l=w.length;i<l;i++){
-					//var a = w[i];
-					//var n = a[0];
-					//var c = a[1];
-					//var s = a[2];
-					//c.call(n);
-				//}
-			//});
-			for(var i = 0, l=stack2.length;i<l;i++){
-				var a = stack2[i];
-				var n = a[0];
-				var c = a[1];
-				var s = a[2];
-				c.call(n);
-			}
+			$.each(stack,function(level,w){				
+				for(var i = 0, l=w.length;i<l;i++){
+					var a = w[i];
+					var n = a[0];
+					var pair = a[1];
+					pair.callback.call(n);
+				}
+			});
 		},
 		eventListener: function(){
 			var self = this;
