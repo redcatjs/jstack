@@ -38,20 +38,18 @@ jstack.mvc = function(config){
 	else{
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
+	var viewReady = jstack.getTemplate(templatePath);
 	
 	var ready = $.Deferred();
-	$.when( jstack.getTemplate(templatePath), controllerReady ).then( function(view){
-		
-		var html = view[0];
+	
+	controllerReady.then(function(){
 		
 		var ctrl = jstack.controller(config.controller,target);
 		
-		ctrl.ready.then(function(){
-		
-			if($.type(config.data)=='object'){
-				$.extend(ctrl.data,config.data);
-			}
-
+		$.when(viewReady, ctrl.ready).then(function(view){
+			
+			var html = view[0];
+			
 			var setDataReturn = ctrl.setDataCall();
 			if(setDataReturn===false){
 				return;
@@ -62,10 +60,9 @@ jstack.mvc = function(config){
 				ready.resolve(target,ctrl);
 			});
 			
-		
 		});
 		
-	} );
+	});
 
 	return ready;
 };
@@ -102,29 +99,12 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	else{
 		controller = view;
 	}
-	
-	var data = el.data('jModel') || {};
-	if(el.hasAttr('j-view-inherit')){
-		var parent = el.parent().closest('[j-controller]');
-		if(parent.length){
-			var inheritProp = el.attr('j-view-inherit');
-			var parentData = parent.data('jModel') || {};
-			if(inheritProp){
-				data[inheritProp] = parentData;
-			}
-			else{
-				data = $.extend({},parentData,data);
-			}
-		}
-	}
-	
-	
+
 	var ready = jstack.viewReady(this);
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
 		target:this,
-		data:data,
 	});
 	mvc.then(function(){
 		setTimeout(function(){

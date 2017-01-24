@@ -5,10 +5,27 @@ jstack.controller = function(controller,element){
 			
 			var self = this;
 			
+			var data = element.data('jModel') || {};
+			if(element.hasAttr('j-view-inherit')){
+				var parent = element.parent().closest('[j-controller]');
+				if(parent.length){
+					var inheritProp = element.attr('j-view-inherit');
+					var parentData = parent.data('jModel') || {};
+					if(inheritProp){
+						data[inheritProp] = parentData;
+					}
+					else{
+						data = $.extend({},parentData,data);
+					}
+				}
+			}
+
 			var defaults = {
 				domReady: function(){},
 				setData: function(){},
+				data: data,
 			};
+			
 			
 			$.extend(true,this,defaults,controller);
 			
@@ -112,8 +129,6 @@ jstack.controller = function(controller,element){
 			dependencies.push(resolveDeferred);
 		}
 	}
- 	
-	controller.data = controller.data || {};
 
 	element.find(':input[name],[j-input],[j-select]').each(function(){
 		var key = jstack.dataBinder.getScopedInput(this);
