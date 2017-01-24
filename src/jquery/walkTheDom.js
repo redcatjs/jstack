@@ -1,5 +1,5 @@
-$.walkTheDOM = function(node, func){
-	if(func(node)===false){
+$.walkTheDOM = function(node, func, reverse){
+	if(!reverse&&func(node)===false){
 		return false;
 	}
 	var children = node.childNodes;
@@ -8,6 +8,9 @@ $.walkTheDOM = function(node, func){
 		if(this.walkTheDOM(children[i], func)===false){
 			return false;
 		}
+	}
+	if(!reverse&&func(node)===false){
+		return false;
 	}
 };
 $.fn.walkTheDOM = function(func){
