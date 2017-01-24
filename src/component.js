@@ -116,15 +116,6 @@ jstack.loader = function(selector,handler,unloader){
 //define preloaders
 jstack.preloader = [
 	{
-		selector:':input[name],[j-input],[j-select]',
-		callback: function(){
-			if(!$(this).data('j:firstload')){
-				$(this).data('j:firstload',true);
-				jstack.dataBinder.inputToModel(this,'j:default',true);
-			}
-		},
-	},
-	{
 		selector:'[j-for]',
 		callback:function(){
 			jstack.dataBinder.loaders.jFor.call(this);
@@ -134,7 +125,8 @@ jstack.preloader = [
 		selector:'[j-if]',
 		callback:function(){
 			jstack.dataBinder.loaders.jIf.call(this);
-			this.removeAttribute('j-if');
+			
+			//this.removeAttribute('j-if');
 		},
 		watcher: 'jIf',
 	},
@@ -142,7 +134,8 @@ jstack.preloader = [
 		selector:'[j-switch]',
 		callback:function(){
 			jstack.dataBinder.loaders.jSwitch.call(this);
-			this.removeAttribute('j-switch');
+			
+			//this.removeAttribute('j-switch');
 		},
 		watcher: 'jSwitch',
 	},
@@ -150,14 +143,16 @@ jstack.preloader = [
 		selector:'[j-href]',
 		callback:function(){
 			jstack.dataBinder.loaders.jHref.call(this);
-			this.removeAttribute('j-href');
+			
+			//this.removeAttribute('j-href');
 		},
 	},
 	{
 		selector:':data(j-var)',
 		callback:function(){
 			jstack.dataBinder.loaders.jVar.call(this);
-			$(this).removeData('j-var');
+			
+			//$(this).removeData('j-var');
 		},
 		watcher: 'jVar',
 	},
@@ -165,7 +160,8 @@ jstack.preloader = [
 		selector:'[data-j-var]',
 		callback:function(){
 			jstack.dataBinder.loaders.jVar.call(this);
-			this.removeAttribute('data-j-var');
+			
+			//this.removeAttribute('data-j-var');
 		},
 		watcher: 'jVar',
 	},
@@ -174,11 +170,11 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jVarAttr.call(this);
 			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-var-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
+			//var $this = $(this);
+			//var attrs = $this.attrStartsWith('j-var-');
+			//$.each(attrs,function(k){
+				//$this.removeAttr(k);
+			//});
 		},
 		watcher: 'jVarAttr',
 	},
@@ -187,11 +183,11 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jModelAttr.call(this);
 			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-model-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
+			//var $this = $(this);
+			//var attrs = $this.attrStartsWith('j-model-');
+			//$.each(attrs,function(k){
+				//$this.removeAttr(k);
+			//});
 		},
 		watcher: 'jModelAttr',
 	},
@@ -200,11 +196,11 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jDataAttr.call(this);
 			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-data-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
+			//var $this = $(this);
+			//var attrs = $this.attrStartsWith('j-data-');
+			//$.each(attrs,function(k){
+				//$this.removeAttr(k);
+			//});
 		},
 		watcher: 'jDataAttr',
 	},
@@ -213,21 +209,17 @@ jstack.preloader = [
 		callback:function(){
 			jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
 			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-shortcut-model-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
+			//var $this = $(this);
+			//var attrs = $this.attrStartsWith('j-shortcut-model-');
+			//$.each(attrs,function(k){
+				//$this.removeAttr(k);
+			//});
 		},
 		watcher: 'jShrotcutModelAttr',
 	},
 	{
 		selector:':input[name],[j-input],[j-select]',
 		callback:function(){
-			if(!$(this).data('j:firstload')){
-				$(this).data('j:firstload',true);
-				jstack.dataBinder.inputToModel(this,'j:default',true);
-			}
 			jstack.dataBinder.loaders.inputWithName.call(this);
 		},
 		watcher: 'inputWithName',

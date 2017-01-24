@@ -30,7 +30,6 @@ jstack.mvc = function(config){
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
-	var viewCompilerReady = $.Deferred();
 	var processor;
 	
 	if(jstack.controllers[config.controller]){
@@ -40,24 +39,10 @@ jstack.mvc = function(config){
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
 	
-	jstack.getTemplate(templatePath).then(function(html){		
-		processor = function(data){
-			target.data('jModel',data);
-			target.attr('j-controller',controller);
-			
-			if(Boolean(target.attr('j-view-append'))){
-				target.append( html );
-			}
-			else{
-				target.html( html );
-			}
-		};
-		viewCompilerReady.resolve();
-	});
-
-	
 	var ready = $.Deferred();
-	$.when( controllerReady, viewCompilerReady ).then( function() {
+	$.when( jstack.getTemplate(templatePath), controllerReady ).then( function(view){
+		
+		var html = view[0];
 		
 		var ctrl = jstack.controller(config.controller,target);
 		
@@ -66,36 +51,17 @@ jstack.mvc = function(config){
 			if($.type(config.data)=='object'){
 				$.extend(ctrl.data,config.data);
 			}
-			
-			
-			
-			ctrl.render = function(data){
-				
-				if(data&&data!==ctrl.data){
-					$.extend(ctrl.data,data);
-				}
-				
-				processor(ctrl.data);
-				
-				if(ctrl.domReady){
-					setTimeout(function(){
-						ctrl.domReady();
-						ready.resolve(target,ctrl);
-					});
-				}
-								
-			};
-			
-			if(ctrl.setData){
-				var setDataReturn = ctrl.setDataCall();
-				if(setDataReturn===false){
-					return;
-				}
-				if($.type(setDataReturn)=='object'&&setDataReturn!==ctrl.data){
-					$.extend(ctrl.data,setDataReturn);
-				}
+
+			var setDataReturn = ctrl.setDataCall();
+			if(setDataReturn===false){
+				return;
 			}
-			ctrl.render();
+			
+			setTimeout(function(){
+				ctrl.render(html);
+				ready.resolve(target,ctrl);
+			});
+			
 		
 		});
 		

@@ -5,18 +5,48 @@ jstack.controller = function(controller,element){
 			
 			var self = this;
 			
-			$.extend(true,this,controller);
+			var defaults = {
+				domReady: function(){},
+				setData: function(){},
+			};
+			
+			$.extend(true,this,defaults,controller);
 			
 			
 			this.ready = $.Deferred();
 			this.element = element;
 			element.data('jController',this);
 			
+			this.startDataObserver = function(){
+				self.data = ObjectObservable.create(self.data);
+				ObjectObservable.observe(self.data,function(change){
+					console.log('j:model:update',change);
+					jstack.dataBinder.update();
+				});
+			};
 			
 			this.setDataArguments = [];
 			this.setDataCall = function(){
-				return this.setData.apply( this, this.setDataArguments );
+				var r = this.setData.apply( this, this.setDataArguments );
+				if($.type(r)=='object'&&r!==ctrl.data){
+					$.extend(this.data,r);
+				}
+				this.startDataObserver();
+				return r;
 			};			
+			
+			this.render = function(html){
+				var el = this.element;
+				el.data('jModel',this.data);
+				el.attr('j-controller',this);
+				if(Boolean(el.attr('j-view-append'))){
+					el.append( html );
+				}
+				else{
+					el.html( html );
+				}
+				this.domReady();
+			};
 			
 		};
 		return jstack.controllers[controller.name];
@@ -84,14 +114,13 @@ jstack.controller = function(controller,element){
 	}
  	
 	controller.data = controller.data || {};
-	
-	controller.data = ObjectObservable.create(controller.data);
-	
-	ObjectObservable.observe(controller.data,function(change){
-		//console.log(change);
-		jstack.dataBinder.update();
+
+	element.find(':input[name],[j-input],[j-select]').each(function(){
+		var key = jstack.dataBinder.getScopedInput(this);
+		var val = jstack.dataBinder.getInputVal(this);
+		jstack.dataBinder.dotSet(key,controller.data,val,true);
+		
 	});
-	
 	
 	$.when.apply($, dependencies).then(function(){
 		controller.ready.resolve();

@@ -278,7 +278,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el,eventName,isDefault){
+		inputToModel: function(el,eventName){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
 			
@@ -295,7 +295,7 @@ jstack.dataBinder = (function(){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				value = self.dotSet(key,data,value,isDefault);
+				value = self.dotSet(key,data,value);
 				input.trigger(eventName,[value]);
 				
 			};
@@ -328,17 +328,13 @@ jstack.dataBinder = (function(){
 			return true;
 		},
 		watchers: {},
-		addWatcher: function(element,callback,selector,level){
+		addWatcher: function(element,callback,level){
 			if(!level) level = 0;
-			var a = [ element, callback, selector ];
+			var a = [ element, callback ];
 			if(!this.watchers[level]){
 				this.watchers[level] = [];
 			}
-			var dkey = 'j:watcher:'+selector;
-			var el = $(element);
-			if(el.data(dkey)) return;
-			el.data(dkey,a);
-			//if(this.watchers[level].indexOf(a)!==-1) return;
+			if(this.watchers[level].indexOf(a)!==-1) return;
 			this.watchers[level].push( a );
 		},
 		runWatchers: function(){
@@ -348,12 +344,10 @@ jstack.dataBinder = (function(){
 					var a = w[i];
 					var element = a[0];
 					var callback = a[1];
-					var selector = a[2];
-					if( ( selector && selector!==Node.TEXT_NODE && !$(element).is(selector) ) || !document.body.contains(element)){
+					if(!document.body.contains(element)){
 						w.splice(i,1);
 						return;
 					}
-					//console.log(selector);
 					callback.call(element);
 				}
 			});
@@ -364,6 +358,7 @@ jstack.dataBinder = (function(){
 		updateDeferStateObserver: null,
 		updateWait: 100,
 		update: function(){
+			console.log('update');
 			if(this.updateTimeout){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
@@ -398,6 +393,68 @@ jstack.dataBinder = (function(){
 		loadMutations: function(mutations){
 			var self = this;
 			//console.log(mutations);
+			
+			/*
+			$.each(mutations,function(i,mutation){
+				
+				$.each(mutation.addedNodes,function(ii,node){
+					
+					$.walkTheDOM(node,function(n){
+						
+						if(!$.contains(document.body,n)) return;
+						
+						var $n = $(n);
+						
+						if($n.parent().closest('[j-for]').length){
+							return;
+						}
+						
+						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+							jstack.dataBinder.loaders.textMustache.call(n);
+							return;
+						}
+						
+						if(n.nodeType!=Node.ELEMENT_NODE) return;
+						
+						$.each(jstack.preloader,function(iii,pair){
+							if($n.is(pair.selector)){
+								return pair.callback.call(n);
+							}
+						});
+						
+						if(!$.contains(document.body,n)) return;
+						
+						
+						if($n.data('j:load:state')){
+							return;
+						}
+						$n.data('j:load:state',1);
+						setTimeout(function(){
+							if($n.data('j:load:state')==2){
+								return;
+							}
+							$n.data('j:load:state',3);
+							$n.trigger('j:load');
+							$n.data('j:load:state',3);
+						},0);
+						
+						
+					},true);
+
+				});
+				
+				$.each(mutation.removedNodes,function(ii,node){
+					$.walkTheDOM(node,function(n){
+						if(!self.validNodeEvent(n,true)) return;
+						setTimeout(function(){
+							$(n).trigger('j:unload');
+						},0);
+					});
+				});
+			});
+			return;
+			*/
+			
 			var stack = {100:[]};
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
@@ -419,11 +476,11 @@ jstack.dataBinder = (function(){
 						$.each(jstack.preloader,function(iii,pair){
 							if($n.is(pair.selector)){
 								if( !n.hasAttribute('j-static') && pair.watcher ){
-									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], pair.selector, iii);
+									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], iii);
 								}
 								if(!stack[iii]) stack[iii] = [];
 								stack[iii].push([n,pair]);
-								//c.call(n);
+								pair.callback.call(n);
 							}
 						});
 						
@@ -444,29 +501,36 @@ jstack.dataBinder = (function(){
 							},0);
 						};
 						
-						stack[100].push([n,jloadCallback]);
+						stack[100].push([n,{callback:jloadCallback}]);
+						jloadCallback.call(n);
 						
-					},true);
-				});
-				
-				$.each(mutation.removedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
-						if(!self.validNodeEvent(n,true)) return;
-						setTimeout(function(){
-							$(n).trigger('j:unload');
-						},0);
 					});
 				});
+				
+				//$.each(mutation.removedNodes,function(ii,node){
+					//$.walkTheDOM(node,function(n){
+						//if(!self.validNodeEvent(n,true)) return;
+						//setTimeout(function(){
+							//$(n).trigger('j:unload');
+						//},0);
+					//});
+				//});
 			});
 			
-			$.each(stack,function(level,w){				
-				for(var i = 0, l=w.length;i<l;i++){
-					var a = w[i];
-					var n = a[0];
-					var pair = a[1];
-					pair.callback.call(n);
-				}
-			});
+			//$.each(stack,function(level,w){				
+				//for(var i = 0, l=w.length;i<l;i++){
+					//var a = w[i];
+					//var n = a[0];
+					//var pair = a[1];
+					//if(pair.selector&&!$(n).is(pair.selector)){
+						//return;
+					//}
+					//if( !n.hasAttribute('j-static') && pair.watcher ){
+						//self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], level);
+					//}
+					//pair.callback.call(n);
+				//}
+			//});
 		},
 		eventListener: function(){
 			var self = this;
