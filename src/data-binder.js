@@ -334,9 +334,11 @@ jstack.dataBinder = (function(){
 			if(!this.watchers[level]){
 				this.watchers[level] = [];
 			}
-			if(this.watchers[level].indexOf(a)===-1){
-				this.watchers[level].push( a );
-			}
+			var dkey = 'j:watcher:'+selector;
+			if(element.data(dkey)) return;
+			element.data(dkey,a);
+			//if(this.watchers[level].indexOf(a)!==-1) return;
+			this.watchers[level].push( a );
 		},
 		runWatchers: function(){
 			//console.log(this.watchers);
