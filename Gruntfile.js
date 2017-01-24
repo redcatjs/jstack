@@ -55,6 +55,7 @@ grunt.initConfig({
 				"src/jquery/replaceTagName.js",
 				"src/jquery/jModel.js",
 				"src/jquery/jhtml.js",
+				"src/jquery/commentChildren.js",
 				
 				"src/template/getTemplate.js",
 				"src/template/jml.js",
