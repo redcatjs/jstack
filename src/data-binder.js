@@ -379,6 +379,7 @@ jstack.dataBinder = (function(){
 			//console.log(mutations);
 			
 			var compilerTexts = [];
+			var compilerJloads = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -415,14 +416,16 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						$n.data('j:load:state',1);
-						setTimeout(function(){
-							if($n.data('j:load:state')==2){
-								return;
-							}
-							$n.data('j:load:state',3);
-							$n.trigger('j:load');
-							$n.data('j:load:state',3);
-						},0);
+						compilerJloads.push(function(){
+							setTimeout(function(){
+								if($n.data('j:load:state')==2){
+									return;
+								}
+								$n.data('j:load:state',3);
+								$n.trigger('j:load');
+								$n.data('j:load:state',3);
+							},0);
+						});
 						
 					});
 				});
@@ -441,6 +444,9 @@ jstack.dataBinder = (function(){
 				var render = compilerTexts[i];
 				render();
 				self.addWatcher(render, 99);
+			}
+			for(var i = 0, l=compilerJloads.length;i<l;i++){
+				compilerJloads[i]();
 			}
 		},
 		eventListener: function(){
