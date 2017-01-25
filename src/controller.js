@@ -44,7 +44,7 @@ jstack.controller = function(controller,element){
 			this.startDataObserver = function(){
 				self.data = ObjectObservable.create(self.data);
 				ObjectObservable.observe(self.data,function(change){
-					console.log('j:model:update',change);
+					//console.log('j:model:update',change);
 					jstack.dataBinder.update();
 				});
 			};
