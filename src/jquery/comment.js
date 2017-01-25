@@ -37,7 +37,7 @@ $.fn.commentChildren = function(){
 	var arr = [];
 	var comment = Node.COMMENT_NODE;
 	this.each(function(){
-		var endTag = '/'+this.nodeValue;
+		var endTag = '/'+this.nodeValue.split(' ')[0];
 		var n = this.nextSibling;
 		while(n && (n.nodeType!==comment || n.nodeValue!=endTag) ){
 			arr.push(n);
@@ -52,11 +52,34 @@ $.fn.parentComment = function(tag){
 	var a = [];
 	n = this[0].previousSibling;
 	while(n){
-		if(n.nodeType===comment&&n.nodeValue===tag){
+		if(n.nodeType===comment&&n.nodeValue.split(' ')[0]===tag){
 			a.push(n);
 			break;
 		}
 		n = n.previousSibling;
 	}
 	return $(a);
+};
+
+$.fn.dataComment = function(){
+	if(arguments.length){
+		var setData;
+		if(arguments.length>1){
+			setData = {};
+			setData[arguments[0]] =	arguments[1];
+		}
+		else{
+			var setData = arguments[0];
+		}
+		return this.each(function(){
+			var x = this.nodeValue.split(' ');
+			var nodeName = x.shift();
+			var data = x.length ? JSON.parse( x.join(' ') ) : {};
+			$.extend(data,setData);
+			this.nodeValue = nodeName+' '+JSON.stringify(data);
+		});
+	}
+	var x = this[0].nodeValue.split(' ');
+	x.shift();
+	return x.length ? JSON.parse( x.join(' ') ) : {};
 };
