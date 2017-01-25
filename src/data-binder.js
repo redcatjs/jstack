@@ -484,7 +484,7 @@ jstack.dataBinder = (function(){
 			$(document.body).on('input change j:update', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
 					return;
-				
+					
 				var value = self.getInputVal(this);
 				
 				if(e.type=='change'){
