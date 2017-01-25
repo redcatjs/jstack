@@ -903,11 +903,9 @@ jstack.dataBinder = (function(){
 			};
 			return render;
 		},
-		textParser:function(text, returnOriginal){
+		textParser:function(text){
 			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
 			if (!tagRE.test(text)) {
-				if(returnOriginal)
-					return text;
 				return;
 			}
 			var tokens = [];
