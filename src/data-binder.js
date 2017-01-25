@@ -148,7 +148,7 @@ jstack.dataBinder = (function(){
 			catch(jstackException){
 				if(jstack.config.debug){
 					var warn = [jstackException.message, ", expression: "+varKey, "element", el];
-					if(el.nodeType==Node.NODE_COMMENT){
+					if(el.nodeType==Node.COMMENT_NODE){
 						warn.push($(el).parent().get());
 					}
 					console.warn.apply(console,warn);
@@ -442,6 +442,9 @@ jstack.dataBinder = (function(){
 				
 				$.each(mutation.removedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
+						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
+							$(n).removeDataComment();
+						}
 						if(!self.validNodeEvent(n,true)) return;
 						setTimeout(function(){
 							$(n).trigger('j:unload');
