@@ -116,27 +116,25 @@ jstack.dataBinder = (function(){
 			};
 			$(forCollection).each(function(){
 				var parentFor = $(this);
-				var parentForList = parentFor.closest('[j-for-list]');
+				var parentForList = parentFor.parentComment('j:for');
 				
 				if(!parentForList.length) return;
 				
-				var myvar = parentForList.attr('j-for-list');
-				var value = parentForList.attr('j-for-value');
-				var id = parentFor.attr('j-for-id');
+				console.log(parentForList,parentForList.dataComment());
 				
+				var value = parentForList.dataComment('value');
 				forParams.push(value);
 				
-				var valueToEval = myvar;
-				valueToEval += jstack.isIntKey(id)?'['+id+']':'.'+id;
+				var forData = parentFor.data('j:for:data');
+				forArgs.push(forData);
 				
-				forArgs.push(self.getValueEval(parentForList,valueToEval));
-				
-				var key = parentForList.attr('j-for-key');
-				var index = parentForList.attr('j-for-index');
+				var key = parentForList.dataComment('key');
+				var index = parentForList.dataComment('index');
 				if(index){
 					addToScope(index,parentFor.index()+1);
 				}
 				if(key){
+					var id = parentFor.attr('j-for-id');
 					addToScope(key,id);
 				}
 			});
@@ -386,6 +384,7 @@ jstack.dataBinder = (function(){
 			//console.log(mutations);
 			
 			//var stack = {100:[]};
+			var compilerTexts = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -402,7 +401,8 @@ jstack.dataBinder = (function(){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
 								self.addWatcher(n, render, 99);
-								render();
+								compilerTexts.push(render);
+								//render();
 							}
 							return;
 						}
@@ -457,6 +457,9 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
+			for(var i = 0, l=compilerTexts.length;i<l;i++){
+				compilerTexts[i]();
+			}
 			//$.each(stack,function(level,w){				
 				//for(var i = 0, l=w.length;i<l;i++){
 					//var a = w[i];
@@ -613,10 +616,16 @@ jstack.dataBinder = (function(){
 					}
 					
 					var currentData;
-					
 					var getData = function(){
 						return jstack.dataBinder.getValueEval(jfor,myvar);
 					};
+					
+					//parentForList
+					jfor.dataComment({
+						value:value,
+						key:key,
+						index:index,
+					});
 					
 					var render = function(){
 						if(!document.body.contains(jfor[0])) return false;
@@ -629,11 +638,12 @@ jstack.dataBinder = (function(){
 						var collection = jfor.commentChildren();
 						
 						//add
-						$.each(data,function(k){
+						$.each(data,function(k,v){
 							var row = collection.filter('[j-for-id="'+k+'"]');
 							if(!row.length){
 								row = $this.clone();
 								row.attr('j-for-id',k);
+								row.data('j:for:data',v);
 								row.insertBefore(jforClose);
 							}
 							forIdList.push(k.toString());
