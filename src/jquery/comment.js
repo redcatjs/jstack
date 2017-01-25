@@ -147,5 +147,5 @@ $.fn.dataComment = function(){
 	}
 	return data;
 };
-é
-});
+
+})();
