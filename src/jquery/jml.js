@@ -9,8 +9,8 @@ $.fn.jml = function(){
 				var n = this.nextSibling;
 				while(n && (n.nodeType!==comment || n.nodeValue!=endTag)){
 					var next = n.nextSibling;
-					$(n).remove();
 					n = next;
+					$(n).remove();
 				}
 				$(this).replaceWith(origin);
 			}
