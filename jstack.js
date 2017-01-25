@@ -2443,26 +2443,6 @@ $.fn.dataComment = function(){
 };
 
 })();
-$.fn.jml = function(){
-	var comment = Node.COMMENT_NODE;
-	var clone = this.clone(true);
-	clone.findComments().each(function(){
-		if(this.nodeValue.substr(0,2)=='j:'){
-			var origin = $(this).dataComment('origin');
-			if(origin){
-				var endTag = '/'+this.nodeValue.split(' ')[0];
-				var n = this.nextSibling;
-				while(n && (n.nodeType!==comment || n.nodeValue!=endTag)){
-					var next = n.nextSibling;
-					$(n).remove();
-					n = next;
-				}
-				$(this).replaceWith(origin);
-			}
-		}
-	});
-	return clone.html();
-};
 $.fn.jData = function(key){
 	if(this.length>1){
 		var a = [];
@@ -3066,14 +3046,15 @@ jstack.dataBinder = (function(){
 				
 				if(!parentForList.length) return;
 				
-				var value = parentForList.dataComment('value');
+				var jforCommentData = parentForList.dataCommentJSON();
+				var value = jforCommentData.value;
 				forParams.push(value);
 				
 				var forData = parentFor.data('j:for:data');
 				forArgs.push(forData);
 				
-				var key = parentForList.dataComment('key');
-				var index = parentForList.dataComment('index');
+				var key = jforCommentData.key;
+				var index = jforCommentData.index;
 				if(index){
 					addToScope(index,parentFor.index()+1);
 				}
@@ -3561,7 +3542,7 @@ jstack.dataBinder = (function(){
 					};
 					
 					//parentForList
-					jfor.dataComment({
+					jfor.dataCommentJSON({
 						value:value,
 						key:key,
 						index:index,
@@ -3831,7 +3812,6 @@ jstack.dataBinder = (function(){
 			
 			var text = $('<!--j:text-->');
 			var textClose = $('<!--/j:text-->');
-			text.dataComment('origin',textString);
 			$this.replaceWith(text);
 			textClose.insertAfter(text);
 			
