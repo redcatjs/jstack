@@ -2461,8 +2461,37 @@ $.fn.jml = function(){
 			}
 		}
 	});
-	console.log(clone.html());
 	return clone.html();
+};
+$.fn.jData = function(key){
+	if(this.length>1){
+		var a = [];
+		this.each(function(){
+			a.push( $.fn.jData.call( $(this), key ) );
+		});
+		return a;
+	}
+	else{
+			
+		var a = {};
+		var el = this[0];
+		$.each(this.attrStartsWith('j-data-'),function(k,v){
+			var parsed = jstack.dataBinder.textParser(v);
+			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : v;
+			a[k] = value;
+		});
+		var data = {};
+		$.each(a,function(k,v){
+			$.attrsToObject( k.substr(7), v, data );
+		});
+		
+		if(key){
+			data = jstack.dataBinder.dotGet(key,data);
+		}
+		
+		return data;
+	
+	}
 };
 (function(){
 	var templates = {};
@@ -2545,7 +2574,7 @@ jstack.loader('[j-component]',function(){
 		return;
 	}
 	$el.attr('j-component-handled','true');
-	var config = $el.dataAttrConfig('j-data-');
+	var config = $el.jData();
 	var paramsData = $el.attr('j-params-data');
 	var load = function(){
 		var o;
@@ -3675,11 +3704,14 @@ jstack.dataBinder = (function(){
 					
 					var parsed = jstack.dataBinder.textParser(original);
 					
+					if(typeof(parsed)!='string'){
+						$this.attr('href',jstack.route.baseLocation + "#" + original);
+						return;
+					}
+					
 					var currentData;
-					var getData = typeof(parsed)=='string'?function(){
+					var getData = function(){
 						return jstack.dataBinder.getValueEval(el,parsed);
-					}:function(){
-						return original;
 					};
 					var render = function(){
 						if(!document.body.contains(el)) return false;
@@ -3694,54 +3726,6 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:':data(j-var)',
-				callback:function(){
-					var el = this;
-					var $this = $(this);
-					var myvar = $this.data('j-var');
-					$this.removeData('j-var');
-					var currentData;
-					var getData = function(){
-						return jstack.dataBinder.getValueEval(el,myvar);
-					};
-					var render = function(){
-						if(!document.body.contains(el)) return false;
-						
-						var data = getData();
-						if(currentData===data) return;
-						currentData = data;
-						
-						$this.html(data);
-					};
-					return render;
-				},
-			},
-			{
-				selector:'[data-j-var]',
-				callback:function(){
-					
-					var el = this;
-					var $this = $(this);
-					var myvar = $this.attr('data-j-var');
-					this.removeAttribute('data-j-var');
-					var currentData;
-					var getData = function(){
-						return jstack.dataBinder.getValueEval(el,myvar);
-					};
-					var render = function(){
-						if(!document.body.contains(el)) return false;
-						
-						var data = getData();
-						if(currentData===data) return;
-						currentData = data;
-						
-						$this.html(data);
-					};
-					return render;
-					
-				},
-			},
-			{
 				selector:':attrStartsWith("j-model-")',
 				callback:function(){
 					var el = this;
@@ -3750,38 +3734,21 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
-						attrsVars[k.substr(8)] = jstack.dataBinder.textParser(v);
+						var parsed = jstack.dataBinder.textParser(v);
+						var key = k.substr(8);
+						if(typeof(parsed)=='string'){
+							attrsVars[k] = parsed;
+						}
+						else{
+							$this.attr(key,v);
+						}
 						$this.removeAttr(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return false;
 						
-						$.each(attrsVars,function(k,parsed){
-							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
-							if(attrsVarsCurrent[k]===value) return;
-							attrsVarsCurrent[k] = value;
-							$this.attr(k,value);
-						});
-					};
-					return render;
-				},
-			},
-			{
-				selector:':attrStartsWith("j-data-")',
-				callback:function(){
-					var el = this;
-					var $this = $(this);
-					var attrs = $this.attrStartsWith('j-data-');
-					var attrsVars = {};
-					var attrsVarsCurrent = {};
-					$.each(attrs,function(k,v){
-						attrsVars[k] = jstack.dataBinder.textParser(v);
-					});
-					var render = function(){
-						if(!document.body.contains(el)) return false;
-						
-						$.each(attrsVars,function(k,parsed){
-							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
+						$.each(attrsVars,function(k,v){
+							var value =  jstack.dataBinder.getValueEval(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
 							$this.attr(k,value);
