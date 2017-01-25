@@ -1986,12 +1986,6 @@ $.fn.outerHTML = function(){
 		return null;
 	}
 };
-$.fn.loadJml = function(url,data){
-	var self = this;
-	return jstack.jml(url,data).then(function(content){
-		self.append(content);
-	});
-};
 $.fn.hasAttr = function(attr){
 	return this[0].hasAttribute(attr);
 };
@@ -2298,35 +2292,13 @@ $.fn.jModel = function(key,defaultValue){
 		return data;
 	}
 };
-$.fn.jExposeVar = function(onOrigin){
-	var collection = [];
-	this.each(function(){
-		var el = onOrigin?this:$(this).clone().get(0);
-		var $el = $(el);
-		var all = $el.find(':data(j-var)');
-		if($el.data('j-var')){
-			all.add(el);
-		}
-		all.each(function(){
-			var span = $(this);
-			span.attr('data-j-var',span.data('j-var'));
-			span.removeData('j-var');
-			span.empty();
-		});
-		collection.push(el);
-	});
-	return $(collection);
-};
-$.fn.jhtml = function(onOrigin){
-	return this.jExposeVar(onOrigin).html();
-};
-$.fn.findComments = function(){
+$.fn.findComments = function(tag){
 	var arr = [];
 	var nt = Node.COMMENT_NODE;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === nt){
+			if(node.nodeType === nt && (!tag || node.nodeValue.split(' ')[0]==tag)){
 				arr.push(node);
 			}
 			else{
@@ -2340,11 +2312,10 @@ $.fn.findComments = function(){
 $.fn.findCommentsChildren = function(tag){
 	var arr = [];
 	var comment = Node.COMMENT_NODE;
-	var tl = tag.length;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === comment && node.nodeValue.substr(0,tl)==tag){
+			if(node.nodeType === comment && node.nodeValue.split(' ')[0]==tag){
 				arr.push.apply( arr, $(node).commentChildren() );
 			}
 			else{
@@ -2383,7 +2354,7 @@ $.fn.parentComment = function(tag){
 	return $(a);
 };
 
-$.fn.dataComment = function(){
+$.fn.dataCommentJSON = function(){
 	if(arguments.length>1||$.type(arguments[0])=='object'){
 		var setData;
 		if(arguments.length>1){
@@ -2409,10 +2380,97 @@ $.fn.dataComment = function(){
 	}
 	return data;
 };
+
+(function(){
+
+var commentPrimary = 0;
+var commentRegister = {};
+
+$.fn.removeDataComment = function(key){
+	var el = this[0];
+	var x = el.nodeValue.split(' ');
+	if(x[1]){
+		var primary = x[1];
+		if(commentRegister[primary]){
+			if(key){
+				if(commentRegister[primary][key]){
+					delete commentRegister[primary][key];
+				}
+			}
+			else{
+				delete commentRegister[primary];
+			}
+		}
+	}
+};
+$.fn.dataComment = function(){
+  
+	if(arguments.length>1||$.type(arguments[0])=='object'){
+		var setData;
+		if(arguments.length>1){
+			setData = {};
+			setData[arguments[0]] =	arguments[1];
+		}
+		else{
+			var setData = arguments[0];
+		}
+		return this.each(function(){
+			var data = $(this).dataComment();
+			$.extend(data,setData);
+		});
+	}
+	
+  var el = this[0];
+  var x = el.nodeValue.split(' ');
+  var nodeName = x.shift();
+  var primary;
+  if(x.length){
+    primary =  x[0]; 
+  }
+  else{
+    primary =  ++commentPrimary;
+    el.nodeValue = nodeName+' '+primary;
+  }
+  if(!commentRegister[primary]){
+    commentRegister[primary] = {};
+  }
+  var data = commentRegister[primary];
+	
+  if(arguments.length){
+		data = data[arguments[0]];
+	}
+	return data;
+};
+
+})();
+$.fn.jml = function(){
+	var comment = Node.COMMENT_NODE;
+	var clone = this.clone(true);
+	clone.findComments().each(function(){
+		if(this.nodeValue.substr(0,2)=='j:'){
+			var origin = $(this).dataComment('origin');
+			if(origin){
+				var endTag = '/'+this.nodeValue.split(' ')[0];
+				var n = this.nextSibling;
+				while(n && (n.nodeType!==comment || n.nodeValue!=endTag)){
+					var next = n.nextSibling;
+					$(n).remove();
+					n = next;
+				}
+				$(this).replaceWith(origin);
+			}
+		}
+	});
+	console.log(clone.html());
+	return clone.html();
+};
 (function(){
 	var templates = {};
 	var requests = {};
-	jstack.getTemplate = function( templatePath ) {
+	jstack.getTemplate = function( templatePath, absolute ) {
+		if(!absolute){
+			templatePath = jstack.config.templatesPath+templatePath;
+		}
 		if ( !requests[ templatePath ] ) {
 			if ( $js.dev ) {
 				var ts = ( new Date().getTime() ).toString();
@@ -2434,14 +2492,6 @@ $.fn.dataComment = function(){
 	};
 
 })();
-jstack.jml = function( url ) {
-	var defer = $.Deferred();
-	url = jstack.config.templatesPath+url;
-	jstack.getTemplate( url ).then( function( html ) {
-		defer.resolve( html );
-	} );
-	return defer;
-};
 jstack.component = {};
 
 //use j:load event to make loader definition helper
@@ -3021,7 +3071,11 @@ jstack.dataBinder = (function(){
 			}
 			catch(jstackException){
 				if(jstack.config.debug){
-					console.warn(jstackException.message, ", expression: "+varKey, "element", el);
+					var warn = [jstackException.message, ", expression: "+varKey, "element", el];
+					if(el.nodeType==Node.NODE_COMMENT){
+						warn.push($(el).parent().get());
+					}
+					console.warn.apply(console,warn);
 				}
 			}
 			
@@ -3806,7 +3860,8 @@ jstack.dataBinder = (function(){
 		],
 		compilerText:function(){
 			if(!this.textContent) return;
-			var parsed = jstack.dataBinder.textParser(this.textContent.toString());
+			var textString = this.textContent.toString();
+			var parsed = jstack.dataBinder.textParser(textString);
 			if(typeof(parsed)!='string') return;
 			
 			var el = this;
@@ -3815,10 +3870,9 @@ jstack.dataBinder = (function(){
 			
 			var text = $('<!--j:text-->');
 			var textClose = $('<!--/j:text-->');
+			text.dataComment('origin',textString);
 			$this.replaceWith(text);
 			textClose.insertAfter(text);
-			//var text = $('<span/>');
-			//$this.replaceWith(text);
 			
 			var currentData;
 			var getData = function(){
@@ -3832,7 +3886,6 @@ jstack.dataBinder = (function(){
 				currentData = data;
 				text.commentChildren().remove();
 				text.after(data);
-				//text.html(data);
 			};
 			return render;
 		},
@@ -4003,16 +4056,6 @@ jstack.mvc = function(config){
 	var target = $(config.target);
 	var controller = config.controller;
 	
-	
-	//var templatesPath = jstack.config.templatesPath;
-	//var templatePath = templatesPath+config.view+'.jml';
-	
-	var templatesPath = config.view.split('/');
-	templatesPath.pop();
-	templatesPath = templatesPath.join('/')+'/';
-	templatesPath = jstack.config.templatesPath+templatesPath;
-	var templatePath = jstack.config.templatesPath+config.view+'.jml';
-	
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
@@ -4024,7 +4067,7 @@ jstack.mvc = function(config){
 	else{
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
-	var viewReady = jstack.getTemplate(templatePath);
+	var viewReady = jstack.getTemplate(config.view+'.jml');
 	
 	var ready = $.Deferred();
 	
