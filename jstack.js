@@ -3205,26 +3205,30 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el,eventName){
+		inputToModel: function(el){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
-			
-			
+
 			var self = this;
 			
 			var data = self.getControllerData(el);
 			var name = input.attr('name');
-			
-			
+
 			var performInputToModel = function(){
 				var key = self.getScopedInput(el);
 				if(filteredValue!=value){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				value = self.dotSet(key,data,value);
-				input.trigger(eventName,[value]);
 				
+				var oldValue = self.dotGet(key,data);
+				
+				value = self.dotSet(key,data,value);
+				input.trigger('j:input',[value]);
+				
+				if(oldValue!==value){
+					input.trigger('j:change',[value,oldValue]);
+				}
 			};
 			
 			var value = self.getInputVal(el);
@@ -3403,7 +3407,7 @@ jstack.dataBinder = (function(){
 			});
 			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
 			
-			$(document.body).on('input change', ':input[name]', function(e){
+			$(document.body).on('input change j:update', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
 					return;
 				
@@ -3420,18 +3424,7 @@ jstack.dataBinder = (function(){
 				
 				$(this).data('jHandledValue',value);
 				
-				self.inputToModel(this,'j:input');
-			});
-			
-			$(document.body).on('val', ':input[name][j-val-event]', function(e){
-				self.inputToModel(this,'j:input');
-			});
-			$(document.body).on('j:update', ':input[name]', function(e){
-				$(this).data('j:populate:prevent',true);
-				self.inputToModel(this,'j:input');
-				$(this).one('j:input',function(){
-					$(this).data('j:populate:prevent',false);
-				});
+				self.inputToModel(this);
 			});
 		},
 		filter:function(el,value){
