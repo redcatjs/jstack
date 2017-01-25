@@ -334,6 +334,7 @@ jstack.dataBinder = (function(){
 			return $(ancestor).data('j:if:state')!==false;
 		},
 		runWatchers: function(){
+			var self = this;
 			//console.log('update');
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
