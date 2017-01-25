@@ -936,7 +936,8 @@ jstack.dataBinder = (function(){
 		],
 		compilerText:function(){
 			if(!this.textContent) return;
-			var parsed = jstack.dataBinder.textParser(this.textContent.toString());
+			var textString = this.textContent.toString();
+			var parsed = jstack.dataBinder.textParser(textString);
 			if(typeof(parsed)!='string') return;
 			
 			var el = this;
@@ -945,10 +946,9 @@ jstack.dataBinder = (function(){
 			
 			var text = $('<!--j:text-->');
 			var textClose = $('<!--/j:text-->');
+			text.dataComment('text',textString);
 			$this.replaceWith(text);
 			textClose.insertAfter(text);
-			//var text = $('<span/>');
-			//$this.replaceWith(text);
 			
 			var currentData;
 			var getData = function(){
@@ -962,7 +962,6 @@ jstack.dataBinder = (function(){
 				currentData = data;
 				text.commentChildren().remove();
 				text.after(data);
-				//text.html(data);
 			};
 			return render;
 		},
