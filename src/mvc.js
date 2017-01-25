@@ -17,16 +17,6 @@ jstack.mvc = function(config){
 	var target = $(config.target);
 	var controller = config.controller;
 	
-	
-	//var templatesPath = jstack.config.templatesPath;
-	//var templatePath = templatesPath+config.view+'.jml';
-	
-	var templatesPath = config.view.split('/');
-	templatesPath.pop();
-	templatesPath = templatesPath.join('/')+'/';
-	templatesPath = jstack.config.templatesPath+templatesPath;
-	var templatePath = jstack.config.templatesPath+config.view+'.jml';
-	
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
@@ -38,7 +28,7 @@ jstack.mvc = function(config){
 	else{
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
-	var viewReady = jstack.getTemplate(templatePath);
+	var viewReady = jstack.getTemplate(config.view+'.jml');
 	
 	var ready = $.Deferred();
 	

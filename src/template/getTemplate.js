@@ -1,7 +1,10 @@
 (function(){
 	var templates = {};
 	var requests = {};
-	jstack.getTemplate = function( templatePath ) {
+	jstack.getTemplate = function( templatePath, absolute ) {
+		if(!absolute){
+			templatePath = jstack.config.templatesPath+templatePath;
+		}
 		if ( !requests[ templatePath ] ) {
 			if ( $js.dev ) {
 				var ts = ( new Date().getTime() ).toString();
