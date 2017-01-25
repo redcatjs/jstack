@@ -62,7 +62,7 @@ $.fn.parentComment = function(tag){
 };
 
 $.fn.dataComment = function(){
-	if(arguments.length){
+	if(arguments.length>1||$.type(arguments[0])=='object'){
 		var setData;
 		if(arguments.length>1){
 			setData = {};
@@ -81,5 +81,9 @@ $.fn.dataComment = function(){
 	}
 	var x = this[0].nodeValue.split(' ');
 	x.shift();
-	return x.length ? JSON.parse( x.join(' ') ) : {};
+	var data = x.length ? JSON.parse( x.join(' ') ) : {};
+	if(arguments.length){
+		data = data[arguments[0]];
+	}
+	return data;
 };
