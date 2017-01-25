@@ -322,10 +322,13 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(render,level){
+		watchersNodes: {},
+		addWatcher: function(node, render,level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
-			this.watchers[level][++this.watchersPrimary] = render;
+			var id = ++this.watchersPrimary;
+			this.watchersNodes[id] = [n,level];
+			this.watchers[level][id] = render;
 		},
 		runWatchers: function(){
 			//console.log('update');
@@ -391,7 +394,10 @@ jstack.dataBinder = (function(){
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
-								compilerTexts.push(render);
+								compilerTexts.push(function(){
+									self.addWatcher(n, render, 99);
+									render();
+								});
 							}
 							return;
 						}
@@ -405,7 +411,7 @@ jstack.dataBinder = (function(){
 								
 								if(render){
 									if(!n.hasAttribute('j-static')){
-										self.addWatcher(render, iii);
+										self.addWatcher(n, render, iii);
 									}
 									render();
 								}
@@ -441,9 +447,7 @@ jstack.dataBinder = (function(){
 			});
 			
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				var render = compilerTexts[i];
-				render();
-				self.addWatcher(render, 99);
+				compilerTexts[i]();
 			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
