@@ -338,7 +338,8 @@ jstack.dataBinder = (function(){
 			this.watchers[level].push( a );
 		},
 		runWatchers: function(){
-			//console.log(this.watchers);
+			console.log('update');
+			console.log(this.watchers);
 			$.each(this.watchers,function(level,w){				
 				for(var i = 0, l=w.length;i<l;i++){
 					var a = w[i];
@@ -346,6 +347,7 @@ jstack.dataBinder = (function(){
 					var callback = a[1];
 					if(!document.body.contains(element)){
 						w.splice(i,1);
+						//jstack.arrayRemove(w,i);
 						return;
 					}
 					callback();
@@ -358,7 +360,6 @@ jstack.dataBinder = (function(){
 		updateDeferStateObserver: null,
 		updateWait: 100,
 		update: function(){
-			console.log('update');
 			if(this.updateTimeout){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
@@ -382,7 +383,6 @@ jstack.dataBinder = (function(){
 				this.updateDeferStateObserver = $.Deferred();
 			}
 			
-			//console.log('update');
 			this.runWatchers();
 			
 			this.updateDeferStateObserver.resolve();
@@ -934,15 +934,15 @@ jstack.dataBinder = (function(){
 			
 			var currentData;
 			var getData = function(){
-				jstack.dataBinder.getValueEval(el,parsed);
+				return jstack.dataBinder.getValueEval(text,parsed);
 			};
 			var render = function(){
 				var data = getData();
+				console.log(text.parent(),data);
 				if(currentData===data) return;
 				currentData = data;
-				
 				text.commentChildren().remove();
-				text.insertAfter(data);
+				text.after(data);
 			};
 			return render;
 		},
