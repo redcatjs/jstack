@@ -327,21 +327,21 @@ jstack.dataBinder = (function(){
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
+		checkRemoved: function(){
+			var ancestor = el;
+			while(ancestor.parentNode){
+				ancestor = ancestor.parentNode;
+			}
+			return $(ancestor).data('j:if:state')!==false;
+		},
 		runWatchers: function(){
 			//console.log('update');
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
 					var el = render();
-					if(!el) return;
-					var ancestor = el;
-					while(ancestor.parentNode){
-						ancestor = ancestor.parentNode;
+					if(el&&self.checkRemoved(el)){
+						delete couch[primary];
 					}
-					var $ancestor = $(ancestor);
-					if($ancestor.data('j:if:state')===false){
-						return;
-					}
-					delete couch[primary];
 				});
 			});
 			
