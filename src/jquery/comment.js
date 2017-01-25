@@ -50,11 +50,13 @@ $.fn.commentChildren = function(){
 $.fn.parentComment = function(tag){
 	var comment = Node.COMMENT_NODE;
 	var a = [];
-	this.prevAll().each(function(){
-		if(this.nodeType===comment && this.nodeValue===tag){
-			a.push(this);
-			return false;
+	n = this[0].previousSibling;
+	while(n){
+		if(n.nodeType===comment&&n.nodeValue===tag){
+			a.push(n);
+			break;
 		}
-	});
+		n = n.previousSibling;
+	}
 	return $(a);
 };
