@@ -7,20 +7,23 @@ $.fn.jData = function(key){
 		return a;
 	}
 	else{
-		if(key){
-			var v = $(this).attr('j-data-'.args[0]);
+			
+		var a = {};
+		$.each(this.attrStartsWith('j-data-'),function(k,v){
 			var parsed = jstack.dataBinder.textParser(v);
-			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : parsed;
-			return value;
+			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : v;
+			a[k] = value;
+		});
+		var data = {};
+		$.each(a,function(k,v){
+			$.attrsToObject( k.substr(7), v, data );
+		});
+
+		if(key){
+			data = jstack.dataBinder.dotGet(key,data);
 		}
-		else{
-			var a = [];
-			$.each(this.attrStartsWith('j-data-'),function(k,v){
-				var parsed = jstack.dataBinder.textParser(v);
-				var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : parsed;
-				a.push(value);
-			});
-			return a;
-		}
+		
+		return data;
+	
 	}
 };
