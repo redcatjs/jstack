@@ -847,7 +847,6 @@ jstack.dataBinder = (function(){
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
 						attrsVars[k] = jstack.dataBinder.textParser(v);
-						$this.removeAttr(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return false;
