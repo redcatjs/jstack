@@ -2359,7 +2359,7 @@ $.fn.commentChildren = function(){
 	var arr = [];
 	var comment = Node.COMMENT_NODE;
 	this.each(function(){
-		var endTag = '/'+this.nodeValue;
+		var endTag = '/'+this.nodeValue.split(' ')[0];
 		var n = this.nextSibling;
 		while(n && (n.nodeType!==comment || n.nodeValue!=endTag) ){
 			arr.push(n);
@@ -2367,6 +2367,47 @@ $.fn.commentChildren = function(){
 		}
 	});
 	return $(arr);
+};
+
+$.fn.parentComment = function(tag){
+	var comment = Node.COMMENT_NODE;
+	var a = [];
+	n = this[0].previousSibling;
+	while(n){
+		if(n.nodeType===comment&&n.nodeValue.split(' ')[0]===tag){
+			a.push(n);
+			break;
+		}
+		n = n.previousSibling;
+	}
+	return $(a);
+};
+
+$.fn.dataComment = function(){
+	if(arguments.length>1||$.type(arguments[0])=='object'){
+		var setData;
+		if(arguments.length>1){
+			setData = {};
+			setData[arguments[0]] =	arguments[1];
+		}
+		else{
+			var setData = arguments[0];
+		}
+		return this.each(function(){
+			var x = this.nodeValue.split(' ');
+			var nodeName = x.shift();
+			var data = x.length ? JSON.parse( x.join(' ') ) : {};
+			$.extend(data,setData);
+			this.nodeValue = nodeName+' '+JSON.stringify(data);
+		});
+	}
+	var x = this[0].nodeValue.split(' ');
+	x.shift();
+	var data = x.length ? JSON.parse( x.join(' ') ) : {};
+	if(arguments.length){
+		data = data[arguments[0]];
+	}
+	return data;
 };
 (function(){
 	var templates = {};
@@ -2401,11 +2442,49 @@ jstack.jml = function( url ) {
 	} );
 	return defer;
 };
-(function(){
-
 jstack.component = {};
 
-var loadComponent = function(){
+//use j:load event to make loader definition helper
+jstack.loader = function(selector,handler,unloader){
+	$.on('j:load',selector,function(){
+		handler.call(this);
+	});
+	if(typeof(unloader)=='function'){
+		$.on('j:unload',selector,function(){
+			unloader.call(this);
+		});
+	}
+	$(selector).each(function(){
+		handler.call(this);
+	});
+};
+
+//define loaders
+jstack.loader(':attrStartsWith("j-on-")',function(){
+	var $this = $(this);
+	var attrs = $this.attrStartsWith('j-on-');
+	$.each(attrs,function(k,v){
+		var event = k.substr(5);
+		$this.removeAttr(k);
+		$this.on(event,function(e){
+			var controller = jstack.dataBinder.getControllerObject(this);
+			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+			}
+			var method = controller.methods[v];
+			if(typeof(method)!='function'){
+				return;
+			}
+			var r = method.call(controller,e,this);
+			if(r===false){
+				return false;
+			}
+		});
+	});
+});
+
+//j-component
+jstack.loader('[j-component]',function(){
 	var el = this;
 	var $el = $(el);
 	var component = $el.attr('j-component');
@@ -2447,102 +2526,12 @@ var loadComponent = function(){
 	else{					
 		$js('jstack.'+component,load);
 	}
-};
-
-var loadJqueryComponent = function(){
-	var el = this;
-	var component = $(el).attr('jquery-component');
-	var config = $(el).dataAttrConfig('j-data-');
-	var paramsData = $(el).attr('j-params-data');
-	var params = [];
-	if(paramsData){
-		var keys = [];
-		for (var k in config) {
-			if (config.hasOwnProperty(k)) {
-				keys.push(k);
-			}
-		}
-		keys.sort();
-		for(var i=0,l=keys.length;i<l;i++){
-			params.push(config[keys[i]]);
-		}
-	}
-	else if(!$.isEmptyObject(config)){
-		params.push(config);
-	}
-	var load = function(){
-		$(el).data('j:component',$.fn[component].apply($(el), params));
-	};
-	if($.fn[component]){
-		load();
-	}
-	else{					
-		$js('jstack.jquery.'+component,load);
-	}
-};
-
-$.on('j:load','[j-component]',loadComponent);
-$.on('j:load','[jquery-component]',loadJqueryComponent);
-$.on('j:unload','[j-component]',function(){
+},function(){
 	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
 		o.unload();
 	}
 });
-
-$('[j-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadComponent.call(this);
-	}
-});
-$('[jquery-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadJqueryComponent.call(this);
-	}
-});
-
-//use j:load event to make loader definition helper
-jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',selector,function(){
-		handler.call(this);
-	});
-	if(typeof(unloader)=='function'){
-		$.on('j:unload',selector,function(){
-			unloader.call(this);
-		});
-	}
-	$(selector).each(function(){
-		handler.call(this);
-	});
-};
-
-//define loaders
-jstack.loader(':attrStartsWith("j-on-")',function(){
-	var $this = $(this);
-	var attrs = $this.attrStartsWith('j-on-');
-	$.each(attrs,function(k,v){
-		var event = k.substr(5);
-		$this.removeAttr(k);
-		$this.on(event,function(e){
-			var controller = jstack.dataBinder.getControllerObject(this);
-			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-			}
-			var method = controller.methods[v];
-			if(typeof(method)!='function'){
-				return;
-			}
-			var r = method.call(controller,e,this);
-			if(r===false){
-				return false;
-			}
-		});
-	});
-});
-
-
-
-})();
 jstack.route = ( function( w, url ) {
 
 	var routes = [];
@@ -3001,27 +2990,25 @@ jstack.dataBinder = (function(){
 			};
 			$(forCollection).each(function(){
 				var parentFor = $(this);
-				var parentForList = parentFor.closest('[j-for-list]');
+				var parentForList = parentFor.parentComment('j:for');
 				
 				if(!parentForList.length) return;
 				
-				var myvar = parentForList.attr('j-for-list');
-				var value = parentForList.attr('j-for-value');
-				var id = parentFor.attr('j-for-id');
+				console.log(parentForList,parentForList.dataComment());
 				
+				var value = parentForList.dataComment('value');
 				forParams.push(value);
 				
-				var valueToEval = myvar;
-				valueToEval += jstack.isIntKey(id)?'['+id+']':'.'+id;
+				var forData = parentFor.data('j:for:data');
+				forArgs.push(forData);
 				
-				forArgs.push(self.getValueEval(parentForList,valueToEval));
-				
-				var key = parentForList.attr('j-for-key');
-				var index = parentForList.attr('j-for-index');
+				var key = parentForList.dataComment('key');
+				var index = parentForList.dataComment('index');
 				if(index){
 					addToScope(index,parentFor.index()+1);
 				}
 				if(key){
+					var id = parentFor.attr('j-for-id');
 					addToScope(key,id);
 				}
 			});
@@ -3271,6 +3258,7 @@ jstack.dataBinder = (function(){
 			//console.log(mutations);
 			
 			//var stack = {100:[]};
+			var compilerTexts = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -3287,7 +3275,8 @@ jstack.dataBinder = (function(){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
 								self.addWatcher(n, render, 99);
-								render();
+								compilerTexts.push(render);
+								//render();
 							}
 							return;
 						}
@@ -3342,6 +3331,9 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
+			for(var i = 0, l=compilerTexts.length;i<l;i++){
+				compilerTexts[i]();
+			}
 			//$.each(stack,function(level,w){				
 				//for(var i = 0, l=w.length;i<l;i++){
 					//var a = w[i];
@@ -3498,10 +3490,16 @@ jstack.dataBinder = (function(){
 					}
 					
 					var currentData;
-					
 					var getData = function(){
 						return jstack.dataBinder.getValueEval(jfor,myvar);
 					};
+					
+					//parentForList
+					jfor.dataComment({
+						value:value,
+						key:key,
+						index:index,
+					});
 					
 					var render = function(){
 						if(!document.body.contains(jfor[0])) return false;
@@ -3514,11 +3512,12 @@ jstack.dataBinder = (function(){
 						var collection = jfor.commentChildren();
 						
 						//add
-						$.each(data,function(k){
+						$.each(data,function(k,v){
 							var row = collection.filter('[j-for-id="'+k+'"]');
 							if(!row.length){
 								row = $this.clone();
 								row.attr('j-for-id',k);
+								row.data('j:for:data',v);
 								row.insertBefore(jforClose);
 							}
 							forIdList.push(k.toString());
@@ -3561,7 +3560,7 @@ jstack.dataBinder = (function(){
 						currentData = data;
 						
 						if(data){
-							$this.insertAfter(jIf);
+							$this.insertAfter(jif);
 						}
 						else{
 							$this.detach();
@@ -3732,7 +3731,6 @@ jstack.dataBinder = (function(){
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
 						attrsVars[k] = jstack.dataBinder.textParser(v);
-						$this.removeAttr(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return false;
