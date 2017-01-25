@@ -2237,7 +2237,7 @@ $.walkTheDOM = function(node, func, reverse){
 		return false;
 	}
 	var children = node.childNodes;
-	for(var i = 0, l = children.length; i < l; i++){
+	for(var i = 0; i < children.length; i++){
 		if(!children[i]) continue;
 		if(this.walkTheDOM(children[i], func)===false){
 			return false;
@@ -3341,10 +3341,6 @@ jstack.dataBinder = (function(){
 						
 						var $n = $(n);
 						
-						if($n.parent().closest('[j-for]').length){
-							return;
-						}
-						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
@@ -3830,6 +3826,7 @@ jstack.dataBinder = (function(){
 			var textString = this.textContent.toString();
 			var parsed = jstack.dataBinder.textParser(textString);
 			if(typeof(parsed)!='string') return;
+			
 			
 			var el = this;
 			var $this = $(this);
