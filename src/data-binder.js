@@ -676,7 +676,7 @@ jstack.dataBinder = (function(){
 						currentData = data;
 						
 						if(data){
-							$this.insertAfter(jIf);
+							$this.insertAfter(jif);
 						}
 						else{
 							$this.detach();
