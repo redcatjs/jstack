@@ -4,7 +4,7 @@ $.fn.findComments = function(tag){
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === nt && (!tag || node..nodeValue.split(' ')[0]==tag)){
+			if(node.nodeType === nt && (!tag || node.nodeValue.split(' ')[0]==tag)){
 				arr.push(node);
 			}
 			else{
