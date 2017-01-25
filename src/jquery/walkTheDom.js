@@ -3,7 +3,7 @@ $.walkTheDOM = function(node, func, reverse){
 		return false;
 	}
 	var children = node.childNodes;
-	for(var i = 0, l = children.length; i < l; i++){
+	for(var i = 0; i < children.length; i++){
 		if(!children[i]) continue;
 		if(this.walkTheDOM(children[i], func)===false){
 			return false;
