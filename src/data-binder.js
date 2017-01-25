@@ -878,7 +878,6 @@ jstack.dataBinder = (function(){
 			
 			var text = $('<!--j:text-->');
 			var textClose = $('<!--/j:text-->');
-			text.dataComment('origin',textString);
 			$this.replaceWith(text);
 			textClose.insertAfter(text);
 			
