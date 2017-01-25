@@ -272,7 +272,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el,eventName){
+		inputToModel: function(el){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
 			
@@ -290,7 +290,7 @@ jstack.dataBinder = (function(){
 					input.populateInput(value,{preventValEvent:true});
 				}
 				value = self.dotSet(key,data,value);
-				input.trigger(eventName,[value]);
+				input.trigger('j:input',[value]);
 				
 			};
 			
@@ -487,15 +487,15 @@ jstack.dataBinder = (function(){
 				
 				$(this).data('jHandledValue',value);
 				
-				self.inputToModel(this,'j:input');
+				self.inputToModel(this);
 			});
 			
 			$(document.body).on('val', ':input[name][j-val-event]', function(e){
-				self.inputToModel(this,'j:input');
+				self.inputToModel(this);
 			});
 			$(document.body).on('j:update', ':input[name]', function(e){
 				$(this).data('j:populate:prevent',true);
-				self.inputToModel(this,'j:input');
+				self.inputToModel(this);
 				$(this).one('j:input',function(){
 					$(this).data('j:populate:prevent',false);
 				});
