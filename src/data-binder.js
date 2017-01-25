@@ -327,7 +327,7 @@ jstack.dataBinder = (function(){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			var id = ++this.watchersPrimary;
-			this.watchersNodes[id] = [n,level];
+			this.watchersNodes[id] = [node,level];
 			this.watchers[level][id] = render;
 		},
 		runWatchers: function(){
