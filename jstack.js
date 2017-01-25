@@ -3101,7 +3101,7 @@ jstack.dataBinder = (function(){
 			catch(jstackException){
 				if(jstack.config.debug){
 					var warn = [jstackException.message, ", expression: "+varKey, "element", el];
-					if(el.nodeType==Node.NODE_COMMENT){
+					if(el.nodeType==Node.COMMENT_NODE){
 						warn.push($(el).parent().get());
 					}
 					console.warn.apply(console,warn);
@@ -3275,17 +3275,24 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(render,level){
+		addWatcher: function(node, render,level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
+		checkRemoved: function(ancestor){
+			while(ancestor.parentNode){
+				ancestor = ancestor.parentNode;
+			}
+			return $(ancestor).data('j:if:state')!==false;
+		},
 		runWatchers: function(){
+			var self = this;
 			//console.log('update');
-			//console.log(this.watchers);
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
-					if(render()===false){
+					var el = render();
+					if(el&&self.checkRemoved(el)){
 						delete couch[primary];
 					}
 				});
@@ -3344,7 +3351,10 @@ jstack.dataBinder = (function(){
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
-								compilerTexts.push(render);
+								compilerTexts.push(function(){
+									self.addWatcher(n, render, 99);
+									render();
+								});
 							}
 							return;
 						}
@@ -3358,7 +3368,7 @@ jstack.dataBinder = (function(){
 								
 								if(render){
 									if(!n.hasAttribute('j-static')){
-										self.addWatcher(render, iii);
+										self.addWatcher(n, render, iii);
 									}
 									render();
 								}
@@ -3385,6 +3395,9 @@ jstack.dataBinder = (function(){
 				
 				$.each(mutation.removedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
+						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
+							$(n).removeDataComment();
+						}
 						if(!self.validNodeEvent(n,true)) return;
 						setTimeout(function(){
 							$(n).trigger('j:unload');
@@ -3394,9 +3407,7 @@ jstack.dataBinder = (function(){
 			});
 			
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				var render = compilerTexts[i];
-				render();
-				self.addWatcher(render, 99);
+				compilerTexts[i]();
 			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
@@ -3406,8 +3417,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			
 			var observer = new MutationObserver(function(mutations){
-				//console.log('mutations');
-				//console.log(mutations);
+				//console.log('mutations',mutations);
 				self.loadMutations(mutations);
 			});
 			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
@@ -3558,7 +3568,7 @@ jstack.dataBinder = (function(){
 					});
 					
 					var render = function(){
-						if(!document.body.contains(jfor[0])) return false;
+						if(!document.body.contains(jfor[0])) return jfor[0];
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -3609,12 +3619,13 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
 					};
 					var render = function(){
-						if(!document.body.contains(jif[0])) return false;
+						if(!document.body.contains(jif[0])) return jif[0];
 						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
 						
+						$this.data('j:if:state',data);
 						if(data){
 							$this.insertAfter(jif);
 						}
@@ -3641,7 +3652,7 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(el,myvar));
 					};
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -3696,7 +3707,7 @@ jstack.dataBinder = (function(){
 						return jstack.dataBinder.getValueEval(el,parsed);
 					};
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -3727,7 +3738,7 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value =  jstack.dataBinder.getValueEval(el,v);
@@ -3754,7 +3765,7 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value = Boolean(jstack.dataBinder.getValueEval(el,v));
@@ -3793,7 +3804,7 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -3829,7 +3840,7 @@ jstack.dataBinder = (function(){
 				return jstack.dataBinder.getValueEval(text,parsed);
 			};
 			var render = function(){
-				if(!document.body.contains(text[0])) return false;
+				if(!document.body.contains(text[0])) return text[0];
 				
 				var data = getData();
 				if(currentData===data) return;
