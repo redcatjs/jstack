@@ -55,7 +55,6 @@ grunt.initConfig({
 				"src/jquery/walkTheDom.js",
 				"src/jquery/replaceTagName.js",
 				"src/jquery/jModel.js",
-				"src/jquery/jhtml.js",
 				"src/jquery/comment.js",
 				
 				"src/template/getTemplate.js",
