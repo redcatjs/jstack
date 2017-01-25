@@ -47,7 +47,6 @@ grunt.initConfig({
 				"src/jquery/val.js",
 				"src/jquery/populate.js",
 				"src/jquery/outerHTML.js",
-				"src/jquery/loadJml.js",
 				"src/jquery/hasAttr.js",
 				"src/jquery/jComponentReady.js",
 				"src/jquery/jquery-serialize-object.js",
