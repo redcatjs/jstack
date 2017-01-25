@@ -9,16 +9,17 @@ $.fn.jData = function(key){
 	else{
 			
 		var a = {};
+		var el = this[0];
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
 			var parsed = jstack.dataBinder.textParser(v);
-			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : v;
+			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : v;
 			a[k] = value;
 		});
 		var data = {};
 		$.each(a,function(k,v){
 			$.attrsToObject( k.substr(7), v, data );
 		});
-
+		
 		if(key){
 			data = jstack.dataBinder.dotGet(key,data);
 		}
