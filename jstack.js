@@ -2979,13 +2979,6 @@ jstack.dataBinder = (function(){
 				forCollection.push( this );
 			});
 			var addToScope = function(param,arg){
-				//var index = forParams.indexOf(param);
-				//if(index!==-1){
-					//forParams.splice(index,1);
-					//forArgs.splice(index,1);
-				//}
-				//forParams.push(param);
-				//forArgs.push(arg);
 				scopeValue[param] = arg;
 			};
 			$(forCollection).each(function(){
@@ -2993,8 +2986,6 @@ jstack.dataBinder = (function(){
 				var parentForList = parentFor.parentComment('j:for');
 				
 				if(!parentForList.length) return;
-				
-				console.log(parentForList,parentForList.dataComment());
 				
 				var value = parentForList.dataComment('value');
 				forParams.push(value);
