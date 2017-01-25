@@ -490,15 +490,12 @@ jstack.dataBinder = (function(){
 				self.inputToModel(this);
 			});
 			
-			$(document.body).on('val', ':input[name][j-val-event]', function(e){
-				self.inputToModel(this);
-			});
 			$(document.body).on('j:update', ':input[name]', function(e){
 				$(this).data('j:populate:prevent',true);
-				self.inputToModel(this);
 				$(this).one('j:input',function(){
 					$(this).data('j:populate:prevent',false);
 				});
+				self.inputToModel(this);
 			});
 		},
 		filter:function(el,value){
