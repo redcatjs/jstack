@@ -345,12 +345,9 @@ jstack.dataBinder = (function(){
 					var a = w[i];
 					var element = a[0];
 					var callback = a[1];
-					//if(!document.body.contains(element)){
-						//w.splice(i,1);
-						//jstack.arrayRemove(w,i);
-						//return;
-					//}
-					callback();
+					if(callback()===false){
+						w.splice(i,1);
+					}
 				}
 			});
 			
@@ -628,6 +625,8 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
+						if(!document.body.contains(jfor[0])) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -653,6 +652,7 @@ jstack.dataBinder = (function(){
 								$(this).remove();
 							}
 						});
+						
 					};
 					
 					return render;
@@ -675,6 +675,8 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
 					};
 					var render = function(){
+						if(!document.body.contains(jif[0])) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -685,7 +687,6 @@ jstack.dataBinder = (function(){
 						else{
 							$this.detach();
 						}
-						
 					};
 					
 					return render;
@@ -706,6 +707,8 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(el,myvar));
 					};
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -756,6 +759,8 @@ jstack.dataBinder = (function(){
 						return original;
 					};
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -777,6 +782,8 @@ jstack.dataBinder = (function(){
 						return jstack.dataBinder.getValueEval(el,myvar);
 					};
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -799,6 +806,8 @@ jstack.dataBinder = (function(){
 						return jstack.dataBinder.getValueEval(el,myvar);
 					};
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -822,6 +831,8 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						$.each(attrsVars,function(k,parsed){
 							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
 							if(attrsVarsCurrent[k]===value) return;
@@ -845,6 +856,8 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						$.each(attrsVars,function(k,parsed){
 							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
 							if(attrsVarsCurrent[k]===value) return;
@@ -870,6 +883,8 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						$.each(attrsVars,function(k,v){
 							var value = Boolean(jstack.dataBinder.getValueEval(el,v));
 							
@@ -899,7 +914,6 @@ jstack.dataBinder = (function(){
 					var $el = $(this);
 					if($el.closest('[j-unscope]').length) return;
 					
-					
 					var currentData;
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
@@ -908,6 +922,8 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
@@ -937,6 +953,8 @@ jstack.dataBinder = (function(){
 				return jstack.dataBinder.getValueEval(text,parsed);
 			};
 			var render = function(){
+				if(!document.body.contains(text[0])) return false;
+				
 				var data = getData();
 				if(currentData===data) return;
 				currentData = data;
