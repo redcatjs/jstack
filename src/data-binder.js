@@ -337,8 +337,8 @@ jstack.dataBinder = (function(){
 		runWatchers: function(){
 			//console.log('update');
 			//console.log(this.watchers);
-			this.watchers.forEach(function(level,couch){
-				couch.forEach(function(primary,render){
+			$.each(this.watchers,function(level,couch){
+				$.each(couch,function(primary,render){
 					if(render()===false){
 						delete couch[primary];
 					}
