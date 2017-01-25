@@ -378,7 +378,6 @@ jstack.dataBinder = (function(){
 			var self = this;
 			//console.log(mutations);
 			
-			//var stack = {100:[]};
 			var compilerTexts = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
@@ -393,7 +392,6 @@ jstack.dataBinder = (function(){
 							if(render){
 								self.addWatcher(n, render, 99);
 								compilerTexts.push(render);
-								//render();
 							}
 							return;
 						}
@@ -401,12 +399,9 @@ jstack.dataBinder = (function(){
 						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
 						$.each(self.compilers,function(iii,compiler){
-							if($n.is(compiler.selector)){
-								//if(!stack[iii]) stack[iii] = [];
-								//stack[iii].push([n,compiler]);
+							if($n.is(compiler.selector)){								
 								
 								var render = compiler.callback.call(n);
-								//if(n.hasAttribute('j-static')) return;
 								
 								if(render){
 									self.addWatcher(n, render, iii);
@@ -418,22 +413,15 @@ jstack.dataBinder = (function(){
 						if($n.data('j:load:state')){
 							return;
 						}
-						
-						var jloadCallback = function(){
-							var $n = $(this);
-							$n.data('j:load:state',1);
-							setTimeout(function(){
-								if($n.data('j:load:state')==2){
-									return;
-								}
-								$n.data('j:load:state',3);
-								$n.trigger('j:load');
-								$n.data('j:load:state',3);
-							},0);
-						};
-						
-						//stack[100].push([n,{callback:jloadCallback}]);
-						jloadCallback.call(n);
+						$n.data('j:load:state',1);
+						setTimeout(function(){
+							if($n.data('j:load:state')==2){
+								return;
+							}
+							$n.data('j:load:state',3);
+							$n.trigger('j:load');
+							$n.data('j:load:state',3);
+						},0);
 						
 					});
 				});
@@ -451,17 +439,6 @@ jstack.dataBinder = (function(){
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
 				compilerTexts[i]();
 			}
-			//$.each(stack,function(level,w){				
-				//for(var i = 0, l=w.length;i<l;i++){
-					//var a = w[i];
-					//var n = a[0];
-					//var pair = a[1];
-					//if(pair.selector&&!$(n).is(pair.selector)){
-						//return;
-					//}
-					//pair.callback.call(n);
-				//}
-			//});
 		},
 		eventListener: function(){
 			var self = this;
