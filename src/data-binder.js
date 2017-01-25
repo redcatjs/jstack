@@ -388,10 +388,6 @@ jstack.dataBinder = (function(){
 						
 						var $n = $(n);
 						
-						if($n.parent().closest('[j-for]').length){
-							return;
-						}
-						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
@@ -877,6 +873,7 @@ jstack.dataBinder = (function(){
 			var textString = this.textContent.toString();
 			var parsed = jstack.dataBinder.textParser(textString);
 			if(typeof(parsed)!='string') return;
+			
 			
 			var el = this;
 			var $this = $(this);
