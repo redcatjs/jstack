@@ -322,7 +322,7 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(node, render,level){
+		addWatcher: function(render,level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
@@ -390,7 +390,6 @@ jstack.dataBinder = (function(){
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
-								self.addWatcher(n, render, 99);
 								compilerTexts.push(render);
 							}
 							return;
@@ -405,7 +404,7 @@ jstack.dataBinder = (function(){
 								
 								if(render){
 									if(!n.hasAttribute('j-static')){
-										self.addWatcher(n, render, iii);
+										self.addWatcher(render, iii);
 									}
 									render();
 								}
@@ -439,7 +438,9 @@ jstack.dataBinder = (function(){
 			});
 			
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				compilerTexts[i]();
+				var render = compilerTexts[i];
+				render();
+				self.addWatcher(render, 99);
 			}
 		},
 		eventListener: function(){
