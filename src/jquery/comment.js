@@ -1,10 +1,10 @@
-$.fn.findComments = function(){
+$.fn.findComments = function(tag){
 	var arr = [];
 	var nt = Node.COMMENT_NODE;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === nt){
+			if(node.nodeType === nt && (!tag || node..nodeValue.split(' ')[0]==tag)){
 				arr.push(node);
 			}
 			else{
@@ -18,11 +18,10 @@ $.fn.findComments = function(){
 $.fn.findCommentsChildren = function(tag){
 	var arr = [];
 	var comment = Node.COMMENT_NODE;
-	var tl = tag.length;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === comment && node.nodeValue.substr(0,tl)==tag){
+			if(node.nodeType === comment && node.nodeValue.split(' ')[0]==tag){
 				arr.push.apply( arr, $(node).commentChildren() );
 			}
 			else{
