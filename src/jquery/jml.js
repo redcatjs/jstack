@@ -16,6 +16,5 @@ $.fn.jml = function(){
 			}
 		}
 	});
-	console.log(clone.html());
 	return clone.html();
 };
