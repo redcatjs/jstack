@@ -60,7 +60,7 @@ $.fn.parentComment = function(tag){
 	return $(a);
 };
 
-$.fn.dataComment = function(){
+$.fn.dataCommentJSON = function(){
 	if(arguments.length>1||$.type(arguments[0])=='object'){
 		var setData;
 		if(arguments.length>1){
@@ -86,3 +86,49 @@ $.fn.dataComment = function(){
 	}
 	return data;
 };
+
+(function(){
+
+var commentPrimary = 0;
+var commentRegister = {};
+
+$.fn.dataComment = function(){
+  
+	if(arguments.length>1||$.type(arguments[0])=='object'){
+		var setData;
+		if(arguments.length>1){
+			setData = {};
+			setData[arguments[0]] =	arguments[1];
+		}
+		else{
+			var setData = arguments[0];
+		}
+		return this.each(function(){
+			var data = $(this).dataComment();
+			$.extend(data,setData);
+		});
+	}
+	
+  var el = this[0];
+  var x = el.nodeValue.split(' ');
+  var nodeName = x.shift();
+  var primary;
+  if(x.length){
+    primary =  x[0]; 
+  }
+  else{
+    primary =  ++commentPrimary;
+    el.nodeValue = nodeName+' '+primary;
+  }
+  if(!commentRegister[primary]){
+    commentRegister[primary] = {};
+  }
+  var data = commentRegister[primary];
+	
+  if(arguments.length){
+		data = data[arguments[0]];
+	}
+	return data;
+};
+é
+});
