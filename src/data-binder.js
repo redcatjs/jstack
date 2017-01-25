@@ -322,22 +322,26 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		watchersNodes: {},
 		addWatcher: function(node, render,level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
-			var id = ++this.watchersPrimary;
-			this.watchersNodes[id] = [node,level];
-			this.watchers[level][id] = render;
+			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		runWatchers: function(){
 			//console.log('update');
-			//console.log(this.watchers);
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
-					if(render()===false){
-						delete couch[primary];
+					var el = render();
+					if(!el) return;
+					var ancestor = el;
+					while(ancestor.parentNode){
+						ancestor = ancestor.parentNode;
 					}
+					var $ancestor = $(ancestor);
+					if($ancestor.data('j:if:state')===false){
+						return;
+					}
+					delete couch[primary];
 				});
 			});
 			
@@ -457,8 +461,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			
 			var observer = new MutationObserver(function(mutations){
-				//console.log('mutations');
-				//console.log(mutations);
+				//console.log('mutations',mutations);
 				self.loadMutations(mutations);
 			});
 			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
@@ -609,7 +612,7 @@ jstack.dataBinder = (function(){
 					});
 					
 					var render = function(){
-						if(!document.body.contains(jfor[0])) return false;
+						if(!document.body.contains(jfor[0])) return jfor[0];
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -660,12 +663,13 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
 					};
 					var render = function(){
-						if(!document.body.contains(jif[0])) return false;
+						if(!document.body.contains(jif[0])) return jif[0];
 						
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
 						
+						$this.data('j:if:state',data);
 						if(data){
 							$this.insertAfter(jif);
 						}
@@ -692,7 +696,7 @@ jstack.dataBinder = (function(){
 						return Boolean(jstack.dataBinder.getValueEval(el,myvar));
 					};
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -747,7 +751,7 @@ jstack.dataBinder = (function(){
 						return jstack.dataBinder.getValueEval(el,parsed);
 					};
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -778,7 +782,7 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value =  jstack.dataBinder.getValueEval(el,v);
@@ -805,7 +809,7 @@ jstack.dataBinder = (function(){
 						$this.removeAttr(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value = Boolean(jstack.dataBinder.getValueEval(el,v));
@@ -844,7 +848,7 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
-						if(!document.body.contains(el)) return false;
+						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
 						if(currentData===data) return;
@@ -880,7 +884,7 @@ jstack.dataBinder = (function(){
 				return jstack.dataBinder.getValueEval(text,parsed);
 			};
 			var render = function(){
-				if(!document.body.contains(text[0])) return false;
+				if(!document.body.contains(text[0])) return text[0];
 				
 				var data = getData();
 				if(currentData===data) return;
