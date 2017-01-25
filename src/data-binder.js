@@ -327,28 +327,22 @@ jstack.dataBinder = (function(){
 			}
 			return true;
 		},
+		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(element,callback,level){
+		addWatcher: function(node, render,level){
 			if(!level) level = 0;
-			var a = [ element, callback ];
-			if(!this.watchers[level]){
-				this.watchers[level] = [];
-			}
-			if(this.watchers[level].indexOf(a)!==-1) return;
-			this.watchers[level].push( a );
+			if(!this.watchers[level]) this.watchers[level] = {};
+			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		runWatchers: function(){
 			//console.log('update');
 			//console.log(this.watchers);
-			$.each(this.watchers,function(level,w){				
-				for(var i = 0, l=w.length;i<l;i++){
-					var a = w[i];
-					var element = a[0];
-					var callback = a[1];
-					if(callback()===false){
-						w.splice(i,1);
+			this.watchers.forEach(function(level,couch){
+				couch.forEach(function(primary,render){
+					if(render()===false){
+						delete couch[primary];
 					}
-				}
+				});
 			});
 			
 		},
