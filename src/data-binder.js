@@ -113,14 +113,15 @@ jstack.dataBinder = (function(){
 				
 				if(!parentForList.length) return;
 				
-				var value = parentForList.dataComment('value');
+				var jforCommentData = parentForList.dataCommentJSON();
+				var value = jforCommentData.value;
 				forParams.push(value);
 				
 				var forData = parentFor.data('j:for:data');
 				forArgs.push(forData);
 				
-				var key = parentForList.dataComment('key');
-				var index = parentForList.dataComment('index');
+				var key = jforCommentData.key;
+				var index = jforCommentData.index;
 				if(index){
 					addToScope(index,parentFor.index()+1);
 				}
@@ -608,7 +609,7 @@ jstack.dataBinder = (function(){
 					};
 					
 					//parentForList
-					jfor.dataComment({
+					jfor.dataCommentJSON({
 						value:value,
 						key:key,
 						index:index,
