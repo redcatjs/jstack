@@ -46,3 +46,15 @@ $.fn.commentChildren = function(){
 	});
 	return $(arr);
 };
+
+$.fn.parentComment = function(tag){
+	var comment = Node.COMMENT_NODE;
+	var a = [];
+	this.prevAll().each(function(){
+		if(this.nodeType===comment && this.nodeValue===tag){
+			a.push(this);
+			return false;
+		}
+	});
+	return $(a);
+};
