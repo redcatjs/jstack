@@ -338,18 +338,18 @@ jstack.dataBinder = (function(){
 			this.watchers[level].push( a );
 		},
 		runWatchers: function(){
-			console.log('update');
-			console.log(this.watchers);
+			//console.log('update');
+			//console.log(this.watchers);
 			$.each(this.watchers,function(level,w){				
 				for(var i = 0, l=w.length;i<l;i++){
 					var a = w[i];
 					var element = a[0];
 					var callback = a[1];
-					if(!document.body.contains(element)){
-						w.splice(i,1);
+					//if(!document.body.contains(element)){
+						//w.splice(i,1);
 						//jstack.arrayRemove(w,i);
-						return;
-					}
+						//return;
+					//}
 					callback();
 				}
 			});
@@ -938,7 +938,6 @@ jstack.dataBinder = (function(){
 			};
 			var render = function(){
 				var data = getData();
-				console.log(text.parent(),data);
 				if(currentData===data) return;
 				currentData = data;
 				text.commentChildren().remove();
