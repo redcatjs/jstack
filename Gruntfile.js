@@ -15,6 +15,7 @@ grunt.initConfig({
 				
 				"src/std/isPositiveInteger.js",
 				"src/std/isIntKey.js",
+				"src/std/arrayRemove.js",
 				"src/std/log.js",
 				
 				"src/string/camelCase.js",
