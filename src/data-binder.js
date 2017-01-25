@@ -147,7 +147,11 @@ jstack.dataBinder = (function(){
 			}
 			catch(jstackException){
 				if(jstack.config.debug){
-					console.warn(jstackException.message, ", expression: "+varKey, "element", el);
+					var warn = [jstackException.message, ", expression: "+varKey, "element", el];
+					if(el.nodeType==Node.NODE_COMMENT){
+						warn.push($(el).parent().get());
+					}
+					console.warn.apply(console,warn);
 				}
 			}
 			
