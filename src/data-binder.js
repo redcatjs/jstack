@@ -404,7 +404,9 @@ jstack.dataBinder = (function(){
 								var render = compiler.callback.call(n);
 								
 								if(render){
-									self.addWatcher(n, render, iii);
+									if(!n.hasAttribute('j-static')){
+										self.addWatcher(n, render, iii);
+									}
 									render();
 								}
 							}
