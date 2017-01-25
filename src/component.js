@@ -51,7 +51,7 @@ jstack.loader('[j-component]',function(){
 		return;
 	}
 	$el.attr('j-component-handled','true');
-	var config = $el.dataAttrConfig('j-data-');
+	var config = $el.jData();
 	var paramsData = $el.attr('j-params-data');
 	var load = function(){
 		var o;
