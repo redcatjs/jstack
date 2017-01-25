@@ -1,8 +1,46 @@
-(function(){
-
 jstack.component = {};
 
-var loadComponent = function(){
+//use j:load event to make loader definition helper
+jstack.loader = function(selector,handler,unloader){
+	$.on('j:load',selector,function(){
+		handler.call(this);
+	});
+	if(typeof(unloader)=='function'){
+		$.on('j:unload',selector,function(){
+			unloader.call(this);
+		});
+	}
+	$(selector).each(function(){
+		handler.call(this);
+	});
+};
+
+//define loaders
+jstack.loader(':attrStartsWith("j-on-")',function(){
+	var $this = $(this);
+	var attrs = $this.attrStartsWith('j-on-');
+	$.each(attrs,function(k,v){
+		var event = k.substr(5);
+		$this.removeAttr(k);
+		$this.on(event,function(e){
+			var controller = jstack.dataBinder.getControllerObject(this);
+			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+			}
+			var method = controller.methods[v];
+			if(typeof(method)!='function'){
+				return;
+			}
+			var r = method.call(controller,e,this);
+			if(r===false){
+				return false;
+			}
+		});
+	});
+});
+
+//j-component
+jstack.loader('[j-component]',function(){
 	var el = this;
 	var $el = $(el);
 	var component = $el.attr('j-component');
@@ -44,61 +82,9 @@ var loadComponent = function(){
 	else{					
 		$js('jstack.'+component,load);
 	}
-};
-
-$.on('j:load','[j-component]',loadComponent);
-$.on('j:unload','[j-component]',function(){
+},function(){
 	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
 		o.unload();
 	}
 });
-
-$('[j-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadComponent.call(this);
-	}
-});
-
-//use j:load event to make loader definition helper
-jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',selector,function(){
-		handler.call(this);
-	});
-	if(typeof(unloader)=='function'){
-		$.on('j:unload',selector,function(){
-			unloader.call(this);
-		});
-	}
-	$(selector).each(function(){
-		handler.call(this);
-	});
-};
-
-//define loaders
-jstack.loader(':attrStartsWith("j-on-")',function(){
-	var $this = $(this);
-	var attrs = $this.attrStartsWith('j-on-');
-	$.each(attrs,function(k,v){
-		var event = k.substr(5);
-		$this.removeAttr(k);
-		$this.on(event,function(e){
-			var controller = jstack.dataBinder.getControllerObject(this);
-			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-			}
-			var method = controller.methods[v];
-			if(typeof(method)!='function'){
-				return;
-			}
-			var r = method.call(controller,e,this);
-			if(r===false){
-				return false;
-			}
-		});
-	});
-});
-
-
-
-})();
