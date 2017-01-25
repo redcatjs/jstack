@@ -56,6 +56,7 @@ grunt.initConfig({
 				"src/jquery/jModel.js",
 				"src/jquery/comment.js",
 				"src/jquery/jml.js",
+				"src/jquery/jData.js",
 				
 				"src/template/getTemplate.js",
 				
