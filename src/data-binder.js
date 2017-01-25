@@ -770,31 +770,6 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:'[data-j-var]',
-				callback:function(){
-					
-					var el = this;
-					var $this = $(this);
-					var myvar = $this.attr('data-j-var');
-					this.removeAttribute('data-j-var');
-					var currentData;
-					var getData = function(){
-						return jstack.dataBinder.getValueEval(el,myvar);
-					};
-					var render = function(){
-						if(!document.body.contains(el)) return false;
-						
-						var data = getData();
-						if(currentData===data) return;
-						currentData = data;
-						
-						$this.html(data);
-					};
-					return render;
-					
-				},
-			},
-			{
 				selector:':attrStartsWith("j-model-")',
 				callback:function(){
 					var el = this;
