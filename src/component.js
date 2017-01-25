@@ -46,40 +46,7 @@ var loadComponent = function(){
 	}
 };
 
-var loadJqueryComponent = function(){
-	var el = this;
-	var component = $(el).attr('jquery-component');
-	var config = $(el).dataAttrConfig('j-data-');
-	var paramsData = $(el).attr('j-params-data');
-	var params = [];
-	if(paramsData){
-		var keys = [];
-		for (var k in config) {
-			if (config.hasOwnProperty(k)) {
-				keys.push(k);
-			}
-		}
-		keys.sort();
-		for(var i=0,l=keys.length;i<l;i++){
-			params.push(config[keys[i]]);
-		}
-	}
-	else if(!$.isEmptyObject(config)){
-		params.push(config);
-	}
-	var load = function(){
-		$(el).data('j:component',$.fn[component].apply($(el), params));
-	};
-	if($.fn[component]){
-		load();
-	}
-	else{					
-		$js('jstack.jquery.'+component,load);
-	}
-};
-
 $.on('j:load','[j-component]',loadComponent);
-$.on('j:load','[jquery-component]',loadJqueryComponent);
 $.on('j:unload','[j-component]',function(){
 	var o = $(this).data('j:component');
 	if(o&&typeof(o.unload)=='function'){
@@ -90,11 +57,6 @@ $.on('j:unload','[j-component]',function(){
 $('[j-component]').each(function(){
 	if( !$(this).data('j:component') ){
 		loadComponent.call(this);
-	}
-});
-$('[jquery-component]').each(function(){
-	if( !$(this).data('j:component') ){
-		loadJqueryComponent.call(this);
 	}
 });
 
