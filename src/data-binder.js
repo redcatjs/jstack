@@ -272,7 +272,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el){
+		inputToModel: function(el,eventType){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
 
@@ -292,6 +292,13 @@ jstack.dataBinder = (function(){
 				
 				value = self.dotSet(key,data,value);
 				input.trigger('j:input',[value]);
+				
+				if(eventType=='j:update'){
+					input.trigger('j:input:update',[value]);
+				}
+				else{
+					input.trigger('j:input:user',[value]);
+				}
 				
 				if(oldValue!==value){
 					input.trigger('j:change',[value,oldValue]);
@@ -491,7 +498,7 @@ jstack.dataBinder = (function(){
 				
 				$(this).data('jHandledValue',value);
 				
-				self.inputToModel(this);
+				self.inputToModel(this,e.type);
 			});
 		},
 		filter:function(el,value){
