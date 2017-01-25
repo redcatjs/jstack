@@ -92,6 +92,23 @@ $.fn.dataCommentJSON = function(){
 var commentPrimary = 0;
 var commentRegister = {};
 
+$.fn.removeDataComment = function(key){
+	var el = this[0];
+	var x = el.nodeValue.split(' ');
+	if(x[1]){
+		var primary = x[1];
+		if(commentRegister[primary]){
+			if(key){
+				if(commentRegister[primary][key]){
+					delete commentRegister[primary][key];
+				}
+			}
+			else{
+				delete commentRegister[primary];
+			}
+		}
+	}
+};
 $.fn.dataComment = function(){
   
 	if(arguments.length>1||$.type(arguments[0])=='object'){
