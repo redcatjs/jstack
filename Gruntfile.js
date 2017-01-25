@@ -57,7 +57,6 @@ grunt.initConfig({
 				"src/jquery/comment.js",
 				
 				"src/template/getTemplate.js",
-				"src/template/jml.js",
 				
 				"src/component.js",
 				"src/route.js",
