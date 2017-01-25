@@ -911,18 +911,76 @@ jstack.controller = function(controller,element){
 			
 			var self = this;
 			
-			$.extend(true,this,controller);
+			var data = element.data('jModel') || {};
+			if(element.hasAttr('j-view-inherit')){
+				var parent = element.parent().closest('[j-controller]');
+				if(parent.length){
+					var inheritProp = element.attr('j-view-inherit');
+					var parentData = parent.data('jModel') || {};
+					if(inheritProp){
+						data[inheritProp] = parentData;
+					}
+					else{
+						data = $.extend({},parentData,data);
+					}
+				}
+			}
+			
+			element.find(':input[name],[j-input],[j-select]').each(function(){
+				var key = jstack.dataBinder.getScopedInput(this);
+				var val = jstack.dataBinder.getInputVal(this);
+				jstack.dataBinder.dotSet(key,data,val,true);
+				
+			});
+			
+			var defaults = {
+				domReady: function(){},
+				setData: function(){},
+				data: data,
+			};
+			
+			
+			$.extend(true,this,defaults,controller);
 			
 			
 			this.ready = $.Deferred();
 			this.element = element;
 			element.data('jController',this);
 			
+			this.startDataObserver = function(){
+				self.data = ObjectObservable.create(self.data);
+				ObjectObservable.observe(self.data,function(change){
+					console.log('j:model:update',change);
+					jstack.dataBinder.update();
+				});
+			};
 			
 			this.setDataArguments = [];
 			this.setDataCall = function(){
-				return this.setData.apply( this, this.setDataArguments );
+				var r = this.setData.apply( this, this.setDataArguments );
+				if(r==false){
+					this.noRender = true;
+				}
+				else if($.type(r)=='object'&&r!==ctrl.data){
+					$.extend(this.data,r);
+				}
+				this.startDataObserver();
 			};			
+			
+			this.render = function(html){
+				if(this.noRender) return;
+				
+				var el = this.element;
+				el.data('jModel',this.data);
+				el.attr('j-controller',this.name);
+				if(Boolean(el.attr('j-view-append'))){
+					el.append( html );
+				}
+				else{
+					el.html( html );
+				}
+				this.domReady();
+			};
 			
 		};
 		return jstack.controllers[controller.name];
@@ -988,18 +1046,9 @@ jstack.controller = function(controller,element){
 			dependencies.push(resolveDeferred);
 		}
 	}
- 	
-	controller.data = controller.data || {};
-	
-	controller.data = ObjectObservable.create(controller.data);
-	
-	ObjectObservable.observe(controller.data,function(change){
-		//console.log(change);
-		jstack.dataBinder.update();
-	});
-	
 	
 	$.when.apply($, dependencies).then(function(){
+		controller.setDataCall();
 		controller.ready.resolve();
 	});
 	
@@ -1188,6 +1237,11 @@ jstack.isPositiveInteger = function(n) { 6 // good for all numeric values which 
 };
 jstack.isIntKey = function(n) {
     return n >>> 0 === parseFloat(n);
+};
+jstack.arrayRemove = function(a, from, to) {
+  var rest = a.slice((to || from) + 1 || a.length);
+  a.length = from < 0 ? a.length + from : from;
+  return Array.prototype.push.apply(a, rest);
 };
 jstack.flatObservable = function(){
 	var args = [];
@@ -2195,7 +2249,7 @@ $.walkTheDOM = function(node, func, reverse){
 			return false;
 		}
 	}
-	if(!reverse&&func(node)===false){
+	if(reverse&&func(node)===false){
 		return false;
 	}
 };
@@ -2265,6 +2319,54 @@ $.fn.jExposeVar = function(onOrigin){
 };
 $.fn.jhtml = function(onOrigin){
 	return this.jExposeVar(onOrigin).html();
+};
+$.fn.findComments = function(){
+	var arr = [];
+	var nt = Node.COMMENT_NODE;
+	this.each(function(){
+		for(var i = 0; i < this.childNodes.length; i++) {
+			var node = this.childNodes[i];
+			if(node.nodeType === nt){
+				arr.push(node);
+			}
+			else{
+				arr.push.apply( arr, $.fn.findComments.call( $(node) ) );
+			}
+		}
+	});
+	return $(arr);
+};
+
+$.fn.findCommentsChildren = function(tag){
+	var arr = [];
+	var comment = Node.COMMENT_NODE;
+	var tl = tag.length;
+	this.each(function(){
+		for(var i = 0; i < this.childNodes.length; i++) {
+			var node = this.childNodes[i];
+			if(node.nodeType === comment && node.nodeValue.substr(0,tl)==tag){
+				arr.push.apply( arr, $(node).commentChildren() );
+			}
+			else{
+				arr.push.apply( arr, $.fn.findCommentsChildren.call( $(node), tag ) );
+			}
+		}
+	});
+	return $(arr);
+};
+
+$.fn.commentChildren = function(){
+	var arr = [];
+	var comment = Node.COMMENT_NODE;
+	this.each(function(){
+		var endTag = '/'+this.nodeValue;
+		var n = this.nextSibling;
+		while(n && (n.nodeType!==comment || n.nodeValue!=endTag) ){
+			arr.push(n);
+			n = n.nextSibling;
+		}
+	});
+	return $(arr);
 };
 (function(){
 	var templates = {};
@@ -2413,127 +2515,6 @@ jstack.loader = function(selector,handler,unloader){
 		handler.call(this);
 	});
 };
-			
-//define preloaders
-jstack.preloader = [
-	{
-		selector:':input[name],[j-input],[j-select]',
-		callback: function(){
-			if(!$(this).data('j:firstload')){
-				$(this).data('j:firstload',true);
-				jstack.dataBinder.inputToModel(this,'j:default',true);
-			}
-		},
-	},
-	{
-		selector:'[j-for]',
-		callback:function(){
-			jstack.dataBinder.loaders.jFor.call(this);
-		},
-	},
-	{
-		selector:'[j-if]',
-		callback:function(){
-			jstack.dataBinder.loaders.jIf.call(this);
-			this.removeAttribute('j-if');
-		},
-		watcher: 'jIf',
-	},
-	{
-		selector:'[j-switch]',
-		callback:function(){
-			jstack.dataBinder.loaders.jSwitch.call(this);
-			this.removeAttribute('j-switch');
-		},
-		watcher: 'jSwitch',
-	},
-	{
-		selector:'[j-href]',
-		callback:function(){
-			jstack.dataBinder.loaders.jHref.call(this);
-			this.removeAttribute('j-href');
-		},
-	},
-	{
-		selector:':data(j-var)',
-		callback:function(){
-			jstack.dataBinder.loaders.jVar.call(this);
-			$(this).removeData('j-var');
-		},
-		watcher: 'jVar',
-	},
-	{
-		selector:'[data-j-var]',
-		callback:function(){
-			jstack.dataBinder.loaders.jVar.call(this);
-			this.removeAttribute('data-j-var');
-		},
-		watcher: 'jVar',
-	},
-	{
-		selector:':attrStartsWith("j-var-")',
-		callback:function(){
-			jstack.dataBinder.loaders.jVarAttr.call(this);
-			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-var-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
-		},
-		watcher: 'jVarAttr',
-	},
-	{
-		selector:':attrStartsWith("j-model-")',
-		callback:function(){
-			jstack.dataBinder.loaders.jModelAttr.call(this);
-			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-model-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
-		},
-		watcher: 'jModelAttr',
-	},
-	{
-		selector:':attrStartsWith("j-data-")',
-		callback:function(){
-			jstack.dataBinder.loaders.jDataAttr.call(this);
-			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-data-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
-		},
-		watcher: 'jDataAttr',
-	},
-	{
-		selector:':attrStartsWith("j-shortcut-model-")',
-		callback:function(){
-			jstack.dataBinder.loaders.jShrotcutModelAttr.call(this);
-			
-			var $this = $(this);
-			var attrs = $this.attrStartsWith('j-shortcut-model-');
-			$.each(attrs,function(k){
-				$this.removeAttr(k);
-			});
-		},
-		watcher: 'jShrotcutModelAttr',
-	},
-	{
-		selector:':input[name],[j-input],[j-select]',
-		callback:function(){
-			if(!$(this).data('j:firstload')){
-				$(this).data('j:firstload',true);
-				jstack.dataBinder.inputToModel(this,'j:default',true);
-			}
-			jstack.dataBinder.loaders.inputWithName.call(this);
-		},
-		watcher: 'inputWithName',
-	},
-];
 
 //define loaders
 jstack.loader(':attrStartsWith("j-on-")',function(){
@@ -3182,7 +3163,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[elementType] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el,eventName,isDefault){
+		inputToModel: function(el,eventName){
 			var input = $(el);
 			if(input.closest('[j-unscope]').length) return;
 			
@@ -3199,7 +3180,7 @@ jstack.dataBinder = (function(){
 					value = filteredValue;
 					input.populateInput(value,{preventValEvent:true});
 				}
-				value = self.dotSet(key,data,value,isDefault);
+				value = self.dotSet(key,data,value);
 				input.trigger(eventName,[value]);
 				
 			};
@@ -3231,35 +3212,22 @@ jstack.dataBinder = (function(){
 			}
 			return true;
 		},
+		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(element,callback,selector,level){
+		addWatcher: function(node, render,level){
 			if(!level) level = 0;
-			var a = [ element, callback, selector ];
-			if(!this.watchers[level]){
-				this.watchers[level] = [];
-			}
-			var dkey = 'j:watcher:'+selector;
-			var el = $(element);
-			if(el.data(dkey)) return;
-			el.data(dkey,a);
-			//if(this.watchers[level].indexOf(a)!==-1) return;
-			this.watchers[level].push( a );
+			if(!this.watchers[level]) this.watchers[level] = {};
+			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		runWatchers: function(){
+			//console.log('update');
 			//console.log(this.watchers);
-			$.each(this.watchers,function(level,w){				
-				for(var i = 0, l=w.length;i<l;i++){
-					var a = w[i];
-					var element = a[0];
-					var callback = a[1];
-					var selector = a[2];
-					if( ( selector && selector!==Node.TEXT_NODE && !$(element).is(selector) ) || !document.body.contains(element)){
-						w.splice(i,1);
-						return;
+			$.each(this.watchers,function(level,couch){
+				$.each(couch,function(primary,render){
+					if(render()===false){
+						delete couch[primary];
 					}
-					//console.log(selector);
-					callback.call(element);
-				}
+				});
 			});
 			
 		},
@@ -3291,7 +3259,6 @@ jstack.dataBinder = (function(){
 				this.updateDeferStateObserver = $.Deferred();
 			}
 			
-			//console.log('update');
 			this.runWatchers();
 			
 			this.updateDeferStateObserver.resolve();
@@ -3302,7 +3269,8 @@ jstack.dataBinder = (function(){
 		loadMutations: function(mutations){
 			var self = this;
 			//console.log(mutations);
-			var stack = {100:[]};
+			
+			//var stack = {100:[]};
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					$.walkTheDOM(node,function(n){
@@ -3316,18 +3284,28 @@ jstack.dataBinder = (function(){
 						}
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							jstack.dataBinder.loaders.textMustache.call(n);
+							var render = jstack.dataBinder.compilerText.call(n);
+							if(render){
+								self.addWatcher(n, render, 99);
+								render();
+							}
 							return;
 						}
 						
-						$.each(jstack.preloader,function(iii,pair){
-							if($n.is(pair.selector)){
-								if( !n.hasAttribute('j-static') && pair.watcher ){
-									self.addWatcher(n, jstack.dataBinder.loaders[pair.watcher], pair.selector, iii);
+						if(n.nodeType!=Node.ELEMENT_NODE) return;
+						
+						$.each(self.compilers,function(iii,compiler){
+							if($n.is(compiler.selector)){
+								//if(!stack[iii]) stack[iii] = [];
+								//stack[iii].push([n,compiler]);
+								
+								var render = compiler.callback.call(n);
+								//if(n.hasAttribute('j-static')) return;
+								
+								if(render){
+									self.addWatcher(n, render, iii);
+									render();
 								}
-								if(!stack[iii]) stack[iii] = [];
-								stack[iii].push([n,pair]);
-								//c.call(n);
 							}
 						});
 						
@@ -3348,9 +3326,10 @@ jstack.dataBinder = (function(){
 							},0);
 						};
 						
-						stack[100].push([n,jloadCallback]);
+						//stack[100].push([n,{callback:jloadCallback}]);
+						jloadCallback.call(n);
 						
-					},true);
+					});
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
@@ -3363,14 +3342,17 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
-			$.each(stack,function(level,w){				
-				for(var i = 0, l=w.length;i<l;i++){
-					var a = w[i];
-					var n = a[0];
-					var pair = a[1];
-					pair.callback.call(n);
-				}
-			});
+			//$.each(stack,function(level,w){				
+				//for(var i = 0, l=w.length;i<l;i++){
+					//var a = w[i];
+					//var n = a[0];
+					//var pair = a[1];
+					//if(pair.selector&&!$(n).is(pair.selector)){
+						//return;
+					//}
+					//pair.callback.call(n);
+				//}
+			//});
 		},
 		eventListener: function(){
 			var self = this;
@@ -3468,284 +3450,397 @@ jstack.dataBinder = (function(){
 		getControllerObject:function(input){
 			return this.getController(input).data('jController');
 		},
-		applyMustach:function(element){
-			$(element).walkTheDOM().filter(function(){
-				return (this.nodeType == Node.TEXT_NODE) && (this instanceof Text);
-			}).each(this.loaders.textMustache);
-		},
-		loaders:{
-			jIf: function(){
-				var $this = $(this);
-				
-				
-				var value = !!jstack.dataBinder.getAttrValueEval(this,'j-if');
-				
-				
-				var contents = $this.data('jIf');
-				
-				if(!$this.is(':empty')||typeof(contents)=='undefined'){
-					contents = $this.contents();
-					$this.data('jIf',contents);
-				}
-				
-				
-				if($this.data('jIfState')===value){
-					return;
-				}
-				
-				$this.data('jIfState',value);
-								
-				if(value){
-					if($this.is(':empty')){
-						contents.appendTo($this);
-						$this.trigger('j-if:true');
-					}
-				}
-				else{
-					if(!$this.is(':empty')){
-						contents.detach();
-						$this.trigger('j-if:false');
-					}
-				}
-			},
-			jSwitch: function(){
-				var $this = $(this);
-				var value = jstack.dataBinder.getAttrValueEval(this,'j-switch');
-				var cases = $this.data('jSwitch');
-				if(typeof(cases)=='undefined'){
-					cases = $this.find('[j-case],[j-case-default]');
-					$this.data('jSwitch',cases);
-				}
-				
-				var state = $this.data('jSwitchState');
-				if(state===value){
-					return;
-				}
-				$this.data('jSwitchState',value);
-				
-				var found = false;
-				cases.filter('[j-case]').each(function(){
-					var jcase = $(this);
-					var caseVal = jcase.attr('j-case');
-					if(caseVal==value){
-						jcase.appendTo($this);
-						jcase.trigger('j-switch:true');
-						found = true;
-					}
-					else{
-						jcase.detach();
-						jcase.trigger('j-switch:false');
-					}
-				});
-				cases.filter('[j-case-default]').each(function(){
-					var jcase = $(this);
-					if(found){
-						jcase.detach();
-						jcase.trigger('j-switch:false');
-					}
-					else{
-						jcase.appendTo($this);
-						jcase.trigger('j-switch:true');
-					}
-				});
-			},
-			
-			jFor: function(){
-				var $this = $(this);
-				var parent = $this.parent();
-				
-				var attrFor = $this.attr('j-for');
-				attrFor = attrFor.trim();
-				var index, key, value, myvar;
-				
-				var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-				var m = p.exec(attrFor);
-				if (m != null){
-					index = m[2].trim();
-					key = m[4].trim();
-					value = m[6];
-					myvar = m[11].trim();
-				}
-				else{
-					var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+		
+		compilers:[
+			{
+				selector:'[j-for]',
+				callback:function(){
+					
+					var el = this;
+					var $this = $(this);
+					var jfor = $('<!--j:for-->');
+					var jforClose = $('<!--/j:for-->');
+					$this.replaceWith(jfor);
+					jforClose.insertAfter(jfor);
+					
+					var attrFor = $this.attr('j-for');
+					$this.removeAttr('j-for');
+					attrFor = attrFor.trim();
+					var index, key, value, myvar;
+					
+					var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 					var m = p.exec(attrFor);
 					if (m != null){
-						key = m[2].trim();
-						value = m[4];
-						myvar = m[9].trim();
+						index = m[2].trim();
+						key = m[4].trim();
+						value = m[6];
+						myvar = m[11].trim();
 					}
 					else{
-						var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+						var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 						var m = p.exec(attrFor);
 						if (m != null){
-							value = m[1];
-							myvar = m[5].trim();
+							key = m[2].trim();
+							value = m[4];
+							myvar = m[9].trim();
 						}
 						else{
-							throw new Error('Malformed for clause: '+attrFor);
+							var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+							var m = p.exec(attrFor);
+							if (m != null){
+								value = m[1];
+								myvar = m[5].trim();
+							}
+							else{
+								throw new Error('Malformed for clause: '+attrFor);
+							}
 						}
-					}
-				}
-				parent.attr('j-for-list',myvar);
-				parent.attr('j-for-value',value);
-				if(key){
-					parent.attr('j-for-key',key);
-				}
-				if(typeof(index)!='undefined'){
-					parent.attr('j-for-index',index);
-				}
-				
-				parent.data('jForTemplate',this);
-				$this.removeAttr('j-for');
-				$this.data('parent',parent);
-				$this.detach();
-				
-				jstack.dataBinder.addWatcher(parent[0],jstack.dataBinder.loaders.jForList,1);
-				jstack.dataBinder.loaders.jForList.call(parent[0]);
-				
-			},
-			jForList: function(){
-				var $this = $(this);
-				
-				if($this.attr('j-if')&&!jstack.dataBinder.getAttrValueEval(this,'j-if')){
-					return;
-				}
-				
-				//add
-				var template = $this.data('jForTemplate');
-				var myvar = $this.attr('j-for-list');
-				var value = jstack.dataBinder.getValueEval(this,myvar);
-				var forIdList = [];
-				$.each(value,function(k){
-					var row = $this.children('[j-for-id="'+k+'"]');
-					if(!row.length){
-						row = $(template).clone();
-						row.attr('j-for-id',k);
-						row.appendTo($this);
-					}
-					forIdList.push(k.toString());
-				});
-				
-				//remove
-				$this.children('[j-for-id]').each(function(){
-					var forId = $(this).attr('j-for-id');
-					if(forIdList.indexOf(forId)===-1){
-						$(this).remove();
-					}
-				});
-				
-			},
-			
-			
-			
-			inputWithName: function(){
-				var input = $(this);
-				if(input.closest('[j-unscope]').length) return;
-				var defaultValue = jstack.dataBinder.getInputVal(this);
-				
-				var key = jstack.dataBinder.getKey( input.attr('name') );
-				var value = jstack.dataBinder.getValue(this,key,defaultValue);
-				
-				if(input.data('j:populate:prevent')) return;
-				input.populateInput(value,{preventValEvent:true});
-				input.trigger('j:val',[value]);
-			},
-			jVar:function(){
-				var el = $(this);
-				var value = jstack.dataBinder.getValueEval(this,el.data('j-var'));
-				if(el.html()!=value){
-					el.html(value);
-				}
-			},
-			jHref: function(){
-				var $this = $(this);
-
-				var original = $this.data('j-href');
-				if(!original){
-					original = $this.attr('j-href');
-					$this.data('j-href',original);
-				}
-				
-				var parsed = jstack.dataBinder.textParser(original);
-				var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(this,parsed) : original;
-				
-				$this.attr('href',jstack.route.baseLocation + "#" + value);
-			},
-			jVarAttr: function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-var-');
-				$.each(attrs,function(k,varAttr){
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
-					$this.attr(k.substr(6),value);
-				});
-			},
-			jModelAttr: function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-model-');
-				$.each(attrs,function(k,varAttr){
-					var parsed = jstack.dataBinder.textParser(varAttr);
-					var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval($this,parsed) : varAttr;
-					$this.attr(k.substr(8),value);
-				});
-			},
-			jDataAttr: function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-data-');
-				$.each(attrs,function(k,varAttr){
-					var original = $this.data(k);
-					if(!original){
-						original = varAttr;
-						$this.data(k,original);
 					}
 					
+					var currentData;
+					
+					var getData = function(){
+						return jstack.dataBinder.getValueEval(jfor,myvar);
+					};
+					
+					var render = function(){
+						if(!document.body.contains(jfor[0])) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						var forIdList = [];
+						var collection = jfor.commentChildren();
+						
+						//add
+						$.each(data,function(k){
+							var row = collection.filter('[j-for-id="'+k+'"]');
+							if(!row.length){
+								row = $this.clone();
+								row.attr('j-for-id',k);
+								row.insertBefore(jforClose);
+							}
+							forIdList.push(k.toString());
+						});
+						
+						//remove
+						collection.each(function(){
+							var forId = $(this).attr('j-for-id');
+							if(forIdList.indexOf(forId)===-1){
+								$(this).remove();
+							}
+						});
+						
+					};
+					
+					return render;
+					
+					
+				},
+			},
+			{
+				selector:'[j-if]',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					var jif = $('<!--j:if-->');
+					$this.replaceWith(jif);
+					$('<!--/j:if-->').insertAfter(jif);
+					var myvar = $this.attr('j-if');
+					this.removeAttribute('j-if');
+					var currentData;
+					var getData = function(){
+						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
+					};
+					var render = function(){
+						if(!document.body.contains(jif[0])) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						if(data){
+							$this.insertAfter(jIf);
+						}
+						else{
+							$this.detach();
+						}
+					};
+					
+					return render;
+				},
+			},
+			{
+				selector:'[j-switch]',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					var myvar = $this.attr('j-switch');
+					this.removeAttribute('j-switch');
+					
+					var cases = $this.find('[j-case],[j-case-default]');
+					
+					var currentData;
+					var getData = function(){
+						return Boolean(jstack.dataBinder.getValueEval(el,myvar));
+					};
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						var found = false;
+						cases.filter('[j-case]').each(function(){
+							var jcase = $(this);
+							var caseVal = jcase.attr('j-case');
+							if(caseVal==value){
+								jcase.appendTo($this);
+								found = true;
+							}
+							else{
+								jcase.detach();
+							}
+						});
+						cases.filter('[j-case-default]').each(function(){
+							var jcase = $(this);
+							if(found){
+								jcase.detach();
+							}
+							else{
+								jcase.appendTo($this);
+							}
+						});
+						
+					};
+					
+					return render;
+				},
+			},
+			{
+				selector:'[j-href]',
+				callback:function(){
+					
+					var el = this;
+					var $this = $(this);
+					
+					var original = $this.attr('j-href');
+					this.removeAttribute('j-href');
+					
 					var parsed = jstack.dataBinder.textParser(original);
-					if(typeof(parsed)=='string'){
-						var value = jstack.dataBinder.getValueEval($this,parsed);
-						$this.attr(k,value);
-					}
-				});
+					
+					var currentData;
+					var getData = typeof(parsed)=='string'?function(){
+						return jstack.dataBinder.getValueEval(el,parsed);
+					}:function(){
+						return original;
+					};
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						$this.attr('href',jstack.route.baseLocation + "#" + data);
+					};
+					
+					return render;
+				},
 			},
-			jShrotcutModelAttr: function(){
-				var $this = $(this);
-				var attrs = $this.attrStartsWith('j-shortcut-model-');
-				var propAttrs = ['selected','checked'];
-				$.each(attrs,function(k,varAttr){
-					var value = jstack.dataBinder.getValueEval($this,varAttr);
-					var attr = k.substr(17);
-					if(propAttrs.indexOf(attr)!==-1){
-						$this.prop(attr,value);
-					}
-					else{						
-						if(value){
-							$this.attr(attr,attr);
-						}
-						else{
-							$this.removeAttr(attr);
-						}
-					}
-				});
+			{
+				selector:':data(j-var)',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					var myvar = $this.data('j-var');
+					$this.removeData('j-var');
+					var currentData;
+					var getData = function(){
+						return jstack.dataBinder.getValueEval(el,myvar);
+					};
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						$this.html(data);
+					};
+					return render;
+				},
 			},
-			textMustache: function(){
-				if(this.textContent){
-					var parsed = jstack.dataBinder.textParser(this.textContent.toString());
-					if(typeof(parsed)=='string'){
-						var $this = $(this);
-						var el;
-						var parent = $this.parent();
-						if(parent.is('option')){
-							parent.data('j-var',parsed);
-							$this.remove();
-							jstack.dataBinder.loaders.jVar.call(parent);
-						}
-						else{
-							el = $('<span/>');
-							el.data('j-var',parsed);
-							$this.replaceWith(el);
-						}
-					}
-				}
+			{
+				selector:'[data-j-var]',
+				callback:function(){
+					
+					var el = this;
+					var $this = $(this);
+					var myvar = $this.attr('data-j-var');
+					this.removeAttribute('data-j-var');
+					var currentData;
+					var getData = function(){
+						return jstack.dataBinder.getValueEval(el,myvar);
+					};
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						$this.html(data);
+					};
+					return render;
+					
+				},
 			},
+			{
+				selector:':attrStartsWith("j-model-")',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					var attrs = $this.attrStartsWith('j-model-');
+					var attrsVars = {};
+					var attrsVarsCurrent = {};
+					$.each(attrs,function(k,v){
+						attrsVars[k.substr(8)] = jstack.dataBinder.textParser(v);
+						$this.removeAttr(k);
+					});
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						$.each(attrsVars,function(k,parsed){
+							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
+							if(attrsVarsCurrent[k]===value) return;
+							attrsVarsCurrent[k] = value;
+							$this.attr(k,value);
+						});
+					};
+					return render;
+				},
+			},
+			{
+				selector:':attrStartsWith("j-data-")',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					var attrs = $this.attrStartsWith('j-data-');
+					var attrsVars = {};
+					var attrsVarsCurrent = {};
+					$.each(attrs,function(k,v){
+						attrsVars[k] = jstack.dataBinder.textParser(v);
+						$this.removeAttr(k);
+					});
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						$.each(attrsVars,function(k,parsed){
+							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
+							if(attrsVarsCurrent[k]===value) return;
+							attrsVarsCurrent[k] = value;
+							$this.attr(k,value);
+						});
+					};
+					return render;
+				},
+			},
+			{
+				selector:':attrStartsWith("j-shortcut-model-")',
+				callback:function(){
+					var propAttrs = ['selected','checked'];
+					
+					var el = this;
+					var $this = $(this);
+					var attrs = $this.attrStartsWith('j-shortcut-model-');
+					var attrsVars = {};
+					var attrsVarsCurrent = {};
+					$.each(attrs,function(k,v){
+						attrsVars[k.substr(17)] = v;
+						$this.removeAttr(k);
+					});
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						$.each(attrsVars,function(k,v){
+							var value = Boolean(jstack.dataBinder.getValueEval(el,v));
+							
+							if(attrsVarsCurrent[k]===value) return;
+							attrsVarsCurrent[k] = value;
+							
+							if(propAttrs.indexOf(k)!==-1){
+								$this.prop(k,value);
+							}
+							else{						
+								if(value){
+									$this.attr(k,k);
+								}
+								else{
+									$this.removeAttr(k);
+								}
+							}
+						});
+					};
+					return render;
+				},
+			},
+			{
+				selector:':input[name],[j-input],[j-select]',
+				callback:function(){
+					var el = this;
+					var $el = $(this);
+					if($el.closest('[j-unscope]').length) return;
+					
+					var currentData;
+					var getData = function(){
+						var defaultValue = jstack.dataBinder.getInputVal(el);
+						var key = jstack.dataBinder.getKey( $el.attr('name') );
+						return jstack.dataBinder.getValue(el,key,defaultValue);
+					};
+					
+					var render = function(){
+						if(!document.body.contains(el)) return false;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						if($el.data('j:populate:prevent')) return;
+						$el.populateInput(data,{preventValEvent:true});
+						$el.trigger('j:val',[data]);
+					};
+					return render;
+				},
+			},
+		],
+		compilerText:function(){
+			if(!this.textContent) return;
+			var parsed = jstack.dataBinder.textParser(this.textContent.toString());
+			if(typeof(parsed)!='string') return;
 			
+			var el = this;
+			var $this = $(this);
+			var text = $('<!--j:text-->');
+			var textClose = $('<!--/j:text-->');
+			$this.replaceWith(text);
+			textClose.insertAfter(text);
+			
+			var currentData;
+			var getData = function(){
+				return jstack.dataBinder.getValueEval(text,parsed);
+			};
+			var render = function(){
+				if(!document.body.contains(text[0])) return false;
+				
+				var data = getData();
+				if(currentData===data) return;
+				currentData = data;
+				text.commentChildren().remove();
+				text.after(data);
+			};
+			return render;
 		},
 		textParser:function(text){
 			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
@@ -3927,7 +4022,6 @@ jstack.mvc = function(config){
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
 	var controllerReady = $.Deferred();
-	var viewCompilerReady = $.Deferred();
 	var processor;
 	
 	if(jstack.controllers[config.controller]){
@@ -3936,67 +4030,21 @@ jstack.mvc = function(config){
 	else{
 		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 	}
-	
-	jstack.getTemplate(templatePath).then(function(html){		
-		processor = function(data){
-			target.data('jModel',data);
-			target.attr('j-controller',controller);
-			
-			if(Boolean(target.attr('j-view-append'))){
-				target.append( html );
-			}
-			else{
-				target.html( html );
-			}
-		};
-		viewCompilerReady.resolve();
-	});
-
+	var viewReady = jstack.getTemplate(templatePath);
 	
 	var ready = $.Deferred();
-	$.when( controllerReady, viewCompilerReady ).then( function() {
+	
+	controllerReady.then(function(){
 		
 		var ctrl = jstack.controller(config.controller,target);
 		
-		ctrl.ready.then(function(){
+		$.when(viewReady, ctrl.ready).then(function(view){
+			var html = view[0];
+			ctrl.render(html);
+			ready.resolve(target,ctrl);
+		});		
 		
-			if($.type(config.data)=='object'){
-				$.extend(ctrl.data,config.data);
-			}
-			
-			
-			
-			ctrl.render = function(data){
-				
-				if(data&&data!==ctrl.data){
-					$.extend(ctrl.data,data);
-				}
-				
-				processor(ctrl.data);
-				
-				if(ctrl.domReady){
-					setTimeout(function(){
-						ctrl.domReady();
-						ready.resolve(target,ctrl);
-					});
-				}
-								
-			};
-			
-			if(ctrl.setData){
-				var setDataReturn = ctrl.setDataCall();
-				if(setDataReturn===false){
-					return;
-				}
-				if($.type(setDataReturn)=='object'&&setDataReturn!==ctrl.data){
-					$.extend(ctrl.data,setDataReturn);
-				}
-			}
-			ctrl.render();
-		
-		});
-		
-	} );
+	});
 
 	return ready;
 };
@@ -4033,29 +4081,12 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	else{
 		controller = view;
 	}
-	
-	var data = el.data('jModel') || {};
-	if(el.hasAttr('j-view-inherit')){
-		var parent = el.parent().closest('[j-controller]');
-		if(parent.length){
-			var inheritProp = el.attr('j-view-inherit');
-			var parentData = parent.data('jModel') || {};
-			if(inheritProp){
-				data[inheritProp] = parentData;
-			}
-			else{
-				data = $.extend({},parentData,data);
-			}
-		}
-	}
-	
-	
+
 	var ready = jstack.viewReady(this);
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
 		target:this,
-		data:data,
 	});
 	mvc.then(function(){
 		setTimeout(function(){
