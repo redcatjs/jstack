@@ -327,8 +327,7 @@ jstack.dataBinder = (function(){
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
-		checkRemoved: function(){
-			var ancestor = el;
+		checkRemoved: function(ancestor){
 			while(ancestor.parentNode){
 				ancestor = ancestor.parentNode;
 			}
