@@ -751,11 +751,14 @@ jstack.dataBinder = (function(){
 					
 					var parsed = jstack.dataBinder.textParser(original);
 					
+					if(typeof(parsed)!='string'){
+						$this.attr('href',jstack.route.baseLocation + "#" + original);
+						return;
+					}
+					
 					var currentData;
-					var getData = typeof(parsed)=='string'?function(){
+					var getData = function(){
 						return jstack.dataBinder.getValueEval(el,parsed);
-					}:function(){
-						return original;
 					};
 					var render = function(){
 						if(!document.body.contains(el)) return false;
@@ -778,38 +781,21 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
-						attrsVars[k.substr(8)] = jstack.dataBinder.textParser(v);
+						var parsed = jstack.dataBinder.textParser(v);
+						var key = k.substr(8);
+						if(typeof(parsed)=='string'){
+							attrsVars[k] = parsed;
+						}
+						else{
+							$this.attr(key,v);
+						}
 						$this.removeAttr(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return false;
 						
-						$.each(attrsVars,function(k,parsed){
-							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
-							if(attrsVarsCurrent[k]===value) return;
-							attrsVarsCurrent[k] = value;
-							$this.attr(k,value);
-						});
-					};
-					return render;
-				},
-			},
-			{
-				selector:':attrStartsWith("j-data-")',
-				callback:function(){
-					var el = this;
-					var $this = $(this);
-					var attrs = $this.attrStartsWith('j-data-');
-					var attrsVars = {};
-					var attrsVarsCurrent = {};
-					$.each(attrs,function(k,v){
-						attrsVars[k] = jstack.dataBinder.textParser(v);
-					});
-					var render = function(){
-						if(!document.body.contains(el)) return false;
-						
-						$.each(attrsVars,function(k,parsed){
-							var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : parsed;
+						$.each(attrsVars,function(k,v){
+							var value =  jstack.dataBinder.getValueEval(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
 							$this.attr(k,value);
@@ -917,9 +903,11 @@ jstack.dataBinder = (function(){
 			};
 			return render;
 		},
-		textParser:function(text){
+		textParser:function(text, returnOriginal){
 			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
 			if (!tagRE.test(text)) {
+				if(returnOriginal)
+					return text;
 				return;
 			}
 			var tokens = [];
