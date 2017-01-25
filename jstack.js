@@ -950,7 +950,7 @@ jstack.controller = function(controller,element){
 			this.startDataObserver = function(){
 				self.data = ObjectObservable.create(self.data);
 				ObjectObservable.observe(self.data,function(change){
-					console.log('j:model:update',change);
+					//console.log('j:model:update',change);
 					jstack.dataBinder.update();
 				});
 			};
@@ -3586,7 +3586,7 @@ jstack.dataBinder = (function(){
 						cases.filter('[j-case]').each(function(){
 							var jcase = $(this);
 							var caseVal = jcase.attr('j-case');
-							if(caseVal==value){
+							if(caseVal==data){
 								jcase.appendTo($this);
 								found = true;
 							}
@@ -3811,10 +3811,14 @@ jstack.dataBinder = (function(){
 			
 			var el = this;
 			var $this = $(this);
+			
+			
 			var text = $('<!--j:text-->');
 			var textClose = $('<!--/j:text-->');
 			$this.replaceWith(text);
 			textClose.insertAfter(text);
+			//var text = $('<span/>');
+			//$this.replaceWith(text);
 			
 			var currentData;
 			var getData = function(){
@@ -3828,6 +3832,7 @@ jstack.dataBinder = (function(){
 				currentData = data;
 				text.commentChildren().remove();
 				text.after(data);
+				//text.html(data);
 			};
 			return render;
 		},
