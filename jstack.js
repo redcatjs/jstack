@@ -3599,27 +3599,106 @@ jstack.dataBinder = (function(){
 					var el = this;
 					var $this = $(this);
 					var jif = $('<!--j:if-->');
-					$this.replaceWith(jif);
-					$('<!--/j:if-->').insertAfter(jif);
+					$this.before(jif);
+					
+					var jelseifEl = $this.nextAll('[j-else-if]');
+					var jelseEl = $this.nextAll('[j-else]');
+
+					var lastBlock;
+					if(jelseEl.length){
+						lastBlock = jelseEl;
+					}
+					else if(jelseifEl.length){
+						lastBlock = jelseifEl.last();
+					}
+					else{
+						lastBlock = jif;
+					}
+					$('<!--/j:if-->').insertAfter(lastBlock);
+					
 					var myvar = $this.attr('j-if');
 					this.removeAttribute('j-if');
 					var currentData;
 					var getData = function(){
 						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
 					};
+					
+					var getData2;
+					var currentData2 = null;
+					if(jelseifEl.length){
+						var myvar2 = [];
+						jelseifEl.each(function(){
+							var jel = $(this);
+							myvar2.push( jel.attr('j-else-if') );
+							jel.removeAttr('j-else-if');
+						});
+						getData2 = function(){
+							var data = false;
+							for(var i=0, l=myvar2.length;i<l;i++){
+								if( Boolean(jstack.dataBinder.getValueEval(jif,myvar2[i])) ){
+									data = i;
+									break;
+								}
+							}
+							return data;
+						};
+					}
+					
+					if(jelseEl.length){
+						jelseEl.removeAttr('j-else');
+					}
+					
 					var render = function(){
 						if(!document.body.contains(jif[0])) return jif[0];
 						
 						var data = getData();
-						if(currentData===data) return;
+						var data2 = null;
+						if(getData2){
+							data2 = data?false:getData2();
+						}
+						if( currentData===data && data2===currentData2 ) return;
 						currentData = data;
+						currentData2 = data2;
+						console.log(myvar,myvar2,data);
 						
 						$this.data('j:if:state',data);
 						if(data){
 							$this.insertAfter(jif);
+							
+							if(jelseifEl.length){
+								jelseifEl.data('j:if:state',false);
+								jelseifEl.detach();
+							}
+							if(jelseEl.length){
+								jelseEl.data('j:if:state',false);
+								jelseEl.detach();
+							}
+							
 						}
 						else{
 							$this.detach();
+							
+							if(jelseifEl.length){
+								jelseifEl.data('j:if:state',false);
+								if(data2===false){
+									jelseifEl.detach();
+								}
+								else{
+									var jelseifElMatch = $(jelseifEl[data2]);
+									jelseifElMatch.data('j:if:state',true);
+									jelseifElMatch.insertAfter(jif);
+								}
+							}
+							if(jelseEl.length){
+								if(data2===false){
+									jelseEl.data('j:if:state',true);
+									jelseEl.insertAfter(jif);
+								}
+								else{
+									jelseEl.data('j:if:state',false);
+									jelseEl.detach();
+								}
+							}
 						}
 					};
 					
