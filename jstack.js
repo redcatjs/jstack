@@ -968,7 +968,7 @@ jstack.controller = function(controller,element){
 				html.find(':input[name],[j-input],[j-select]').each(function(){
 					var key = jstack.dataBinder.getScopedInput(this);
 					var val = jstack.dataBinder.getInputVal(this);
-					jstack.dataBinder.dotSet(key,data,val,true);
+					jstack.dataBinder.dotSet(key,self.data,val,true);
 					
 				});
 				
