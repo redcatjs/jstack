@@ -723,7 +723,6 @@ jstack.dataBinder = (function(){
 						if( currentData===data && data2===currentData2 ) return;
 						currentData = data;
 						currentData2 = data2;
-						console.log(myvar,myvar2,data);
 						
 						$this.data('j:if:state',data);
 						if(data){
