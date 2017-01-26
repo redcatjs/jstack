@@ -3752,6 +3752,37 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
+				selector:'[j-show]',
+				callback:function(){
+					var el = this;
+					var $this = $(this);
+					
+					var myvar = $this.attr('j-show');
+					this.removeAttribute('j-show');
+					var currentData;
+					var getData = function(){
+						return Boolean(jstack.dataBinder.getValueEval(el,myvar));
+					};
+					
+					var render = function(){
+						if(!document.body.contains(el)) return el;
+						
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						if(data){
+							$this.show();
+						}
+						else{
+							$this.hide();
+						}
+					};
+					
+					return render;
+				},
+			},
+			{
 				selector:'[j-href]',
 				callback:function(){
 					
