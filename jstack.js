@@ -3776,6 +3776,7 @@ jstack.dataBinder = (function(){
 					var el = this;
 					var $el = $(this);
 					if($el.closest('[j-unscope]').length) return;
+					if($el.attr('type')=='file') return;
 					
 					var currentData;
 					var getData = function(){
