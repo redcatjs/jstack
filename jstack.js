@@ -3603,7 +3603,7 @@ jstack.dataBinder = (function(){
 					
 					var jelseifEl = $this.nextAll('[j-else-if]');
 					var jelseEl = $this.nextAll('[j-else]');
-
+					
 					var lastBlock;
 					if(jelseEl.length){
 						lastBlock = jelseEl;
@@ -3672,7 +3672,6 @@ jstack.dataBinder = (function(){
 								jelseEl.data('j:if:state',false);
 								jelseEl.detach();
 							}
-							
 						}
 						else{
 							$this.detach();
@@ -3689,7 +3688,7 @@ jstack.dataBinder = (function(){
 								}
 							}
 							if(jelseEl.length){
-								if(data2===false){
+								if(data2===false||data2===null){
 									jelseEl.data('j:if:state',true);
 									jelseEl.insertAfter(jif);
 								}
