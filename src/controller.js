@@ -20,13 +20,6 @@ jstack.controller = function(controller,element){
 				}
 			}
 			
-			element.find(':input[name],[j-input],[j-select]').each(function(){
-				var key = jstack.dataBinder.getScopedInput(this);
-				var val = jstack.dataBinder.getInputVal(this);
-				jstack.dataBinder.dotSet(key,data,val,true);
-				
-			});
-			
 			var defaults = {
 				domReady: function(){},
 				setData: function(){},
@@ -63,6 +56,16 @@ jstack.controller = function(controller,element){
 			
 			this.render = function(html){
 				if(this.noRender) return;
+				
+				html = $(html);
+				
+				html.find(':input[name],[j-input],[j-select]').each(function(){
+					var key = jstack.dataBinder.getScopedInput(this);
+					var val = jstack.dataBinder.getInputVal(this);
+					jstack.dataBinder.dotSet(key,data,val,true);
+					
+				});
+				
 				
 				var el = this.element;
 				el.data('jModel',this.data);
