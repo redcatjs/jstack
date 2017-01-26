@@ -104,6 +104,8 @@ jstack.dataBinder = (function(){
 			$(el).parents('[j-for-id]').each(function(){
 				forCollection.push( this );
 			});
+			
+			
 			var addToScope = function(param,arg){
 				scopeValue[param] = arg;
 			};
@@ -628,10 +630,13 @@ jstack.dataBinder = (function(){
 						//add
 						$.each(data,function(k,v){
 							var row = collection.filter('[j-for-id="'+k+'"]');
-							if(!row.length){
+							var create = !row.length;
+							if(create){
 								row = $this.clone();
 								row.attr('j-for-id',k);
-								row.data('j:for:data',v);
+							}
+							row.data('j:for:data',v);
+							if(create){
 								row.insertBefore(jforClose);
 							}
 							forIdList.push(k.toString());
@@ -889,7 +894,6 @@ jstack.dataBinder = (function(){
 			};
 			var render = function(){
 				if(!document.body.contains(text[0])) return text[0];
-				
 				var data = getData();
 				if(currentData===data) return;
 				currentData = data;
