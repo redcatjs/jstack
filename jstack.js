@@ -3332,8 +3332,9 @@ jstack.dataBinder = (function(){
 		},
 		
 		loadMutations: function(mutations){
+			//console.log('mutations',mutations);
+			
 			var self = this;
-			//console.log(mutations);
 			
 			var compilerTexts = [];
 			var compilerJloads = [];
@@ -3341,11 +3342,14 @@ jstack.dataBinder = (function(){
 				$.each(mutation.addedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
 						
-						if(!document.body.contains(n)) return;
+						if(!document.body.contains(n)) return false;
+						
+						self.observe(n);
 						
 						var $n = $(n);
 						
-						//if($n.closest('[j-escape]').length) return;
+						//if(n.hasAttribute&&n.hasAttribute('j-escape')) return false;
+						//if($n.closest('[j-escape]').length) return false;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
@@ -3372,7 +3376,7 @@ jstack.dataBinder = (function(){
 							}
 						});
 						
-						if(!document.body.contains(n)) return;
+						if(!document.body.contains(n)) return false;
 						if($n.data('j:load:state')){
 							return;
 						}
@@ -3395,15 +3399,15 @@ jstack.dataBinder = (function(){
 					jstack.walkTheDOM(node,function(n){
 						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
 							$(n).removeDataComment();
-							return;
+							return false;
 						}
 						
 						if(n.nodeType==Node.TEXT_NODE){
-							return;
+							return false;
 						}
 						
 						if(!$(n).data('j:load:state')){
-							return;
+							return false;
 						}
 						
 						setTimeout(function(){
@@ -3420,14 +3424,44 @@ jstack.dataBinder = (function(){
 				compilerJloads[i]();
 			}
 		},
+		mutationObserver: null,
+		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
+		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
+		observe: function(n){
+			if(n.nodeType!=Node.ELEMENT_NODE) return;
+			var nodeName = n.tagName.toLowerCase();
+			var observations = {
+				subtree: false,
+				attributeOldValue: false,
+				characterDataOldValue: false,
+			};
+			if(this.noChildListNodeNames[nodeName]){
+				if(!this.inputPseudoNodeNames[nodeName]) return;
+				observations.childList = false;
+				observations.characterData = false;
+			}
+			else{
+				observations.childList = true;
+				observations.characterData = true;
+			}
+			if(this.inputPseudoNodeNames[nodeName]){
+				observations.attributes = true;
+				observations.attributeFilter = ['name','value'];
+			}
+			else{
+				observations.attributes = false;
+			}
+			this.mutationObserver.observe(n, observations);
+		},
 		eventListener: function(){
 			var self = this;
 			
-			var observer = new MutationObserver(function(mutations){
-				//console.log('mutations',mutations);
-				self.loadMutations(mutations);
+			this.mutationObserver = new MutationObserver(function(m){
+				self.loadMutations(m);
 			});
-			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
+			$(document.body).find('*').add(document.body).each(function(){
+				self.observe(this);
+			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
