@@ -394,7 +394,7 @@ jstack.dataBinder = (function(){
 				$.each(mutation.addedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
 						
-						if(!document.body.contains(n)) return;
+						if(!document.body.contains(n)) return false;
 						
 						var $n = $(n);
 						
@@ -425,7 +425,7 @@ jstack.dataBinder = (function(){
 							}
 						});
 						
-						if(!document.body.contains(n)) return;
+						if(!document.body.contains(n)) return false;
 						if($n.data('j:load:state')){
 							return;
 						}
@@ -448,15 +448,15 @@ jstack.dataBinder = (function(){
 					jstack.walkTheDOM(node,function(n){
 						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
 							$(n).removeDataComment();
-							return;
+							return false;
 						}
 						
 						if(n.nodeType==Node.TEXT_NODE){
-							return;
+							return false;
 						}
 						
 						if(!$(n).data('j:load:state')){
-							return;
+							return false;
 						}
 						
 						setTimeout(function(){
