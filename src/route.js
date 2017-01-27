@@ -224,8 +224,7 @@ jstack.route = ( function( w, url ) {
 	routie.reload = hashChanged;
 
 	var rootClick = function( e ) {
-		var self = $( this );
-		var href = self.attr( "href" );
+		var href = this.getAttribute('href');
 		if ( !href ) return;
 		if ( "/" + href == w.location.pathname ) {
 			e.preventDefault();

@@ -1,13 +1,13 @@
 $.fn.requiredId = function(){
-	var id = this.attr('id');
 	if(this.length>1){
 		return this.each(function(){
 			$(this).requiredId();
 		});
 	}
+	var id = this[0].id;
 	if(!id){
 		id = jstack.uniqid('uid-');
-		this.attr('id', id);
+		this[0].setAttribute('id', id);
 	}
 	return id;
 };

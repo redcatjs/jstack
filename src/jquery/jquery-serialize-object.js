@@ -123,7 +123,8 @@ jQuery.fn.serializeArrayWithEmpty = function() {
     }
 
     function encode(pair) {
-      switch ($('[name="' + pair.name + '"]', $form).attr("type")) {
+      //switch ($('[name="' + pair.name + '"]', $form).attr("type")) { //surikat
+      switch ($('[name="' + pair.name + '"]', $form)[0].type) {
         case "checkbox":
           return pair.value === "on" ? true : pair.value;
         default:

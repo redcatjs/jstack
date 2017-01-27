@@ -47,7 +47,7 @@ var populateSelect = function( input, value, config ) {
 	var optFirstTagName = 'option';
 	input.children().each(function(i){
 		var opt = $(this);
-		if(opt.is('option')){
+		if(this.tagName.toLowerCase()=='option'){
 			if (opt.val() == value){
 				opt.prop('selected', true);
 				found = true;
@@ -62,13 +62,13 @@ var populateSelect = function( input, value, config ) {
 			if(i==0){
 				optFirstTagName = opt[0].tagName.toLowerCase();
 			}
-			if(opt.attr('value') == value) {
-				opt.attr('selected', 'selected');
+			if(opt[0].getAttribute('value') == value) {
+				opt[0].setAttribute('selected', 'selected');
 				found = true;
 			}
 			else{
 				if(!config.push){
-					opt.removeAttr('selected');
+					opt[0].removeAttribute('selected');
 				}
 			}
 		}
@@ -101,7 +101,7 @@ var populateSelect = function( input, value, config ) {
 
 $.fn.populateInput = function( value, config ) {
 	config = $.extend({
-		addMissing: this.hasAttr('j-add-missing'),
+		addMissing: this[0].hasAttribute('j-add-missing'),
 		preventValEvent: false,
 		push: false,
 	},config);
@@ -119,9 +119,9 @@ $.fn.populateInput = function( value, config ) {
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		if ( input.is( 'select, [j-select]' ) ) {
+		if ( this.tagName.toLowerCase()=='select' || this.hasAttribute('j-select') ) {
 			if ( value instanceof Array ) {
-				if(input.attr('name').substr(-2)=='[]'||input.hasAttr('multiple')){
+				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );
 				}
 				else{
@@ -134,11 +134,11 @@ $.fn.populateInput = function( value, config ) {
 				populateSelect( input, value, config );
 			}
 		}
-		else if ( input.is( "textarea" ) ) {
+		else if ( input[0].tagName.toLowerCase()=="textarea" ) {
 			setValue(input, value);
 		}
 		else {
-			switch ( input.attr( "type" ) ){
+			switch ( input[0].getAttribute( "type" ) ){
 				case "file":
 				
 				return;
@@ -154,14 +154,14 @@ $.fn.populateInput = function( value, config ) {
 				case "radio":
 					if ( input.length >= 1 ) {
 						$.each( input, function( index ) {
-							var elemValue = $( this ).attr( "value" );
+							var elemValue = this.value;
 							var elemValueInData = singleVal = value;
 							if ( elemValue === value ) {
-								$( this ).prop( "checked", true );
+								$(this).prop( "checked", true );
 							}
 							else {
 								if(!config.push){
-									$( this ).prop( "checked", false );
+									$(this).prop( "checked", false );
 								}
 							}
 						} );
@@ -170,7 +170,7 @@ $.fn.populateInput = function( value, config ) {
 				case "checkbox":
 					if ( input.length > 1 ) {
 						$.each( input, function( index ) {
-							var elemValue = $( this ).attr( "value" );
+							var elemValue = this.value;
 							var elemValueInData = undefined;
 							var singleVal;
 							for ( var i = 0; i < value.length; i++ ) {
@@ -191,12 +191,11 @@ $.fn.populateInput = function( value, config ) {
 						} );
 					}
 					else if ( input.length == 1 ) {
-						$ctrl = input;
 						if ( value ) {
-							$ctrl.prop( "checked", true );
+							input.prop( "checked", true );
 						}
 						else {
-							$ctrl.prop( "checked", false );
+							input.prop( "checked", false );
 						}
 
 					}
@@ -263,22 +262,21 @@ $.fn.populateForm = function( data, config ) {
 };
 $.fn.populate = function( value, config ){
 	return this.each(function(){
-		var el = $(this);
-		if(el.is('form')){
-			el.populateForm(value, config);
+		if(this.tagName.toLowerCase()=='form'){
+			$(this).populateForm(value, config);
 		}
 		else{
-			el.populateInput(value, config);
+			$(this).populateInput(value, config);
 		}
 	});
 };
 $.fn.populateReset = function(){
 	return this.each(function(){
-		var el = $(this);
-		if(el.is('form')){
-			el.find(':input[name]').populateReset();
+		if(this.tagName.toLowerCase()=='form'){
+			$(this).find(':input[name]').populateReset();
 		}
 		else{
+			var el = $(this);
 			var type = el.prop('type');
 			if(type=="checkbox"||type=="radio"){
 				el.prop('checked',this.defaultChecked);

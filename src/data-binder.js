@@ -98,7 +98,7 @@ jstack.dataBinder = (function(){
 			var forArgs = [];
 			
 			var forCollection = [];
-			if($(el).is('[j-for-id]')){
+			if(el.hasAttribute && el.hasAttribute('j-for-id')){
 				forCollection.push( el );
 			}
 			$(el).parents('[j-for-id]').each(function(){
@@ -128,7 +128,7 @@ jstack.dataBinder = (function(){
 					addToScope(index,parentFor.index()+1);
 				}
 				if(key){
-					var id = parentFor.attr('j-for-id');
+					var id = this.getAttribute('j-for-id');
 					addToScope(key,id);
 				}
 			});
@@ -162,12 +162,14 @@ jstack.dataBinder = (function(){
 		},
 		getAttrValueEval: function(el,attr,defaultValue){
 			var self = this;
-			var attrKey = $(el).attr(attr);
+			if(el instanceof jQuery) el = el[0];
+			var attrKey = el.getAttribute(attr);
 			return self.getValueEval(el,attrKey,defaultValue);
 		},
 		getAttrValue: function(el,attr,defaultValue){
 			var self = this;
-			var attrKey = $(el).attr(attr);
+			if(el instanceof jQuery) el = el[0];
+			var attrKey = el.getAttribute(attr);
 			return self.getValue(el,attrKey,defaultValue);
 		},
 		getScopeValue: function(el){
@@ -181,7 +183,7 @@ jstack.dataBinder = (function(){
 		getScope: function(input){
 			return $(input).parents('[j-scope]')
 				.map(function() {
-					return $(this).attr('j-scope');
+					return this.getAttribute('j-scope');
 				})
 				.get()
 				.reverse()
@@ -191,7 +193,7 @@ jstack.dataBinder = (function(){
 		getScopedInput: function(input){
 			var self = this;
 			var $input = $(input);
-			var name = $input.attr('name');
+			var name = input.getAttribute('name');
 			var key = self.getKey(name);
 			if(key.substr(-1)=='.'&&$input.is(':checkbox')){
 				var index;
@@ -241,15 +243,15 @@ jstack.dataBinder = (function(){
 			},
 			jselect: function(el){
 				el = $(el);
-				var multiple = el.hasAttr('multiple');
+				var multiple = el[0].hasAttribute('multiple');
 				var data = el.data('preselect');
 				if(!data){
 					if(multiple){
 						data = [];
 					}
 					el.children().each(function(){
-						if($(this).hasAttr('selected')){
-							var val = $(this).attr('value');
+						if(this.hasAttribute('selected')){
+							var val = this.value;
 							if(multiple){
 								data.push(val);
 							}
@@ -268,7 +270,7 @@ jstack.dataBinder = (function(){
 		},
 		getInputVal: function(element){
 			var elementType = element.tagName.toLowerCase();
-			if(elementType!='select'&&$(element).hasAttr('j-select')){
+			if(elementType!='select'&&element.hasAttribute('j-select')){
 				elementType = 'jselect';
 			}
 			var getter = this.getters[elementType] || this.defaultGetter;
@@ -280,7 +282,7 @@ jstack.dataBinder = (function(){
 			var self = this;
 			
 			var data = self.getControllerData(el);
-			var name = input.attr('name');
+			var name = el.getAttribute('name');
 
 			var performInputToModel = function(){
 				var key = self.getScopedInput(el);
@@ -513,13 +515,13 @@ jstack.dataBinder = (function(){
 		},
 		getFilter:function(el){
 			var self = this;
-			el = $(el);
-			var filter = el.data('j-filter');
+			$el = $(el);
+			var filter = $el.data('j-filter');
 			if(!filter){
-				var attrFilter = el.attr('j-filter');
+				var attrFilter = el.getAttribute('j-filter');
 				if(attrFilter){
 					var method = self.getValue(el,attrFilter);
-					el.data('j-filter',method);
+					$el.data('j-filter',method);
 				}
 			}
 			return filter;
@@ -571,8 +573,8 @@ jstack.dataBinder = (function(){
 					$this.replaceWith(jfor);
 					jforClose.insertAfter(jfor);
 					
-					var attrFor = $this.attr('j-for');
-					$this.removeAttr('j-for');
+					var attrFor = el.getAttribute('j-for');
+					el.removeAttribute('j-for');
 					attrFor = attrFor.trim();
 					var index, key, value, myvar;
 					
@@ -607,7 +609,7 @@ jstack.dataBinder = (function(){
 					
 					var currentData;
 					var getData = function(){
-						return jstack.dataBinder.getValueEval(jfor,myvar);
+						return jstack.dataBinder.getValueEval(jfor[0],myvar);
 					};
 					
 					//parentForList
@@ -633,7 +635,7 @@ jstack.dataBinder = (function(){
 							var create = !row.length;
 							if(create){
 								row = $this.clone();
-								row.attr('j-for-id',k);
+								row[0].setAttribute('j-for-id',k);
 							}
 							row.data('j:for:data',v);
 							if(create){
@@ -644,7 +646,7 @@ jstack.dataBinder = (function(){
 						
 						//remove
 						collection.each(function(){
-							var forId = $(this).attr('j-for-id');
+							var forId = this.getAttribute('j-for-id');
 							if(forIdList.indexOf(forId)===-1){
 								$(this).remove();
 							}
@@ -680,11 +682,11 @@ jstack.dataBinder = (function(){
 					}
 					$('<!--/j:if-->').insertAfter(lastBlock);
 					
-					var myvar = $this.attr('j-if');
-					this.removeAttribute('j-if');
+					var myvar = el.getAttribute('j-if');
+					el.removeAttribute('j-if');
 					var currentData;
 					var getData = function(){
-						return Boolean(jstack.dataBinder.getValueEval(jif,myvar));
+						return Boolean(jstack.dataBinder.getValueEval(jif[0],myvar));
 					};
 					
 					var getData2;
@@ -692,14 +694,13 @@ jstack.dataBinder = (function(){
 					if(jelseifEl.length){
 						var myvar2 = [];
 						jelseifEl.each(function(){
-							var jel = $(this);
-							myvar2.push( jel.attr('j-else-if') );
-							jel.removeAttr('j-else-if');
+							myvar2.push( this.getAttribute('j-else-if') );
+							this.removeAttribute('j-else-if');
 						});
 						getData2 = function(){
 							var data = false;
 							for(var i=0, l=myvar2.length;i<l;i++){
-								if( Boolean(jstack.dataBinder.getValueEval(jif,myvar2[i])) ){
+								if( Boolean(jstack.dataBinder.getValueEval(jif[0],myvar2[i])) ){
 									data = i;
 									break;
 								}
@@ -709,7 +710,9 @@ jstack.dataBinder = (function(){
 					}
 					
 					if(jelseEl.length){
-						jelseEl.removeAttr('j-else');
+						jelseEl.each(function(){
+							this.removeAttribute('j-else');
+						});
 					}
 					
 					var render = function(){
@@ -772,7 +775,7 @@ jstack.dataBinder = (function(){
 				callback:function(){
 					var el = this;
 					var $this = $(this);
-					var myvar = $this.attr('j-switch');
+					var myvar = this.getAttribute('j-switch');
 					this.removeAttribute('j-switch');
 					
 					var cases = $this.find('[j-case],[j-case-default]');
@@ -791,7 +794,7 @@ jstack.dataBinder = (function(){
 						var found = false;
 						cases.filter('[j-case]').each(function(){
 							var jcase = $(this);
-							var caseVal = jcase.attr('j-case');
+							var caseVal = this.getAttribute('j-case');
 							if(caseVal==data){
 								jcase.appendTo($this);
 								found = true;
@@ -821,7 +824,7 @@ jstack.dataBinder = (function(){
 					var el = this;
 					var $this = $(this);
 					
-					var myvar = $this.attr('j-show');
+					var myvar = this.getAttribute('j-show');
 					this.removeAttribute('j-show');
 					var currentData;
 					var getData = function(){
@@ -853,13 +856,13 @@ jstack.dataBinder = (function(){
 					var el = this;
 					var $this = $(this);
 					
-					var original = $this.attr('j-href');
+					var original = this.getAttribute('j-href');
 					this.removeAttribute('j-href');
 					
 					var parsed = jstack.dataBinder.textParser(original);
 					
 					if(typeof(parsed)!='string'){
-						$this.attr('href',jstack.route.baseLocation + "#" + original);
+						el.setAttribute('href',jstack.route.baseLocation + "#" + original);
 						return;
 					}
 					
@@ -873,7 +876,7 @@ jstack.dataBinder = (function(){
 						var data = getData();
 						if(currentData===data) return;
 						currentData = data;
-						$this.attr('href',jstack.route.baseLocation + "#" + data);
+						el.setAttribute('href',jstack.route.baseLocation + "#" + data);
 					};
 					
 					return render;
@@ -894,9 +897,9 @@ jstack.dataBinder = (function(){
 							attrsVars[k] = parsed;
 						}
 						else{
-							$this.attr(key,v);
+							el.setAttribute(key,v);
 						}
-						$this.removeAttr(k);
+						el.removeAttribute(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return el;
@@ -905,7 +908,7 @@ jstack.dataBinder = (function(){
 							var value =  jstack.dataBinder.getValueEval(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
-							$this.attr(k,value);
+							el.setAttribute(k,value);
 						});
 					};
 					return render;
@@ -923,7 +926,7 @@ jstack.dataBinder = (function(){
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
 						attrsVars[k.substr(17)] = v;
-						$this.removeAttr(k);
+						el.removeAttribute(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)) return el;
@@ -939,10 +942,10 @@ jstack.dataBinder = (function(){
 							}
 							else{						
 								if(value){
-									$this.attr(k,k);
+									el.setAttribute(k,k);
 								}
 								else{
-									$this.removeAttr(k);
+									el.removeAttribute(k);
 								}
 							}
 						});
@@ -955,12 +958,12 @@ jstack.dataBinder = (function(){
 				callback:function(){
 					var el = this;
 					var $el = $(this);
-					if($el.attr('type')=='file') return;
+					if(this.type=='file') return;
 					
 					var currentData;
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
-						var key = jstack.dataBinder.getKey( $el.attr('name') );
+						var key = jstack.dataBinder.getKey( el.getAttribute('name') );
 						return jstack.dataBinder.getValue(el,key,defaultValue);
 					};
 					
@@ -997,7 +1000,7 @@ jstack.dataBinder = (function(){
 			
 			var currentData;
 			var getData = function(){
-				return jstack.dataBinder.getValueEval(text,parsed);
+				return jstack.dataBinder.getValueEval(text[0],parsed);
 			};
 			var render = function(){
 				if(!document.body.contains(text[0])) return text[0];

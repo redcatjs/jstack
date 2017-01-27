@@ -2,7 +2,7 @@
 
 	jstack.app = function(el,app){
 		if(!app){
-			app = el.attr('j-app');
+			app = el[0].getAttribute('j-app');
 		}
 		jstack.config.templatesPath += app+'/';
 		jstack.config.controllersPath += app+'/';

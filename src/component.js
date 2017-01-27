@@ -21,7 +21,7 @@ jstack.loader(':attrStartsWith("j-on-")',function(){
 	var attrs = $this.attrStartsWith('j-on-');
 	$.each(attrs,function(k,v){
 		var event = k.substr(5);
-		$this.removeAttr(k);
+		$this[0].removeAttribute(k);
 		$this.on(event,function(e){
 			var controller = jstack.dataBinder.getControllerObject(this);
 			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
@@ -43,16 +43,16 @@ jstack.loader(':attrStartsWith("j-on-")',function(){
 jstack.loader('[j-component]',function(){
 	var el = this;
 	var $el = $(el);
-	var component = $el.attr('j-component');
+	var component = el.getAttribute('j-component');
 	if(!component){
 		return;
 	}
-	if($el.attr('j-component-handled')){
+	if(el.getAttribute('j-component-handled')){
 		return;
 	}
-	$el.attr('j-component-handled','true');
+	el.setAttribute('j-component-handled','true');
 	var config = $el.jData();
-	var paramsData = $el.attr('j-params-data');
+	var paramsData = el.getAttribute('j-params-data');
 	var load = function(){
 		var o;
 		var c = jstack.component[component];

@@ -67,14 +67,13 @@ jstack.viewReady = function(el){
 };
 $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	
-	var el = $(this);
-	el.attr('j-view-loaded',true);
+	this.setAttribute('j-view-loaded','true');
 	
-	var view = el.attr('j-view');
+	var view = this.getAttribute('j-view');
 	
 	var controller;
-	if(el[0].hasAttribute('j-controller')){
-		controller = el.attr('j-controller');
+	if(this.hasAttribute('j-controller')){
+		controller = this.getAttribute('j-controller');
 	}
 	else{
 		controller = view;
