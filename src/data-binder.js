@@ -481,7 +481,7 @@ jstack.dataBinder = (function(){
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
-			if(n.hasAttribute('j-escape')) return;
+			if(n.hasAttribute('j-escape')) return false;
 			var nodeName = n.tagName.toLowerCase();
 			var observations = {
 				subtree: false,
