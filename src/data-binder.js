@@ -385,8 +385,9 @@ jstack.dataBinder = (function(){
 		},
 		
 		loadMutations: function(mutations){
-			var self = this;
-			//console.log(mutations);
+			//console.log('mutations',mutations);
+			
+			var self = jstack.dataBinder;
 			
 			var compilerTexts = [];
 			var compilerJloads = [];
@@ -398,7 +399,8 @@ jstack.dataBinder = (function(){
 						
 						var $n = $(n);
 						
-						//if($n.closest('[j-escape]').length) return;
+						//if(n.hasAttribute&&n.hasAttribute('j-escape')) return false;
+						//if($n.closest('[j-escape]').length) return false;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
@@ -473,14 +475,12 @@ jstack.dataBinder = (function(){
 				compilerJloads[i]();
 			}
 		},
+		mutationObserver: null,
 		eventListener: function(){
 			var self = this;
 			
-			var observer = new MutationObserver(function(mutations){
-				//console.log('mutations',mutations);
-				self.loadMutations(mutations);
-			});
-			observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
+			this.mutationObserver = new MutationObserver(self.loadMutations);
+			this.mutationObserver.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
