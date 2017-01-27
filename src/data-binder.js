@@ -401,9 +401,6 @@ jstack.dataBinder = (function(){
 						
 						var $n = $(n);
 						
-						//if(n.hasAttribute&&n.hasAttribute('j-escape')) return false;
-						//if($n.closest('[j-escape]').length) return false;
-						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
