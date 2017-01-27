@@ -391,6 +391,7 @@ jstack.dataBinder = (function(){
 			
 			var compilerTexts = [];
 			var compilerJloads = [];
+			var unobserveStack = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
@@ -415,6 +416,21 @@ jstack.dataBinder = (function(){
 						}
 						
 						if(n.nodeType!=Node.ELEMENT_NODE) return;
+						
+						//j-once
+						if(n.hasAttribute('j-once')){
+							unobserveStack.push(function(){
+								jstack.walkTheDOM(n,function(el){
+									if(el.nodeType==Node.ELEMENT_NODE){
+										var observer = $(el).data('j:observer');
+										if(observer){
+											observer.disconnect();
+										}
+									}
+								});
+								n.removeAttribute('j-once');
+							});
+						}
 						
 						$.each(self.compilers,function(iii,compiler){
 							if($n.is(compiler.selector)){								
@@ -472,11 +488,14 @@ jstack.dataBinder = (function(){
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
 				compilerTexts[i]();
 			}
+			for(var i = 0, l=unobserveStack.length;i<l;i++){
+				unobserveStack[i]();
+			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
 			}
 		},
-		mutationObserver: null,
+		//mutationObserver: null, //j-once
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
 		observe: function(n){
@@ -504,14 +523,23 @@ jstack.dataBinder = (function(){
 			else{
 				observations.attributes = false;
 			}
-			this.mutationObserver.observe(n, observations);
+			
+			//this.mutationObserver.observe(n, observations);
+			//j-once
+			var self = this;
+			var mutationObserver = new MutationObserver(function(m){
+				self.loadMutations(m);
+			});
+			mutationObserver.observe(n, observations);
+			$(n).data('j:observer',mutationObserver);
 		},
 		eventListener: function(){
 			var self = this;
 			
-			this.mutationObserver = new MutationObserver(function(m){
-				self.loadMutations(m);
-			});
+			//this.mutationObserver = new MutationObserver(function(m){
+				//self.loadMutations(m);
+			//});
+			//j-once
 			jstack.walkTheDOM(document.body,function(el){
 				return self.observe(el);
 			});
