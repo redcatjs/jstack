@@ -387,7 +387,7 @@ jstack.dataBinder = (function(){
 		loadMutations: function(mutations){
 			//console.log('mutations',mutations);
 			
-			var self = jstack.dataBinder;
+			var self = this;
 			
 			var compilerTexts = [];
 			var compilerJloads = [];
@@ -396,6 +396,8 @@ jstack.dataBinder = (function(){
 					jstack.walkTheDOM(node,function(n){
 						
 						if(!document.body.contains(n)) return false;
+						
+						self.observe(n);
 						
 						var $n = $(n);
 						
@@ -476,11 +478,43 @@ jstack.dataBinder = (function(){
 			}
 		},
 		mutationObserver: null,
+		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
+		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
+		observe: function(n){
+			if(n.nodeType!=Node.ELEMENT_NODE) return;
+			var nodeName = n.tagName.toLowerCase();
+			var observations = {
+				subtree: false,
+				attributeOldValue: false,
+				characterDataOldValue: false,
+			};
+			if(this.noChildListNodeNames[nodeName]){
+				if(!this.inputPseudoNodeNames[nodeName]) return;
+				observations.childList = false;
+				observations.characterData = false;
+			}
+			else{
+				observations.childList = true;
+				observations.characterData = true;
+			}
+			if(this.inputPseudoNodeNames[nodeName]){
+				observations.attributes = true;
+				observations.attributeFilter = ['name','value'];
+			}
+			else{
+				observations.attributes = false;
+			}
+			this.mutationObserver.observe(n, observations);
+		},
 		eventListener: function(){
 			var self = this;
 			
-			this.mutationObserver = new MutationObserver(self.loadMutations);
-			this.mutationObserver.observe(document, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['name','value'], });
+			this.mutationObserver = new MutationObserver(function(m){
+				self.loadMutations(m);
+			});
+			$(document.body).find('*').add(document.body).each(function(){
+				self.observe(this);
+			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
 				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
