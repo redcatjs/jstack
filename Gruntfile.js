@@ -29,6 +29,9 @@ grunt.initConfig({
 				"src/reflection/arguments.js",
 				"src/reflection/is-cyclic.js",
 				
+				"src/dom/traverseDom.js",
+				"src/dom/walkTheDom.js",
+				
 				"src/jquery/arrayCompare.js",
 				"src/jquery/attrStartsWith.js",
 				"src/jquery/attrsToObject.js",
@@ -51,7 +54,6 @@ grunt.initConfig({
 				"src/jquery/jComponentReady.js",
 				"src/jquery/jquery-serialize-object.js",
 				"src/jquery/prettifyHTML.js",
-				"src/jquery/walkTheDom.js",
 				"src/jquery/replaceTagName.js",
 				"src/jquery/jModel.js",
 				"src/jquery/comment.js",
