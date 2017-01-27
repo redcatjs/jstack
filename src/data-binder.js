@@ -276,7 +276,6 @@ jstack.dataBinder = (function(){
 		},
 		inputToModel: function(el,eventType){
 			var input = $(el);
-			if(input.closest('[j-unscope]').length) return;
 
 			var self = this;
 			
@@ -336,6 +335,9 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
+		handleNode: function(node, render,level){
+			
+		},
 		addWatcher: function(node, render,level){
 			if($(node).closest('[j-once]').length) return;
 			if(!level) level = 0;
@@ -954,7 +956,6 @@ jstack.dataBinder = (function(){
 				callback:function(){
 					var el = this;
 					var $el = $(this);
-					if($el.closest('[j-unscope]').length) return;
 					if($el.attr('type')=='file') return;
 					
 					var currentData;
