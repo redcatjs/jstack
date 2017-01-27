@@ -1467,6 +1467,46 @@ jstack.reflection.isCyclic = function(obj){
   detect(obj, 'obj');
   return detected;
 };
+jstack.traverseDomBreak = {
+	DESC:2,
+	ASC:4,
+	ADJ:8,
+	BOTH:6,
+	ALL:14,
+};
+jstack.traverseDom = function(node, func, asc){
+	var result;
+	if(!asc){
+		result = func(node);
+	}
+	if(asc || ! (result&jstack.traverseDomBreak.DESC) ){
+		var children = node.childNodes;
+		for(var i = 0; i < children.length; i++){
+			if(!children[i]) continue;
+			var adjResult = this.traverseDom(children[i], func);
+			if(adjResult&jstack.traverseDomBreak.ASC){
+				result = result|adjResult;
+			}
+			if(adjResult&jstack.traverseDomBreak.ADJ){
+				break;
+			}
+		}
+	}
+	if(asc && !(result&jstack.traverseDomBreak.ASC) ){
+		result = func(node);
+	}
+	return result;
+};
+jstack.walkTheDOM = function(node, func){
+	if(func(node)===false){
+		return;
+	}
+	var children = node.childNodes;
+	for(var i = 0; i < children.length; i++){
+		if(!children[i]) continue;
+		this.walkTheDOM(children[i], func);
+	}
+};
 $.arrayCompare = function (a, b) {
 	return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
 };
@@ -2233,33 +2273,6 @@ $.prettifyHTML = function(el){
 		el.prepend('\n'+tbc);
 	}
 	return el.outerHTML();
-};
-$.walkTheDOM = function(node, func, reverse){
-	if(!reverse&&func(node)===false){
-		return false;
-	}
-	var children = node.childNodes;
-	for(var i = 0; i < children.length; i++){
-		if(!children[i]) continue;
-		if(this.walkTheDOM(children[i], func)===false){
-			return false;
-		}
-	}
-	if(reverse&&func(node)===false){
-		return false;
-	}
-};
-$.fn.walkTheDOM = function(func){
-	var r = $();
-	this.each(function(){
-		$.walkTheDOM(this,function(node){
-			r.add(node);
-			if(func){
-				return func.call(node);
-			}
-		});
-	});
-	return r;
 };
 $.fn.replaceTagName = function(replaceWith) {
 	var tags = [],
@@ -3271,8 +3284,7 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(node, render, level, $node){
-			if($node.closest('[j-once]').length) return;
+		addWatcher: function(node, render, level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
@@ -3339,7 +3351,7 @@ jstack.dataBinder = (function(){
 			var compilerJloads = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
+					jstack.walkTheDOM(node,function(n){
 						
 						if(!document.body.contains(n)) return;
 						
@@ -3351,7 +3363,7 @@ jstack.dataBinder = (function(){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
 								compilerTexts.push(function(){
-									self.addWatcher(n, render, 99, $n);
+									self.addWatcher(n, render, 99);
 									render();
 								});
 							}
@@ -3366,7 +3378,7 @@ jstack.dataBinder = (function(){
 								var render = compiler.callback.call(n);
 								
 								if(render){
-									self.addWatcher(n, render, iii, $n);
+									self.addWatcher(n, render, iii);
 									render();
 								}
 							}
@@ -3391,7 +3403,7 @@ jstack.dataBinder = (function(){
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
+					jstack.walkTheDOM(node,function(n){
 						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
 							$(n).removeDataComment();
 						}
