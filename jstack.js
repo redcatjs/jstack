@@ -3212,7 +3212,6 @@ jstack.dataBinder = (function(){
 		},
 		inputToModel: function(el,eventType){
 			var input = $(el);
-			if(input.closest('[j-unscope]').length) return;
 
 			var self = this;
 			
@@ -3272,8 +3271,8 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(node, render,level){
-			if($(node).closest('[j-once]').length) return;
+		addWatcher: function(node, render, level, $node){
+			if($node.closest('[j-once]').length) return;
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
@@ -3346,11 +3345,13 @@ jstack.dataBinder = (function(){
 						
 						var $n = $(n);
 						
+						if($n.closest('[j-escape]').length) return;
+						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
 							if(render){
 								compilerTexts.push(function(){
-									self.addWatcher(n, render, 99);
+									self.addWatcher(n, render, 99, $n);
 									render();
 								});
 							}
@@ -3365,7 +3366,7 @@ jstack.dataBinder = (function(){
 								var render = compiler.callback.call(n);
 								
 								if(render){
-									self.addWatcher(n, render, iii);
+									self.addWatcher(n, render, iii, $n);
 									render();
 								}
 							}
@@ -3890,7 +3891,6 @@ jstack.dataBinder = (function(){
 				callback:function(){
 					var el = this;
 					var $el = $(this);
-					if($el.closest('[j-unscope]').length) return;
 					if($el.attr('type')=='file') return;
 					
 					var currentData;
