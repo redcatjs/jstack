@@ -397,7 +397,9 @@ jstack.dataBinder = (function(){
 						
 						if(!document.body.contains(n)) return false;
 						
-						self.observe(n);
+						if(self.observe(n)===false){
+							return false;
+						}
 						
 						var $n = $(n);
 						
@@ -478,7 +480,8 @@ jstack.dataBinder = (function(){
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
 		observe: function(n){
-			if(n.nodeType!=Node.ELEMENT_NODE||n.hasAttribute('j-escape')) return;
+			if(n.nodeType!=Node.ELEMENT_NODE) return;
+			if(n.hasAttribute('j-escape')) return;
 			var nodeName = n.tagName.toLowerCase();
 			var observations = {
 				subtree: false,
@@ -510,7 +513,7 @@ jstack.dataBinder = (function(){
 				self.loadMutations(m);
 			});
 			jstack.walkTheDOM(document.body,function(el){
-				self.observe(el);
+				return self.observe(el);
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
