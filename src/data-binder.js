@@ -335,9 +335,6 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		handleNode: function(node, render,level){
-			
-		},
 		addWatcher: function(node, render,level){
 			if($(node).closest('[j-once]').length) return;
 			if(!level) level = 0;
@@ -411,6 +408,8 @@ jstack.dataBinder = (function(){
 						if(!document.body.contains(n)) return;
 						
 						var $n = $(n);
+						
+						if($n.closest('[j-escape]').length) return;
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 							var render = jstack.dataBinder.compilerText.call(n);
