@@ -337,6 +337,7 @@ jstack.dataBinder = (function(){
 		watchersPrimary: 0,
 		watchers: {},
 		addWatcher: function(node, render,level){
+			if($(node).closest('[j-once]').length) return;
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
@@ -428,9 +429,7 @@ jstack.dataBinder = (function(){
 								var render = compiler.callback.call(n);
 								
 								if(render){
-									if(!n.hasAttribute('j-static')){
-										self.addWatcher(n, render, iii);
-									}
+									self.addWatcher(n, render, iii);
 									render();
 								}
 							}
