@@ -323,18 +323,6 @@ jstack.dataBinder = (function(){
 			}
 			
 		},
-		validNodeEvent: function(n,excludeRepeat){
-			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-				return false;
-			}
-			if(excludeRepeat){
-				var jn = $(n);
-				if(jn.closest('[j-for]').length){
-					return false;
-				}
-			}
-			return true;
-		},
 		watchersPrimary: 0,
 		watchers: {},
 		addWatcher: function(node, render, level){
@@ -437,6 +425,7 @@ jstack.dataBinder = (function(){
 							}
 						});
 						
+						if(!document.body.contains(n)) return;
 						if($n.data('j:load:state')){
 							return;
 						}
@@ -461,7 +450,15 @@ jstack.dataBinder = (function(){
 							$(n).removeDataComment();
 							return;
 						}
-						if(!self.validNodeEvent(n,true)) return;
+						
+						if(n.nodeType==Node.TEXT_NODE){
+							return;
+						}
+						
+						if(!$(n).data('j:load:state')){
+							return;
+						}
+						
 						setTimeout(function(){
 							$(n).trigger('j:unload');
 						},0);
