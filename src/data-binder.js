@@ -404,7 +404,7 @@ jstack.dataBinder = (function(){
 			var compilerJloads = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
+					jstack.walkTheDOM(node,function(n){
 						
 						if(!document.body.contains(n)) return;
 						
@@ -456,7 +456,7 @@ jstack.dataBinder = (function(){
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
-					$.walkTheDOM(node,function(n){
+					jstack.walkTheDOM(node,function(n){
 						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
 							$(n).removeDataComment();
 						}
