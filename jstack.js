@@ -3380,10 +3380,9 @@ jstack.dataBinder = (function(){
 						}
 						
 						$.each(self.compilers,function(iii,compiler){
-							if($n.is(compiler.selector)){								
-								
-								var render = compiler.callback.call(n);
-								
+							var matchResult = compiler.match.call(n);
+							if(matchResult){
+								var render = compiler.callback.call(n,matchResult);
 								if(render){
 									self.addWatcher(n, render, iii);
 									render();
@@ -3567,9 +3566,12 @@ jstack.dataBinder = (function(){
 			return this.getController(input).data('jController');
 		},
 		
+		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
 		compilers:[
 			{
-				selector:'[j-for]',
+				match:function(){
+					return this.hasAttribute('j-for');
+				},
 				callback:function(){
 					
 					var el = this;
@@ -3666,7 +3668,9 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:'[j-if]',
+				match:function(){
+					return this.hasAttribute('j-if');
+				},
 				callback:function(){
 					var el = this;
 					var $this = $(this);
@@ -3777,7 +3781,9 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:'[j-switch]',
+				match:function(){
+					return this.hasAttribute('j-switch');
+				},
 				callback:function(){
 					var el = this;
 					var $this = $(this);
@@ -3825,7 +3831,9 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:'[j-show]',
+				match:function(){
+					return this.hasAttribute('j-show');
+				},
 				callback:function(){
 					var el = this;
 					var $this = $(this);
@@ -3856,7 +3864,9 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:'[j-href]',
+				match:function(){
+					return this.hasAttribute('j-href');
+				},
 				callback:function(){
 					
 					var el = this;
@@ -3889,11 +3899,22 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:':attrStartsWith("j-model-")',
-				callback:function(){
+				match:function(){
+					var r;
+					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
+						var att = atts[i];
+						if(att.name.substr(0,8) === 'j-model-') {
+							if(!r){
+								r = {};
+							}
+							r[att.name] = att.value;
+						}
+					}
+					return r;
+				},
+				callback:function(attrs){
 					var el = this;
 					var $this = $(this);
-					var attrs = $this.attrStartsWith('j-model-');
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
@@ -3921,13 +3942,24 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:':attrStartsWith("j-shortcut-model-")',
-				callback:function(){
+				match:function(){
+					var r;
+					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
+						var att = atts[i];
+						if(att.name.substr(0,17) === 'j-shortcut-model-') {
+							if(!r){
+								r = {};
+							}
+							r[att.name] = att.value;
+						}
+					}
+					return r;
+				},
+				callback:function(attrs){
 					var propAttrs = ['selected','checked'];
 					
 					var el = this;
 					var $this = $(this);
-					var attrs = $this.attrStartsWith('j-shortcut-model-');
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
@@ -3960,7 +3992,9 @@ jstack.dataBinder = (function(){
 				},
 			},
 			{
-				selector:':input[name],[j-input],[j-select]',
+				match: function(){
+					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()];
+				},
 				callback:function(){
 					var el = this;
 					var $el = $(this);
