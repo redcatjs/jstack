@@ -459,6 +459,7 @@ jstack.dataBinder = (function(){
 					jstack.walkTheDOM(node,function(n){
 						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
 							$(n).removeDataComment();
+							return;
 						}
 						if(!self.validNodeEvent(n,true)) return;
 						setTimeout(function(){
