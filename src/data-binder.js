@@ -509,8 +509,8 @@ jstack.dataBinder = (function(){
 			this.mutationObserver = new MutationObserver(function(m){
 				self.loadMutations(m);
 			});
-			$(document.body).find('*').add(document.body).each(function(){
-				self.observe(this);
+			jstack.walkTheDOM(document.body,function(el){
+				self.observe(el);
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
