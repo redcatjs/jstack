@@ -432,12 +432,12 @@ jstack.dataBinder = (function(){
 							});
 						}
 						
-						$.each(self.compilers,function(iii,compiler){
+						$.each(self.compilers,function(k,compiler){
 							var matchResult = compiler.match.call(n);
 							if(matchResult){
 								var render = compiler.callback.call(n,matchResult);
 								if(render){
-									self.addWatcher(n, render, iii);
+									self.addWatcher(n, render, compiler.level);
 									render();
 								}
 							}
@@ -620,8 +620,9 @@ jstack.dataBinder = (function(){
 		},
 		
 		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
-		compilers:[
-			{
+		compilers:{
+			jFor:{
+				level: 1,
 				match:function(){
 					return this.hasAttribute('j-for');
 				},
@@ -720,7 +721,8 @@ jstack.dataBinder = (function(){
 					
 				},
 			},
-			{
+			jIf:{
+				level: 2,
 				match:function(){
 					return this.hasAttribute('j-if');
 				},
@@ -833,7 +835,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jSwitch:{
+				level: 3,
 				match:function(){
 					return this.hasAttribute('j-switch');
 				},
@@ -883,7 +886,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jShow:{
+				level: 4,
 				match:function(){
 					return this.hasAttribute('j-show');
 				},
@@ -916,7 +920,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jHref:{
+				level: 5,
 				match:function(){
 					return this.hasAttribute('j-href');
 				},
@@ -951,7 +956,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jModel:{
+				level: 6,
 				match:function(){
 					var r;
 					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
@@ -994,7 +1000,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jShotcutModel:{
+				level: 7,
 				match:function(){
 					var r;
 					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
@@ -1044,7 +1051,8 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			{
+			jInput:{
+				level: 8,
 				match: function(){
 					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()];
 				},
@@ -1074,7 +1082,7 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-		],
+		},
 		compilerText:function(){
 			if(!this.textContent) return;
 			var textString = this.textContent.toString();
