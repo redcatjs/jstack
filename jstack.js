@@ -2471,8 +2471,14 @@ $.fn.jData = function(key){
 		var a = {};
 		var el = this[0];
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
-			var parsed = jstack.dataBinder.textParser(v);
-			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : v;
+			var tokens = jstack.dataBinder.textTokenizer(v);
+			var value;
+			if(tokens===false){
+				value = v;
+			}
+			else{
+				value = jstack.dataBinder.compilerAttrRender(el,tokens);
+			}
 			a[k] = value;
 		});
 		var data = {};
@@ -3089,7 +3095,6 @@ jstack.dataBinder = (function(){
 			
 			
 			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}");
-			
 			var value;
 			try{
 				var func = Function.apply(null,params);
@@ -3881,17 +3886,14 @@ jstack.dataBinder = (function(){
 					var original = this.getAttribute('j-href');
 					this.removeAttribute('j-href');
 					
-					var parsed = jstack.dataBinder.textParser(original);
-					
-					if(typeof(parsed)!='string'){
+					var tokens = jstack.dataBinder.textTokenizer(original);
+					if(tokens===false){
 						el.setAttribute('href',jstack.route.baseLocation + "#" + original);
 						return;
 					}
 					
 					var currentData;
-					var getData = function(){
-						return jstack.dataBinder.getValueEval(el,parsed);
-					};
+					var getData = jstack.dataBinder.createCompilerAttrRender(el,tokens);
 					var render = function(){
 						if(!document.body.contains(el)) return el;
 						
@@ -3925,13 +3927,13 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
-						var parsed = jstack.dataBinder.textParser(v);
+						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(8);
-						if(typeof(parsed)=='string'){
-							attrsVars[k] = parsed;
+						if(tokens===false){
+							el.setAttribute(key,v);
 						}
 						else{
-							el.setAttribute(key,v);
+							attrsVars[k] = tokens;
 						}
 						el.removeAttribute(k);
 					});
@@ -3939,7 +3941,7 @@ jstack.dataBinder = (function(){
 						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
-							var value =  jstack.dataBinder.getValueEval(el,v);
+							var value = jstack.dataBinder.compilerAttrRender(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
 							el.setAttribute(k,value);
@@ -4031,6 +4033,33 @@ jstack.dataBinder = (function(){
 				},
 			},
 		},
+		compilerAttrRender: function(el,tokens){
+			var r = '';
+			for(var i = 0, l = tokens.length; i<l; i++){
+				var token = tokens[i];
+				if(token.substr(0,2)=='{{'){
+					token = jstack.dataBinder.getValueEval(el,token.substr(2,token.length-4));
+				}
+				r += token;
+			}
+			return r;
+		},
+		createCompilerAttrRender: function(el,tokens){
+			return function(){
+				return jstack.dataBinder.compilerAttrRender(el,tokens);
+			};
+		},
+		createCompilerTextRender: function(text,token){
+			var currentData;
+			return function(){
+				var data = jstack.dataBinder.getValueEval(text[0],token);
+				if(!document.body.contains(text[0])) return text[0];
+				if(currentData===data) return;
+				currentData = data;
+				text.commentChildren().remove();
+				text.after(data);
+			};
+		},
 		compilerText:function(){
 			if(!this.textContent) return;
 			var textString = this.textContent.toString();
@@ -4043,17 +4072,6 @@ jstack.dataBinder = (function(){
 			
 			var last = $this;
 			
-			var createRender = function(text,token){
-				var currentData;
-				return function(){
-					var data = jstack.dataBinder.getValueEval(text[0],token);
-					if(!document.body.contains(text[0])) return text[0];
-					if(currentData===data) return;
-					currentData = data;
-					text.commentChildren().remove();
-					text.after(data);
-				};
-			};
 			for(var i = 0, l = tokens.length; i < l; i++){				
 				var token = tokens[i];
 				
@@ -4071,7 +4089,7 @@ jstack.dataBinder = (function(){
 				last = textClose;
 				
 				token = token.substr(2,token.length-4);
-				renders.push(createRender(text,token));
+				renders.push(jstack.dataBinder.createCompilerTextRender(text,token));
 			};
 			$this.remove();
 			
