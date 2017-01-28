@@ -1083,15 +1083,15 @@ jstack.dataBinder = (function(){
 			},
 		},
 		compilerAttrRender: function(el,tokens){
-			var r = [];
+			var r = '';
 			for(var i = 0, l = tokens.length; i<l; i++){
 				var token = tokens[i];
 				if(token.substr(0,2)=='{{'){
 					token = jstack.dataBinder.getValueEval(el,token.substr(2,token.length-4));
 				}
-				r.push(token);
+				r += token;
 			}
-			return r.join('');
+			return r;
 		},
 		createCompilerAttrRender: function(el,tokens){
 			return function(){
