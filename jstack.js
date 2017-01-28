@@ -3935,6 +3935,7 @@ jstack.dataBinder = (function(){
 					var $this = $(this);
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
+					var propAttrs = ['selected','checked'];
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(8);
@@ -3953,57 +3954,20 @@ jstack.dataBinder = (function(){
 							var value = jstack.dataBinder.compilerAttrRender(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
-							el.setAttribute(k,value);
-						});
-					};
-					return render;
-				},
-			},
-			jShotcutModel:{
-				level: 7,
-				match:function(){
-					var r;
-					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
-						var att = atts[i];
-						if(att.name.substr(0,17) === 'j-shortcut-model-') {
-							if(!r){
-								r = {};
-							}
-							r[att.name] = att.value;
-						}
-					}
-					return r;
-				},
-				callback:function(attrs){
-					var propAttrs = ['selected','checked'];
-					
-					var el = this;
-					var $this = $(this);
-					var attrsVars = {};
-					var attrsVarsCurrent = {};
-					$.each(attrs,function(k,v){
-						attrsVars[k.substr(17)] = v;
-						el.removeAttribute(k);
-					});
-					var render = function(){
-						if(!document.body.contains(el)) return el;
-						
-						$.each(attrsVars,function(k,v){
-							var value = Boolean(jstack.dataBinder.getValueEval(el,v));
-							
-							if(attrsVarsCurrent[k]===value) return;
-							attrsVarsCurrent[k] = value;
 							
 							if(propAttrs.indexOf(k)!==-1){
 								$this.prop(k,value);
 							}
-							else{						
+							else if(typeof(value) === "boolean"){
 								if(value){
 									el.setAttribute(k,k);
 								}
 								else{
 									el.removeAttribute(k);
 								}
+							}
+							else{
+								el.setAttribute(k,value);
 							}
 						});
 					};
