@@ -962,13 +962,13 @@ jstack.dataBinder = (function(){
 					return render;
 				},
 			},
-			jModel:{
+			jTwoPoints:{
 				level: 6,
 				match:function(){
 					var r;
 					for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
 						var att = atts[i];
-						if(att.name.substr(0,8) === 'j-model-') {
+						if(att.name.substr(0,1) === ':') {
 							if(!r){
 								r = {};
 							}
@@ -985,7 +985,7 @@ jstack.dataBinder = (function(){
 					var propAttrs = ['selected','checked'];
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
-						var key = k.substr(8);
+						var key = k.substr(1);
 						if(tokens===false){
 							el.setAttribute(key,v);
 						}
