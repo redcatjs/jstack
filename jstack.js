@@ -4065,7 +4065,7 @@ jstack.dataBinder = (function(){
 					continue;
 				}
 				
-				var text = $('<!--j:text '+token+'-->');
+				var text = $('<!--j:text-->');
 				var textClose = $('<!--/j:text-->');
 				text.insertAfter(last);
 				textClose.insertAfter(text);
