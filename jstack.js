@@ -3697,6 +3697,11 @@ jstack.dataBinder = (function(){
 					var jelseifEl = $this.nextAll('[j-else-if]');
 					var jelseEl = $this.nextAll('[j-else]');
 					
+					if(this.tagName.toLowerCase()=='template'){
+						$this.detach();
+						$this = $(document.importNode(this.content, true));
+					}
+					
 					var lastBlock;
 					if(jelseEl.length){
 						lastBlock = jelseEl;
@@ -3720,10 +3725,18 @@ jstack.dataBinder = (function(){
 					var currentData2 = null;
 					if(jelseifEl.length){
 						var myvar2 = [];
-						jelseifEl.each(function(){
+						jelseifEl = $( jelseifEl.map(function(){
 							myvar2.push( this.getAttribute('j-else-if') );
 							this.removeAttribute('j-else-if');
-						});
+							
+							var node = this;
+							if(this.tagName.toLowerCase()=='template'){
+								$(this).detach();
+								node = document.importNode(this.content, true);
+							}
+							return node;
+						}) );
+						
 						getData2 = function(){
 							var data = false;
 							for(var i=0, l=myvar2.length;i<l;i++){
@@ -3737,9 +3750,16 @@ jstack.dataBinder = (function(){
 					}
 					
 					if(jelseEl.length){
-						jelseEl.each(function(){
+						jelseEl = $( jelseEl.map(function(){
 							this.removeAttribute('j-else');
-						});
+							
+							var node = this;
+							if(this.tagName.toLowerCase()=='template'){
+								$(this).detach();
+								node = document.importNode(this.content, true);
+							}
+							return node;
+						}) );
 					}
 					
 					var render = function(){
