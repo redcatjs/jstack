@@ -988,9 +988,7 @@ jstack.dataBinder = (function(){
 						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
-							var value = jstack.dataBinder.compilerAttrRender(el,tokens);
-							jstack.dataBinder.getValueEval(el,v);
-							value = value.join('');
+							var value = jstack.dataBinder.compilerAttrRender(el,v);
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
 							el.setAttribute(k,value);
