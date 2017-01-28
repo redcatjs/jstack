@@ -325,7 +325,7 @@ jstack.dataBinder = (function(){
 		},
 		watchersPrimary: 0,
 		watchers: {},
-		addWatcher: function(node, render, level){
+		addWatcher: function(render, level){
 			if(!level) level = 0;
 			if(!this.watchers[level]) this.watchers[level] = {};
 			this.watchers[level][++this.watchersPrimary] = render;
@@ -405,12 +405,11 @@ jstack.dataBinder = (function(){
 						var $n = $(n);
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							var render = jstack.dataBinder.compilerText.call(n);
-							if(render){
-								compilerTexts.push(function(){
-									self.addWatcher(n, render, 99);
-									render();
-								});
+							var renders = jstack.dataBinder.compilerText.call(n);
+							if(renders){
+								for(var i = 0, l=renders.length;i<l;i++){
+									compilerTexts.push(renders[i]);
+								}
 							}
 							return;
 						}
@@ -437,7 +436,7 @@ jstack.dataBinder = (function(){
 							if(matchResult){
 								var render = compiler.callback.call(n,matchResult);
 								if(render){
-									self.addWatcher(n, render, compiler.level);
+									self.addWatcher(render, compiler.level);
 									render();
 								}
 							}
@@ -485,7 +484,9 @@ jstack.dataBinder = (function(){
 			});
 			
 			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				compilerTexts[i]();
+				var render = compilerTexts[i];
+				self.addWatcher(render, 99);
+				render();
 			}
 			for(var i = 0, l=unobserveStack.length;i<l;i++){
 				unobserveStack[i]();
@@ -1086,32 +1087,73 @@ jstack.dataBinder = (function(){
 		compilerText:function(){
 			if(!this.textContent) return;
 			var textString = this.textContent.toString();
-			var parsed = jstack.dataBinder.textParser(textString);
-			if(typeof(parsed)!='string') return;
-			
+			var tokens = jstack.dataBinder.textTokenizer(textString);
+			if(tokens===false) return;
 			
 			var el = this;
 			var $this = $(this);
+			var renders = [];
 			
+			var last = $this;
 			
-			var text = $('<!--j:text-->');
-			var textClose = $('<!--/j:text-->');
-			$this.replaceWith(text);
-			textClose.insertAfter(text);
-			
-			var currentData;
-			var getData = function(){
-				return jstack.dataBinder.getValueEval(text[0],parsed);
+			var createRender = function(text,token){
+				var currentData;
+				return function(){
+					console.log(text,token);
+					var data = jstack.dataBinder.getValueEval(text[0],token);
+					if(!document.body.contains(text[0])) return text[0];
+					if(currentData===data) return;
+					currentData = data;
+					text.commentChildren().remove();
+					text.after(data);
+				};
 			};
-			var render = function(){
-				if(!document.body.contains(text[0])) return text[0];
-				var data = getData();
-				if(currentData===data) return;
-				currentData = data;
-				text.commentChildren().remove();
-				text.after(data);
+			for(var i = 0, l = tokens.length; i < l; i++){				
+				var token = tokens[i];
+				
+				if(token.substr(0,2)!='{{'){
+					token = document.createTextNode(token);
+					last.after(token);
+					last = token;
+					continue;
+				}
+				
+				var text = $('<!--j:text '+token+'-->');
+				var textClose = $('<!--/j:text-->');
+				text.insertAfter(last);
+				textClose.insertAfter(text);
+				last = textClose;
+				
+				token = token.substr(2,token.length-4);
+				renders.push(createRender(text,token));
 			};
-			return render;
+			$this.remove();
+			
+			return renders;
+		},
+		textTokenizer:function(text){
+			var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
+			if (!tagRE.test(text)) {
+				return false;
+			}
+			var tokens = [];
+			var lastIndex = tagRE.lastIndex = 0;
+			var match, index;
+			while ((match = tagRE.exec(text))) {
+				index = match.index;
+				// push text token
+				if (index > lastIndex) {
+					tokens.push(text.slice(lastIndex, index));
+				}
+				// tag token
+				var exp = match[1].trim();
+				tokens.push("{{" + exp + "}}");
+				lastIndex = index + match[0].length;
+			}
+			if (lastIndex < text.length) {
+				tokens.push(text.slice(lastIndex));
+			}
+			return tokens;
 		},
 		textParser:function(text){
 			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
