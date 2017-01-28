@@ -58,7 +58,7 @@ jstack.dataBinder = (function(){
 			var data = self.getControllerData(el);
 			
 			var key = '';
-			var form = $(el).closest('form[name]');
+			var form = $(el).closest('form[j-name]');
 			if(form.length){
 				key += form.attr('name')+'.';
 			}
@@ -172,7 +172,7 @@ jstack.dataBinder = (function(){
 				key += index;
 			}
 			var scopeKey = '';
-			var form = $input.closest('form[name]');
+			var form = $input.closest('form[j-name]');
 			if(form.length){
 				scopeKey += form.attr('name')+'.';
 			}
