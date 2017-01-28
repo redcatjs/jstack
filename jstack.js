@@ -4046,7 +4046,6 @@ jstack.dataBinder = (function(){
 			var createRender = function(text,token){
 				var currentData;
 				return function(){
-					console.log(text,token);
 					var data = jstack.dataBinder.getValueEval(text[0],token);
 					if(!document.body.contains(text[0])) return text[0];
 					if(currentData===data) return;
