@@ -11,8 +11,14 @@ $.fn.jData = function(key){
 		var a = {};
 		var el = this[0];
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
-			var parsed = jstack.dataBinder.textParser(v);
-			var value = (typeof(parsed)=='string') ? jstack.dataBinder.getValueEval(el,parsed) : v;
+			var tokens = jstack.dataBinder.textTokenizer(v);
+			var value;
+			if(tokens===false){
+				value = v;
+			}
+			else{
+				value = jstack.dataBinder.compilerAttrRender(el,tokens);
+			}
 			a[k] = value;
 		});
 		var data = {};
