@@ -142,7 +142,6 @@ jstack.dataBinder = (function(){
 			
 			
 			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?$default:$return;}");
-			
 			var value;
 			try{
 				var func = Function.apply(null,params);
@@ -975,13 +974,13 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					$.each(attrs,function(k,v){
-						var parsed = jstack.dataBinder.textParser(v);
+						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(8);
-						if(typeof(parsed)=='string'){
-							attrsVars[k] = parsed;
+						if(tokens===false){
+							el.setAttribute(key,v);
 						}
 						else{
-							el.setAttribute(key,v);
+							attrsVars[k] = tokens;
 						}
 						el.removeAttribute(k);
 					});
@@ -989,7 +988,9 @@ jstack.dataBinder = (function(){
 						if(!document.body.contains(el)) return el;
 						
 						$.each(attrsVars,function(k,v){
-							var value =  jstack.dataBinder.getValueEval(el,v);
+							var value = jstack.dataBinder.compilerAttrRender(el,tokens);
+							jstack.dataBinder.getValueEval(el,v);
+							value = value.join('');
 							if(attrsVarsCurrent[k]===value) return;
 							attrsVarsCurrent[k] = value;
 							el.setAttribute(k,value);
@@ -1081,17 +1082,20 @@ jstack.dataBinder = (function(){
 				},
 			},
 		},
+		compilerAttrRender: function(el,tokens){
+			var r = [];
+			for(var i = 0, l = tokens.length; i<l; i++){
+				var token = tokens[i];
+				if(token.substr(0,2)=='{{'){
+					token = jstack.dataBinder.getValueEval(el,token.substr(2,token.length-4));
+				}
+				r.push(token);
+			}
+			return r.join('');
+		},
 		createCompilerAttrRender: function(el,tokens){
 			return function(){
-				var r = [];
-				for(var i = 0, l = tokens.length; i<l; i++){
-					var token = tokens[i];
-					if(token.substr(0,2)=='{{'){
-						token = jstack.dataBinder.getValueEval(el,token);
-					}
-					r.push(token);
-				}
-				return r.join('');
+				return jstack.dataBinder.compilerAttrRender(el,tokens);
 			};
 		},
 		createCompilerTextRender: function(text,token){
