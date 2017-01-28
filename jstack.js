@@ -3382,6 +3382,15 @@ jstack.dataBinder = (function(){
 								n.removeAttribute('j-once');
 							});
 						}
+						else if(n.hasAttribute('j-once-element')){
+							unobserveStack.push(function(){
+								var observer = $n.data('j:observer');
+								if(observer){
+									observer.disconnect();
+								}
+								n.removeAttribute('j-once-element');
+							});
+						}
 						
 						$.each(self.compilers,function(k,compiler){
 							var matchResult = compiler.match.call(n);
