@@ -1190,6 +1190,6 @@ jstack.dataBinder = (function(){
 	o.eventListener();
 	return o;
 })();
-$.on('reset','form[j-scope]',function(){
+$.on('reset','form',function(){
 	$(this).populateReset();
 });
