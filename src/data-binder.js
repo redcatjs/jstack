@@ -60,7 +60,7 @@ jstack.dataBinder = (function(){
 			var key = '';
 			var form = $(el).closest('form[j-name]');
 			if(form.length){
-				key += form.attr('name')+'.';
+				key += form.attr('j-name')+'.';
 			}
 			key += varKey;
 
