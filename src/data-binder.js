@@ -1084,6 +1084,18 @@ jstack.dataBinder = (function(){
 				},
 			},
 		},
+		
+		createCompilerTextRender: function(text,token){
+			var currentData;
+			return function(){
+				var data = jstack.dataBinder.getValueEval(text[0],token);
+				if(!document.body.contains(text[0])) return text[0];
+				if(currentData===data) return;
+				currentData = data;
+				text.commentChildren().remove();
+				text.after(data);
+			};
+		},
 		compilerText:function(){
 			if(!this.textContent) return;
 			var textString = this.textContent.toString();
@@ -1096,17 +1108,6 @@ jstack.dataBinder = (function(){
 			
 			var last = $this;
 			
-			var createRender = function(text,token){
-				var currentData;
-				return function(){
-					var data = jstack.dataBinder.getValueEval(text[0],token);
-					if(!document.body.contains(text[0])) return text[0];
-					if(currentData===data) return;
-					currentData = data;
-					text.commentChildren().remove();
-					text.after(data);
-				};
-			};
 			for(var i = 0, l = tokens.length; i < l; i++){				
 				var token = tokens[i];
 				
@@ -1124,7 +1125,7 @@ jstack.dataBinder = (function(){
 				last = textClose;
 				
 				token = token.substr(2,token.length-4);
-				renders.push(createRender(text,token));
+				renders.push(jstack.dataBinder.createCompilerTextRender(text,token));
 			};
 			$this.remove();
 			
