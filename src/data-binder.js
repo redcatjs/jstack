@@ -773,8 +773,8 @@ jstack.dataBinder = (function(){
 					if(jelseifEl.length){
 						var myvar2 = [];
 						jelseifEl = $( jelseifEl.map(function(){
-							this.removeAttribute('j-else-if');
 							myvar2.push( this.getAttribute('j-else-if') );
+							this.removeAttribute('j-else-if');
 							
 							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
