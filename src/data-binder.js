@@ -744,6 +744,11 @@ jstack.dataBinder = (function(){
 					var jelseifEl = $this.nextAll('[j-else-if]');
 					var jelseEl = $this.nextAll('[j-else]');
 					
+					if(this.tagName.toLowerCase()=='template'){
+						$this.detach();
+						$this = $(document.importNode(this.content, true));
+					}
+					
 					var lastBlock;
 					if(jelseEl.length){
 						lastBlock = jelseEl;
