@@ -87,8 +87,8 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$controller, $this" ];
-			var args = [ controller, el ];
+			var params = [ "$controller, $this, $scope" ];
+			var args = [ controller, el, scopeValue ];
 			
 			var forParams = [];
 			var forArgs = [];
@@ -174,7 +174,7 @@ jstack.dataBinder = (function(){
 			var scopeKey = '';
 			var form = $input.closest('form[j-name]');
 			if(form.length){
-				scopeKey += form.attr('name')+'.';
+				scopeKey += form.attr('j-name')+'.';
 			}
 			scopeKey += key;
 			return scopeKey;
