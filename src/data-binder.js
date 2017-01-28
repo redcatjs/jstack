@@ -1087,7 +1087,7 @@ jstack.dataBinder = (function(){
 				if(token.substr(0,2)=='{{'){
 					token = jstack.dataBinder.getValueEval(el,token.substr(2,token.length-4));
 				}
-				r += token;
+				r += token?token:'';
 			}
 			return r;
 		},
