@@ -934,17 +934,14 @@ jstack.dataBinder = (function(){
 					var original = this.getAttribute('j-href');
 					this.removeAttribute('j-href');
 					
-					var parsed = jstack.dataBinder.textParser(original);
-					
-					if(typeof(parsed)!='string'){
+					var tokens = jstack.dataBinder.textTokenizer(original);
+					if(tokens===false){
 						el.setAttribute('href',jstack.route.baseLocation + "#" + original);
 						return;
 					}
 					
 					var currentData;
-					var getData = function(){
-						return jstack.dataBinder.getValueEval(el,parsed);
-					};
+					var getData = jstack.dataBinder.createCompilerAttrRender(el,tokens);
 					var render = function(){
 						if(!document.body.contains(el)) return el;
 						
@@ -1084,7 +1081,19 @@ jstack.dataBinder = (function(){
 				},
 			},
 		},
-		
+		createCompilerAttrRender: function(el,tokens){
+			return function(){
+				var r = [];
+				for(var i = 0, l = tokens.length; i<l; i++){
+					var token = tokens[i];
+					if(token.substr(0,2)=='{{'){
+						token = jstack.dataBinder.getValueEval(el,token);
+					}
+					r.push(token);
+				}
+				return r.join('');
+			};
+		},
 		createCompilerTextRender: function(text,token){
 			var currentData;
 			return function(){
