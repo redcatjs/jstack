@@ -1166,6 +1166,7 @@ jstack.dataBinder = (function(){
 			}
 			return tokens;
 		},
+		/*
 		textParser:function(text){
 			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
 			if (!tagRE.test(text)) {
@@ -1189,7 +1190,8 @@ jstack.dataBinder = (function(){
 				tokens.push(JSON.stringify(text.slice(lastIndex)));
 			}
 			return tokens.join('+');
-		}
+		},
+		*/
 	};
 	var o = new dataBinder();
 	o.eventListener();
