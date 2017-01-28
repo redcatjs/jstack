@@ -171,6 +171,13 @@ jstack.dataBinder = (function(){
 			var attrKey = el.getAttribute(attr);
 			return self.getValue(el,attrKey,defaultValue);
 		},
+		getParentScope:function(el){
+			var parent = $(el).parent().closest('[j-scope]');
+			if(!parent.length){
+				parent = this.getController(el);
+			}
+			return parent;
+		},
 		getScopeValue: function(el){
 			var self = this;
 			var scope = $(el).closest('[j-scope]');
@@ -179,8 +186,11 @@ jstack.dataBinder = (function(){
 			}
 			return self.getAttrValue(scope,'j-scope',{});
 		},
-		getScope: function(input){
-			return $(input).parents('[j-scope]')
+		getScoped: function(input,suffix){
+			if(suffix.substr(0,1)==='.'){
+				return suffix.substr(1);
+			}
+			var scope = $(input).parents('[j-scope]')
 				.map(function() {
 					return this.getAttribute('j-scope');
 				})
@@ -188,6 +198,11 @@ jstack.dataBinder = (function(){
 				.reverse()
 				.join('.')
 			;
+			if(scope){
+				scope += '.';
+			}
+			scope += suffix;
+			return scope;
 		},
 		getScopedInput: function(input){
 			var self = this;
@@ -206,17 +221,6 @@ jstack.dataBinder = (function(){
 				key += index;
 			}
 			return self.getScoped(input,key);
-		},
-		getScoped: function(input,suffix){
-			if(suffix.substr(0,1)==='.'){
-				return suffix.substr(1);
-			}
-			var scope = this.getScope(input);
-			if(scope){
-				scope += '.';
-			}
-			scope += suffix;
-			return scope;
 		},
 		getters: {
 			select: function(el){
@@ -595,13 +599,6 @@ jstack.dataBinder = (function(){
 		},
 		getControllerData:function(input){
 			return this.getController(input).data('jModel');
-		},
-		getParentScope:function(el){
-			var parent = $(el).parent().closest('[j-scope]');
-			if(!parent.length){
-				parent = this.getController(el);
-			}
-			return parent;
 		},
 		getController:function(input){
 			var controller = $(input).closest('[j-controller]');
