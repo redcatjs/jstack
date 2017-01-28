@@ -772,10 +772,18 @@ jstack.dataBinder = (function(){
 					var currentData2 = null;
 					if(jelseifEl.length){
 						var myvar2 = [];
-						jelseifEl.each(function(){
-							myvar2.push( this.getAttribute('j-else-if') );
+						jelseifEl = $( jelseifEl.map(function(){
 							this.removeAttribute('j-else-if');
-						});
+							myvar2.push( this.getAttribute('j-else-if') );
+							
+							var node = this;
+							if(this.tagName.toLowerCase()=='template'){
+								$(this).detach();
+								node = document.importNode(this.content, true);
+							}
+							return node;
+						}) );
+						
 						getData2 = function(){
 							var data = false;
 							for(var i=0, l=myvar2.length;i<l;i++){
@@ -789,9 +797,16 @@ jstack.dataBinder = (function(){
 					}
 					
 					if(jelseEl.length){
-						jelseEl.each(function(){
+						jelseEl = $( jelseEl.map(function(){
 							this.removeAttribute('j-else');
-						});
+							
+							var node = this;
+							if(this.tagName.toLowerCase()=='template'){
+								$(this).detach();
+								node = document.importNode(this.content, true);
+							}
+							return node;
+						}) );
 					}
 					
 					var render = function(){
