@@ -101,9 +101,6 @@ jstack.dataBinder = (function(){
 				forCollection.push( this );
 			});
 			
-			var addToScope = function(param,arg){
-				scopeValue[param] = arg;
-			};
 			$(forCollection).each(function(){
 				var parentFor = $(this);
 				var parentForList = parentFor.parentComment('j:for');
@@ -122,11 +119,11 @@ jstack.dataBinder = (function(){
 				var key = jforCommentData.key;
 				var index = jforCommentData.index;
 				if(index){
-					addToScope(index,parentFor.index()+1);
+					scopeValue[index] = parentFor.index()+1;
 				}
 				if(key){
 					var id = this.nodeType===Node.COMMENT_NODE?this.nodeValue.split(' ')[1]:this.getAttribute('j-for-id');
-					addToScope(key,id);
+					scopeValue[key] = id;
 				}
 			});
 			
