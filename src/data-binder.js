@@ -95,12 +95,8 @@ jstack.dataBinder = (function(){
 				forCollection.push( el );
 			}
 			var $el = $(el);
-			$el.parentsComment('j:for:id').each(function(){
-				forCollection.push( this );
-			});
-			$el.parents('[j-for-id]').each(function(){
-				forCollection.push( this );
-			});
+			forCollection.push.apply( forCollection, $el.parentsComment('j:for:id',true) );
+			forCollection.push.apply( forCollection, $el.parents('[j-for-id]').get() );
 			
 			$(forCollection).each(function(){
 				var parentFor = $(this);

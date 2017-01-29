@@ -43,7 +43,7 @@ $.fn.commentChildren = function(){
 	return $(arr);
 };
 
-$.fn.parentComment = function(tag){
+$.fn.parentComment = function(tag,noJqWrap){
 	var a = [];
 	n = this[0].previousSibling;
 	while(n){
@@ -53,7 +53,7 @@ $.fn.parentComment = function(tag){
 		}
 		n = n.previousSibling;
 	}
-	return $(a);
+	return noJqWrap?a:$(a);
 };
 
 $.fn.parentsComment = function(tag){
