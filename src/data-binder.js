@@ -120,8 +120,10 @@ jstack.dataBinder = (function(){
 			
 			var forCollection = self.getParentsForId(el);
 			
-			$(forCollection).each(function(){
-				var parentFor = $(this);
+			for(var i = 0, l = forCollection.length; i<l; i++){
+				var forid = forCollection[i];
+				
+				var parentFor = $(forid);
 				var parentForList = parentFor.parentComment('j:for');
 				
 				if(!parentForList.length) return;
@@ -130,8 +132,9 @@ jstack.dataBinder = (function(){
 				var value = jforCommentData.value;
 				params.push(value);
 				
+				var isComment = forid.nodeType===Node.COMMENT_NODE;
 				
-				var forData = this.nodeType===Node.COMMENT_NODE?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
+				var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
 				args.push(forData);
 				
 				
@@ -141,10 +144,10 @@ jstack.dataBinder = (function(){
 					scopeValue[index] = parentFor.index()+1;
 				}
 				if(key){
-					var id = this.nodeType===Node.COMMENT_NODE?this.nodeValue.split(' ')[1]:this.getAttribute('j-for-id');
+					var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
 					scopeValue[key] = id;
 				}
-			});
+			}
 			
 			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?'':$return;}");
 			var value;
