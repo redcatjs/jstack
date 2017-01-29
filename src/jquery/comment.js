@@ -1,10 +1,9 @@
 $.fn.findComments = function(tag){
 	var arr = [];
-	var nt = Node.COMMENT_NODE;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === nt && (!tag || node.nodeValue.split(' ')[0]==tag)){
+			if(node.nodeType === Node.COMMENT_NODE && (!tag || node.nodeValue.split(' ')[0]==tag)){
 				arr.push(node);
 			}
 			else{
@@ -17,11 +16,10 @@ $.fn.findComments = function(tag){
 
 $.fn.findCommentsChildren = function(tag){
 	var arr = [];
-	var comment = Node.COMMENT_NODE;
 	this.each(function(){
 		for(var i = 0; i < this.childNodes.length; i++) {
 			var node = this.childNodes[i];
-			if(node.nodeType === comment && node.nodeValue.split(' ')[0]==tag){
+			if(node.nodeType === Node.COMMENT_NODE && node.nodeValue.split(' ')[0]==tag){
 				arr.push.apply( arr, $(node).commentChildren() );
 			}
 			else{
@@ -34,11 +32,10 @@ $.fn.findCommentsChildren = function(tag){
 
 $.fn.commentChildren = function(){
 	var arr = [];
-	var comment = Node.COMMENT_NODE;
 	this.each(function(){
 		var endTag = '/'+this.nodeValue.split(' ')[0];
 		var n = this.nextSibling;
-		while(n && (n.nodeType!==comment || n.nodeValue!=endTag) ){
+		while(n && (n.nodeType!==Node.COMMENT_NODE || n.nodeValue!=endTag) ){
 			arr.push(n);
 			n = n.nextSibling;
 		}
@@ -47,11 +44,10 @@ $.fn.commentChildren = function(){
 };
 
 $.fn.parentComment = function(tag){
-	var comment = Node.COMMENT_NODE;
 	var a = [];
 	n = this[0].previousSibling;
 	while(n){
-		if(n.nodeType===comment&&n.nodeValue.split(' ')[0]===tag){
+		if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]===tag){
 			a.push(n);
 			break;
 		}
@@ -61,11 +57,10 @@ $.fn.parentComment = function(tag){
 };
 
 $.fn.parentsComment = function(tag){
-	var comment = Node.COMMENT_NODE;
 	var a = [];
 	n = this[0].previousSibling;
 	while(n){
-		if(n.nodeType===comment&&n.nodeValue.split(' ')[0]===tag){
+		if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]===tag){
 			a.push(n);
 			n = n.parentNode;
 		}
