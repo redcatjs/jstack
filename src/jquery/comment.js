@@ -60,6 +60,20 @@ $.fn.parentComment = function(tag){
 	return $(a);
 };
 
+$.fn.parentsComment = function(tag){
+	var comment = Node.COMMENT_NODE;
+	var a = [];
+	n = this[0].previousSibling;
+	while(n){
+		if(n.nodeType===comment&&n.nodeValue.split(' ')[0]===tag){
+			a.push(n);
+			n = n.parentNode;
+		}
+		n = n.previousSibling;
+	}
+	return $(a);
+};
+
 $.fn.dataCommentJSON = function(){
 	if(arguments.length>1||$.type(arguments[0])=='object'){
 		var setData;
