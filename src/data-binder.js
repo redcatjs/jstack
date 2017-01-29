@@ -94,10 +94,11 @@ jstack.dataBinder = (function(){
 			if(el.hasAttribute && el.hasAttribute('j-for-id')){
 				forCollection.push( el );
 			}
-			$(el).parentsComment('j:for:id').each(function(){
+			var $el = $(el);
+			$el.parentsComment('j:for:id').each(function(){
 				forCollection.push( this );
 			});
-			$(el).parents('[j-for-id]').each(function(){
+			$el.parents('[j-for-id]').each(function(){
 				forCollection.push( this );
 			});
 			
