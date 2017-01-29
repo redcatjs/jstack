@@ -3079,25 +3079,24 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$controller, $this, $scope" ];
-			var args = [ controller, el, scopeValue ];
-			
 			var forCollection = self.getParentsForId(el);
 			
-			$(forCollection).each(function(){
-				var parentFor = $(this);
+			for(var i = 0, l = forCollection.length; i<l; i++){
+				var forid = forCollection[i];
+				
+				var parentFor = $(forid);
 				var parentForList = parentFor.parentComment('j:for');
 				
 				if(!parentForList.length) return;
 				
 				var jforCommentData = parentForList.dataCommentJSON();
 				var value = jforCommentData.value;
-				params.push(value);
 				
+				var isComment = forid.nodeType===Node.COMMENT_NODE;
 				
-				var forData = this.nodeType===Node.COMMENT_NODE?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
-				args.push(forData);
+				var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
 				
+				scopeValue[value] = forData;
 				
 				var key = jforCommentData.key;
 				var index = jforCommentData.index;
@@ -3105,12 +3104,20 @@ jstack.dataBinder = (function(){
 					scopeValue[index] = parentFor.index()+1;
 				}
 				if(key){
-					var id = this.nodeType===Node.COMMENT_NODE?this.nodeValue.split(' ')[1]:this.getAttribute('j-for-id');
+					var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
 					scopeValue[key] = id;
 				}
+			}
+			
+			var params = [ '$controller', '$this' ];
+			var args = [ controller, el ];
+			$.each(scopeValue,function(param,arg){
+				params.push(param);
+				args.push(arg);
 			});
 			
-			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?'':$return;}");
+			params.push("return "+varKey+";");
+			
 			var value;
 			try{
 				var func = Function.apply(null,params);
@@ -3126,7 +3133,7 @@ jstack.dataBinder = (function(){
 				}
 			}
 			
-			return value;
+			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
 			var self = this;
