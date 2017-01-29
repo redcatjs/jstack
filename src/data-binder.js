@@ -90,9 +90,6 @@ jstack.dataBinder = (function(){
 			var params = [ "$controller, $this, $scope" ];
 			var args = [ controller, el, scopeValue ];
 			
-			var forParams = [];
-			var forArgs = [];
-			
 			var forCollection = [];
 			if(el.hasAttribute && el.hasAttribute('j-for-id')){
 				forCollection.push( el );
@@ -115,11 +112,11 @@ jstack.dataBinder = (function(){
 				
 				var jforCommentData = parentForList.dataCommentJSON();
 				var value = jforCommentData.value;
-				forParams.push(value);
+				params.push(value);
 				
 				
 				var forData = this.nodeType===Node.COMMENT_NODE?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
-				forArgs.push(forData);
+				args.push(forData);
 				
 				
 				var key = jforCommentData.key;
@@ -132,15 +129,6 @@ jstack.dataBinder = (function(){
 					addToScope(key,id);
 				}
 			});
-			
-			for(var i=0,l=forParams.length;i<l;i++){
-				params.push(forParams[i]);
-			}
-			for(var i=0,l=forArgs.length;i<l;i++){
-				args.push(forArgs[i]);
-			}
-			
-			//console.log(forParams,forArgs);
 			
 			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?'':$return;}");
 			var value;
