@@ -3032,6 +3032,9 @@ jstack.dataBinder = (function(){
 		},
 		getParentsForId: function(el){
 			var a = [];
+			if(el.hasAttribute&&el.hasAttribute('j-for-id')){
+				a.push(el);
+			}
 			var n = el;
 			while(n){
 				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
@@ -3152,8 +3155,13 @@ jstack.dataBinder = (function(){
 		getters: {
 			select: function(el){
 				el = $(el);
-				if(el.children('option[value]').length){
-					return el.val();
+				var options = el.children('option[value]');
+				if(options.length){
+					var selected = options.filter('[selected]');
+					if(!selected.length){
+						selected = options.eq(0);
+					}
+					return selected.attr('value');
 				}
 			},
 			input: function(element) {
