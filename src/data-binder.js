@@ -68,6 +68,9 @@ jstack.dataBinder = (function(){
 		},
 		getParentsForId: function(el){
 			var a = [];
+			if(el.hasAttribute&&el.hasAttribute('j-for-id')){
+				a.push(el);
+			}
 			var n = el;
 			while(n){
 				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
