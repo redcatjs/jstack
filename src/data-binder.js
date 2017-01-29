@@ -97,10 +97,12 @@ jstack.dataBinder = (function(){
 			if(el.hasAttribute && el.hasAttribute('j-for-id')){
 				forCollection.push( el );
 			}
+			$(el).parentsComment('j:for:id').each(function(){
+				forCollection.push( this );
+			});
 			$(el).parents('[j-for-id]').each(function(){
 				forCollection.push( this );
 			});
-			
 			
 			var addToScope = function(param,arg){
 				scopeValue[param] = arg;
@@ -115,8 +117,10 @@ jstack.dataBinder = (function(){
 				var value = jforCommentData.value;
 				forParams.push(value);
 				
-				var forData = parentFor.data('j:for:data');
+				
+				var forData = this.nodeType===Node.COMMENT_NODE?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
 				forArgs.push(forData);
+				
 				
 				var key = jforCommentData.key;
 				var index = jforCommentData.index;
@@ -124,7 +128,7 @@ jstack.dataBinder = (function(){
 					addToScope(index,parentFor.index()+1);
 				}
 				if(key){
-					var id = this.getAttribute('j-for-id');
+					var id = this.nodeType===Node.COMMENT_NODE?this.nodeValue.split(' ')[1]:this.getAttribute('j-for-id');
 					addToScope(key,id);
 				}
 			});
@@ -136,6 +140,7 @@ jstack.dataBinder = (function(){
 				args.push(forArgs[i]);
 			}
 			
+			//console.log(forParams,forArgs);
 			
 			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?'':$return;}");
 			var value;
@@ -644,40 +649,92 @@ jstack.dataBinder = (function(){
 						index:index,
 					});
 					
-					var render = function(){
-						if(!document.body.contains(jfor[0])) return jfor[0];
+					var render;
+					
+					if(el.tagName.toLowerCase()=='template'){
+						var content = this.content;
 						
-						var data = getData();
-						if(currentData===data) return;
-						currentData = data;
-						
-						var forIdList = [];
-						var collection = jfor.commentChildren();
-						
-						//add
-						$.each(data,function(k,v){
-							var row = collection.filter('[j-for-id="'+k+'"]');
-							var create = !row.length;
-							if(create){
-								row = $this.clone();
-								row[0].setAttribute('j-for-id',k);
-							}
-							row.data('j:for:data',v);
-							if(create){
-								row.insertBefore(jforClose);
-							}
-							forIdList.push(k.toString());
-						});
-						
-						//remove
-						collection.each(function(){
-							var forId = this.getAttribute('j-for-id');
-							if(forIdList.indexOf(forId)===-1){
-								$(this).remove();
-							}
-						});
-						
-					};
+						render = function(){
+							if(!document.body.contains(jfor[0])) return jfor[0];
+							
+							var data = getData();
+							if(currentData===data) return;
+							currentData = data;
+							
+							var forIdList = [];
+							var collection = $( jfor.commentChildren().map(function(){
+								if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
+									return this;
+								}
+							}) );
+							
+							//add
+							$.each(data,function(k,v){
+								var row = $( collection.map(function(){
+									if(this.nodeValue == 'j:for:id '+k){
+										return this;
+									}
+								}) );
+								var create = !row.length;
+								if(create){
+									row = $('<!--j:for:id '+k+'-->');
+								}
+								row.dataComment('j:for:data',v);
+								if(create){
+									row.insertBefore(jforClose);
+									$(document.importNode(content, true)).insertBefore(jforClose);
+									$('<!--/j:for:id-->').insertBefore(jforClose);
+								}
+								forIdList.push(k.toString());
+							});
+							
+							//remove
+							collection.each(function(){
+								var forId = this.nodeValue.split(' ')[1];
+								if(forIdList.indexOf(forId)===-1){
+									$(this).commentChildren().remove();
+									$(this).remove();
+								}
+							});
+							
+						};
+					}
+					else{
+						render = function(){
+							if(!document.body.contains(jfor[0])) return jfor[0];
+							
+							var data = getData();
+							if(currentData===data) return;
+							currentData = data;
+							
+							var forIdList = [];
+							var collection = jfor.commentChildren();
+							
+							//add
+							$.each(data,function(k,v){
+								var row = collection.filter('[j-for-id="'+k+'"]');
+								var create = !row.length;
+								if(create){
+									row = $this.clone();
+									row[0].setAttribute('j-for-id',k);
+								}
+								row.data('j:for:data',v);
+								if(create){
+									row.insertBefore(jforClose);
+								}
+								forIdList.push(k.toString());
+							});
+							
+							//remove
+							collection.each(function(){
+								var forId = this.getAttribute('j-for-id');
+								if(forIdList.indexOf(forId)===-1){
+									$(this).remove();
+								}
+							});
+							
+						};
+					}
 					
 					return render;
 					
