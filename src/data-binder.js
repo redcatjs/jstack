@@ -66,6 +66,31 @@ jstack.dataBinder = (function(){
 
 			return self.dotGet(key,data,defaultValue);
 		},
+		getParentsForId: function(el){
+			var a = [];
+			var n = el;
+			while(n){
+				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
+					a.push(n);
+					n = n.parentNode;
+					if(n.hasAttribute&&n.hasAttribute('j-for-id')){
+						a.push(n);
+					}
+				}
+				if(n){
+					if(n.previousSibling){
+						n = n.previousSibling;
+					}
+					else{
+						n = n.parentNode;
+						if(n&&n.hasAttribute&&n.hasAttribute('j-for-id')){
+							a.push(n);
+						}
+					}
+				}
+			}
+			return a;
+		},
 		getValueEval: function(el,varKey){
 			var self = this;
 			var scopeValue = self.getControllerData(el);
@@ -90,13 +115,7 @@ jstack.dataBinder = (function(){
 			var params = [ "$controller, $this, $scope" ];
 			var args = [ controller, el, scopeValue ];
 			
-			var forCollection = [];
-			if(el.hasAttribute && el.hasAttribute('j-for-id')){
-				forCollection.push( el );
-			}
-			var $el = $(el);
-			forCollection.push.apply( forCollection, $el.parentsComment('j:for:id',true) );
-			forCollection.push.apply( forCollection, $el.parents('[j-for-id]').get() );
+			var forCollection = self.getParentsForId(el);
 			
 			$(forCollection).each(function(){
 				var parentFor = $(this);

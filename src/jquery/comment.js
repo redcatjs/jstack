@@ -64,7 +64,9 @@ $.fn.parentsComment = function(tag){
 			a.push(n);
 			n = n.parentNode;
 		}
-		n = n.previousSibling;
+		if(n){
+			n = n.previousSibling;
+		}
 	}
 	return $(a);
 };
