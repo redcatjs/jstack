@@ -115,9 +115,6 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var params = [ "$controller, $this, $scope" ];
-			var args = [ controller, el, scopeValue ];
-			
 			var forCollection = self.getParentsForId(el);
 			
 			for(var i = 0, l = forCollection.length; i<l; i++){
@@ -130,13 +127,12 @@ jstack.dataBinder = (function(){
 				
 				var jforCommentData = parentForList.dataCommentJSON();
 				var value = jforCommentData.value;
-				params.push(value);
 				
 				var isComment = forid.nodeType===Node.COMMENT_NODE;
 				
 				var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
-				args.push(forData);
 				
+				scopeValue[value] = forData;
 				
 				var key = jforCommentData.key;
 				var index = jforCommentData.index;
@@ -149,7 +145,15 @@ jstack.dataBinder = (function(){
 				}
 			}
 			
-			params.push("with($scope){var $return = "+varKey+"; return typeof($return)=='undefined'?'':$return;}");
+			var params = [ '$controller', '$this' ];
+			var args = [ controller, el ];
+			$.each(scopeValue,function(param,arg){
+				params.push(param);
+				args.push(arg);
+			});
+			
+			params.push("return "+varKey+";");
+			
 			var value;
 			try{
 				var func = Function.apply(null,params);
@@ -165,7 +169,7 @@ jstack.dataBinder = (function(){
 				}
 			}
 			
-			return value;
+			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
 			var self = this;
