@@ -513,6 +513,8 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
+				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'||this.type=='file'))
+					return;
 				self.inputToModel(this,e.type);
 			});
 		},
