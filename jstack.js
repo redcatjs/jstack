@@ -3473,7 +3473,10 @@ jstack.dataBinder = (function(){
 			//j-once
 			var self = this;
 			var mutationObserver = new MutationObserver(function(m){
-				self.loadMutations(m);
+				setTimeout(function(){
+					self.loadMutations(m);
+				},0);
+				
 			});
 			mutationObserver.observe(n, observations);
 			$(n).data('j:observer',mutationObserver);
