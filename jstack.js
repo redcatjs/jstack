@@ -914,8 +914,8 @@ jstack.controller = function(controller,element){
 			var data = element.data('jModel') || {};
 			if(element[0].hasAttribute('j-view-inherit')){
 				var parent = element.parent().closest('[j-controller]');
-				if(parent.length){
-					var inheritProp = element[0].hasAttribute('j-view-inherit');
+				if(parent.length&&element[0].hasAttribute('j-view-inherit')){
+					var inheritProp = element[0].getAttribute('j-view-inherit');
 					var parentData = parent.data('jModel') || {};
 					if(inheritProp){
 						data[inheritProp] = parentData;
