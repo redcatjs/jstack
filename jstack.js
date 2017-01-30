@@ -965,7 +965,7 @@ jstack.controller = function(controller,element){
 				
 				html = $(html);
 				
-				html.find(':input[name],[j-input],[j-select]').each(function(){
+				html.find(':input[name],[j-input],j-select[name]').each(function(){
 					var key = jstack.dataBinder.getScopedInput(this);
 					var val = jstack.dataBinder.getInputVal(this);
 					jstack.dataBinder.dotSet(key,self.data,val,true);
@@ -1744,29 +1744,40 @@ var populateSelect = function( input, value, config ) {
 		return;
 	}
 	
-	//if(input.hasClass('select2-hidden-accessible')){
-		//if(config.push){
-			//var v = input.val();
-			//if(v===null){
-				//v = [];
-			//}
-			//if(typeof(v)!='object'){
-				//v = [v];
-			//}
-			//if(v.indexOf(value)===-1){
-				//v.push(value);
-			//}
+	if(isSelect2){
+		var setValue;
+		if(config.preventValEvent){
+			setValue = function(input,val){
+				input.setVal(val);
+			};
+		}
+		else{
+			setValue = function(input,val){
+				input.val(val);
+			};
+		}
+		if(config.push){
+			var v = input.val();
+			if(v===null){
+				v = [];
+			}
+			if(typeof(v)!='object'){
+				v = [v];
+			}
+			if(v.indexOf(value)===-1){
+				v.push(value);
+			}
+			setValue(input,value);
+		}
+		else{
+			setValue(input,value);
+		}
+		if(!config.preventValEvent){
 			//console.log(input,value);
-			//setValue(input,value);
-		//}
-		//else{
-			//setValue(input,value);
-		//}
-		//if(!config.preventValEvent){
-			//input.trigger('change');
-		//}
-		//return;
-	//}
+			input.trigger('change');
+		}
+		return;
+	}
 	
 	var found = false;
 	var optFirstTagName = 'option';
@@ -1818,10 +1829,6 @@ var populateSelect = function( input, value, config ) {
 		input.append( '<'+optFirstTagName+' value="' + optionValue + '" selected="selected">' + optionText + '</'+optFirstTagName+'>' );
 	}
 	
-	if(isSelect2&&!config.preventValEvent){
-		input.trigger('change');
-	}
-	
 };
 
 $.fn.populateInput = function( value, config ) {
@@ -1844,7 +1851,8 @@ $.fn.populateInput = function( value, config ) {
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		if ( this.tagName.toLowerCase()=='select' || this.hasAttribute('j-select') ) {
+		var nodeName = this.tagName.toLowerCase();
+		if (nodeName =='select' || nodeName == 'j-select' ) {
 			if ( value instanceof Array ) {
 				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );
@@ -3187,7 +3195,7 @@ jstack.dataBinder = (function(){
 			textarea: function(element){
 				return $( element ).val();
 			},
-			jselect: function(el){
+			'j-select': function(el){
 				el = $(el);
 				var multiple = el[0].hasAttribute('multiple');
 				var data = el.data('preselect');
@@ -3215,11 +3223,8 @@ jstack.dataBinder = (function(){
 			return $( element ).html();
 		},
 		getInputVal: function(element){
-			var elementType = element.tagName.toLowerCase();
-			if(elementType!='select'&&element.hasAttribute('j-select')){
-				elementType = 'jselect';
-			}
-			var getter = this.getters[elementType] || this.defaultGetter;
+			var nodeName = element.tagName.toLowerCase();
+			var getter = this.getters[nodeName] || this.defaultGetter;
 			return getter(element);
 		},
 		inputToModel: function(el,eventType){
@@ -4001,6 +4006,7 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
+					console.log(this.tagName.toLowerCase(),(this.hasAttribute('name')||this.hasAttribute(':name')),jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()],this.type!='file');
 					return (this.hasAttribute('name')||this.hasAttribute(':name'))&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
@@ -4049,8 +4055,8 @@ jstack.dataBinder = (function(){
 		createCompilerTextRender: function(text,token){
 			var currentData;
 			return function(){
-				var data = jstack.dataBinder.getValueEval(text[0],token);
 				if(!document.body.contains(text[0])) return text[0];
+				var data = jstack.dataBinder.getValueEval(text[0],token);
 				if(currentData===data) return;
 				currentData = data;
 				text.commentChildren().remove();
