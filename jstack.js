@@ -3980,7 +3980,6 @@ jstack.dataBinder = (function(){
 					var isInput = this.hasAttribute('name')&&(nodeName=='input'||nodeName=='select'||nodeName=='textarea'||nodeName=='option');
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
-						console.log(key,v);
 						var key = k.substr(1);
 						if(tokens===false){
 							el.setAttribute(key,v);
