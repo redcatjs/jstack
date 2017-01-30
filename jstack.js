@@ -3977,7 +3977,6 @@ jstack.dataBinder = (function(){
 					var attrsVarsCurrent = {};
 					var propAttrs = ['selected','checked'];
 					var nodeName = this.nodeName.toLowerCase();
-					var isInput = this.hasAttribute('name')&&(nodeName=='input'||nodeName=='select'||nodeName=='textarea'||nodeName=='option');
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(1);
@@ -4010,10 +4009,6 @@ jstack.dataBinder = (function(){
 							}
 							else{
 								el.setAttribute(k,value);
-							}
-							
-							if((k==':name'||k==':value')&&isInput){
-								delete attrsVarsCurrent[k];
 							}
 							
 						});
