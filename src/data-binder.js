@@ -396,7 +396,6 @@ jstack.dataBinder = (function(){
 						
 						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
-						//j-once
 						var once = n.hasAttribute('j-once');
 						if(once){
 							jstack.walkTheDOM(n,function(el){
@@ -482,7 +481,6 @@ jstack.dataBinder = (function(){
 				compilerJloads[i]();
 			}
 		},
-		//mutationObserver: null, //j-once
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
 		observe: function(n){
@@ -500,8 +498,6 @@ jstack.dataBinder = (function(){
 				characterDataOldValue: false,
 			};
 			
-			//this.mutationObserver.observe(n, observations);
-			//j-once
 			var self = this;
 			var mutationObserver = new MutationObserver(function(m){
 				setTimeout(function(){
@@ -514,10 +510,6 @@ jstack.dataBinder = (function(){
 		eventListener: function(){
 			var self = this;
 			
-			//this.mutationObserver = new MutationObserver(function(m){
-				//self.loadMutations(m);
-			//});
-			//j-once
 			jstack.walkTheDOM(document.body,function(el){
 				return self.observe(el);
 			});
@@ -1185,32 +1177,6 @@ jstack.dataBinder = (function(){
 			}
 			return tokens;
 		},
-		/*
-		textParser:function(text){
-			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
-			if (!tagRE.test(text)) {
-				return;
-			}
-			var tokens = [];
-			var lastIndex = tagRE.lastIndex = 0;
-			var match, index;
-			while ((match = tagRE.exec(text))) {
-				index = match.index;
-				// push text token
-				if (index > lastIndex) {
-					tokens.push(JSON.stringify(text.slice(lastIndex, index)));
-				}
-				// tag token
-				var exp = match[1].trim();
-				tokens.push("(" + exp + ")");
-				lastIndex = index + match[0].length;
-			}
-			if (lastIndex < text.length) {
-				tokens.push(JSON.stringify(text.slice(lastIndex)));
-			}
-			return tokens.join('+');
-		},
-		*/
 	};
 	var o = new dataBinder();
 	o.eventListener();
