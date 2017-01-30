@@ -372,7 +372,6 @@ jstack.dataBinder = (function(){
 			
 			var compilerTexts = [];
 			var compilerJloads = [];
-			var unobserveStack = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
@@ -398,27 +397,20 @@ jstack.dataBinder = (function(){
 						if(n.nodeType!=Node.ELEMENT_NODE) return;
 						
 						//j-once
-						if(n.hasAttribute('j-once')){
-							unobserveStack.push(function(){
-								jstack.walkTheDOM(n,function(el){
-									if(el.nodeType==Node.ELEMENT_NODE){
-										var observer = $(el).data('j:observer');
-										if(observer){
-											observer.disconnect();
-										}
-									}
-								});
-								n.removeAttribute('j-once');
-							});
-						}
-						else if(n.hasAttribute('j-once-element')){
-							unobserveStack.push(function(){
-								var observer = $n.data('j:observer');
-								if(observer){
-									observer.disconnect();
+						var once = n.hasAttribute('j-once');
+						if(once){
+							jstack.walkTheDOM(n,function(el){
+								if(el.nodeType==Node.ELEMENT_NODE){
+									el.setAttribute('j-once-element','true');
 								}
-								n.removeAttribute('j-once-element');
 							});
+							n.removeAttribute('j-once');
+						}
+						else{
+							once = n.hasAttribute('j-once-element');
+							if(once){
+								n.removeAttribute('j-once-element');
+							}
 						}
 						
 						$.each(self.compilers,function(k,compiler){
@@ -426,7 +418,9 @@ jstack.dataBinder = (function(){
 							if(matchResult){
 								var render = compiler.callback.call(n,matchResult);
 								if(render){
-									self.addWatcher(render, compiler.level);
+									if(!once){
+										self.addWatcher(render, compiler.level);
+									}
 									render();
 								}
 							}
@@ -477,9 +471,6 @@ jstack.dataBinder = (function(){
 				var render = compilerTexts[i];
 				self.addWatcher(render, 99);
 				render();
-			}
-			for(var i = 0, l=unobserveStack.length;i<l;i++){
-				unobserveStack[i]();
 			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
