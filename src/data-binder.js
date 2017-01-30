@@ -1018,6 +1018,8 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					var propAttrs = ['selected','checked'];
+					var nodeName = this.nodeName.toLowerCase();
+					var isInput = nodeName=='input'||nodeName=='select'||nodeName=='textarea'||nodeName=='option';
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(1);
@@ -1030,7 +1032,7 @@ jstack.dataBinder = (function(){
 						el.removeAttribute(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return el;
+						if(!document.body.contains(el)||attrsVars.length==0) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value = jstack.dataBinder.compilerAttrRender(el,v);
@@ -1051,6 +1053,12 @@ jstack.dataBinder = (function(){
 							else{
 								el.setAttribute(k,value);
 							}
+							
+							if((k==':name'||k==':value')&&isInput){
+								delete attrsVarsCurrent[k];
+								return;
+							}
+							
 						});
 					};
 					return render;
