@@ -3329,84 +3329,91 @@ jstack.dataBinder = (function(){
 			this.updateTimeout = false;
 		},
 		
+		compileNode: function(node,compilerJloads){
+			var self = this;
+			
+			jstack.walkTheDOM(node,function(n){	
+				if(!document.body.contains(n)) return false;
+				
+				if(self.observe(n)===false){
+					return false;
+				}
+				
+				var $n = $(n);
+				
+				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+					var renders = jstack.dataBinder.compilerText.call(n);
+					if(renders){
+						for(var i = 0, l=renders.length;i<l;i++){
+							self.addWatcher(renders[i],99);
+							renders[i]();
+						}
+					}
+					return;
+				}
+				
+				if(n.nodeType!=Node.ELEMENT_NODE) return;
+				
+				var once = n.hasAttribute('j-once');
+				if(once){
+					jstack.walkTheDOM(n,function(el){
+						if(el.nodeType==Node.ELEMENT_NODE){
+							el.setAttribute('j-once-element','true');
+						}
+					});
+					n.removeAttribute('j-once');
+				}
+				else{
+					once = n.hasAttribute('j-once-element');
+					if(once){
+						n.removeAttribute('j-once-element');
+					}
+				}
+				
+				$.each(self.compilers,function(k,compiler){
+					var matchResult = compiler.match.call(n);
+					if(matchResult){
+						var render = compiler.callback.call(n,matchResult);
+						if(render){
+							if(!once){
+								self.addWatcher(render, compiler.level);
+							}
+							render();
+						}
+					}
+				});
+				
+				if(!document.body.contains(n)) return false;
+				if($n.data('j:load:state')){
+					return;
+				}
+				$n.data('j:load:state',1);
+				compilerJloads.push(function(){
+					setTimeout(function(){
+						if(n.hasAttribute('j-cloak')){
+							n.removeAttribute('j-cloak');
+						}
+						if($n.data('j:load:state')==2){
+							return;
+						}
+						$n.data('j:load:state',3);
+						$n.trigger('j:load');
+						$n.data('j:load:state',3);
+					},0);
+				});
+				
+			});
+			
+		},
 		loadMutations: function(mutations){
 			//console.log('mutations',mutations);
 			
 			var self = this;
 			
-			var compilerTexts = [];
 			var compilerJloads = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					jstack.walkTheDOM(node,function(n){
-						
-						if(!document.body.contains(n)) return false;
-						
-						if(self.observe(n)===false){
-							return false;
-						}
-						
-						var $n = $(n);
-						
-						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							var renders = jstack.dataBinder.compilerText.call(n);
-							if(renders){
-								for(var i = 0, l=renders.length;i<l;i++){
-									compilerTexts.push(renders[i]);
-								}
-							}
-							return;
-						}
-						
-						if(n.nodeType!=Node.ELEMENT_NODE) return;
-						
-						//j-once
-						var once = n.hasAttribute('j-once');
-						if(once){
-							jstack.walkTheDOM(n,function(el){
-								if(el.nodeType==Node.ELEMENT_NODE){
-									el.setAttribute('j-once-element','true');
-								}
-							});
-							n.removeAttribute('j-once');
-						}
-						else{
-							once = n.hasAttribute('j-once-element');
-							if(once){
-								n.removeAttribute('j-once-element');
-							}
-						}
-						
-						$.each(self.compilers,function(k,compiler){
-							var matchResult = compiler.match.call(n);
-							if(matchResult){
-								var render = compiler.callback.call(n,matchResult);
-								if(render){
-									if(!once){
-										self.addWatcher(render, compiler.level);
-									}
-									render();
-								}
-							}
-						});
-						
-						if(!document.body.contains(n)) return false;
-						if($n.data('j:load:state')){
-							return;
-						}
-						$n.data('j:load:state',1);
-						compilerJloads.push(function(){
-							setTimeout(function(){
-								if($n.data('j:load:state')==2){
-									return;
-								}
-								$n.data('j:load:state',3);
-								$n.trigger('j:load');
-								$n.data('j:load:state',3);
-							},0);
-						});
-						
-					});
+					self.compileNode(node,compilerJloads);
 				});
 				
 				$.each(mutation.removedNodes,function(ii,node){
@@ -3431,52 +3438,32 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
-			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				var render = compilerTexts[i];
-				self.addWatcher(render, 99);
-				render();
-			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
 			}
 		},
-		//mutationObserver: null, //j-once
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
-		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
+		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
 			if(n.hasAttribute('j-escape')) return false;
-			var nodeName = n.tagName.toLowerCase();
+			if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
+				return;
+			}
 			var observations = {
 				subtree: false,
+				childList: true,
+				characterData: true,
+				attributes: false,
 				attributeOldValue: false,
 				characterDataOldValue: false,
 			};
-			if(this.noChildListNodeNames[nodeName]){
-				if(!this.inputPseudoNodeNames[nodeName]) return;
-				observations.childList = false;
-				observations.characterData = false;
-			}
-			else{
-				observations.childList = true;
-				observations.characterData = true;
-			}
-			if(this.inputPseudoNodeNames[nodeName]){
-				observations.attributes = true;
-				observations.attributeFilter = ['name','value'];
-			}
-			else{
-				observations.attributes = false;
-			}
 			
-			//this.mutationObserver.observe(n, observations);
-			//j-once
 			var self = this;
 			var mutationObserver = new MutationObserver(function(m){
 				setTimeout(function(){
 					self.loadMutations(m);
 				},0);
-				
 			});
 			mutationObserver.observe(n, observations);
 			$(n).data('j:observer',mutationObserver);
@@ -3484,16 +3471,16 @@ jstack.dataBinder = (function(){
 		eventListener: function(){
 			var self = this;
 			
-			//this.mutationObserver = new MutationObserver(function(m){
-				//self.loadMutations(m);
-			//});
-			//j-once
 			jstack.walkTheDOM(document.body,function(el){
 				return self.observe(el);
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
-				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
+				var nodeName = this.tagName.toLowerCase();
+				if(e.type=='input'&&(
+					    nodeName=='select'
+					||  (nodeName=='input'&&(this.type=='checkbox'||this.type=='radio'||this.type=='file'))
+				))
 					return;
 					
 				var value = self.getInputVal(this);
@@ -3988,6 +3975,8 @@ jstack.dataBinder = (function(){
 					var attrsVars = {};
 					var attrsVarsCurrent = {};
 					var propAttrs = ['selected','checked'];
+					var nodeName = this.nodeName.toLowerCase();
+					var isInput = nodeName=='input'||nodeName=='select'||nodeName=='textarea'||nodeName=='option';
 					$.each(attrs,function(k,v){
 						var tokens = jstack.dataBinder.textTokenizer(v);
 						var key = k.substr(1);
@@ -4000,7 +3989,7 @@ jstack.dataBinder = (function(){
 						el.removeAttribute(k);
 					});
 					var render = function(){
-						if(!document.body.contains(el)) return el;
+						if(!document.body.contains(el)||attrsVars.length==0) return el;
 						
 						$.each(attrsVars,function(k,v){
 							var value = jstack.dataBinder.compilerAttrRender(el,v);
@@ -4021,6 +4010,12 @@ jstack.dataBinder = (function(){
 							else{
 								el.setAttribute(k,value);
 							}
+							
+							if((k==':name'||k==':value')&&isInput){
+								delete attrsVarsCurrent[k];
+								return;
+							}
+							
 						});
 					};
 					return render;
@@ -4029,12 +4024,11 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()];
+					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
 					var $el = $(this);
-					if(this.type=='file') return;
 					
 					var currentData;
 					var getData = function(){
@@ -4144,32 +4138,6 @@ jstack.dataBinder = (function(){
 			}
 			return tokens;
 		},
-		/*
-		textParser:function(text){
-			var tagRE = /\{\{((?:.|\n)+?)\}\}/g; //regex from vue.js :)
-			if (!tagRE.test(text)) {
-				return;
-			}
-			var tokens = [];
-			var lastIndex = tagRE.lastIndex = 0;
-			var match, index;
-			while ((match = tagRE.exec(text))) {
-				index = match.index;
-				// push text token
-				if (index > lastIndex) {
-					tokens.push(JSON.stringify(text.slice(lastIndex, index)));
-				}
-				// tag token
-				var exp = match[1].trim();
-				tokens.push("(" + exp + ")");
-				lastIndex = index + match[0].length;
-			}
-			if (lastIndex < text.length) {
-				tokens.push(JSON.stringify(text.slice(lastIndex)));
-			}
-			return tokens.join('+');
-		},
-		*/
 	};
 	var o = new dataBinder();
 	o.eventListener();
