@@ -513,26 +513,6 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
-				var nodeName = this.tagName.toLowerCase();
-				if(e.type=='input'&&(
-					    nodeName=='select'
-					||  (nodeName=='input'&&(this.type=='checkbox'||this.type=='radio'||this.type=='file'))
-				))
-					return;
-					
-				var value = self.getInputVal(this);
-				
-				if(e.type=='change'){
-					var handled = $(this).data('jHandledValue');
-					if(typeof(handled)!='undefined'&&value==handled){
-						return;
-					}
-				}
-				
-				//console.log('input user',e);
-				
-				$(this).data('jHandledValue',value);
-				
 				self.inputToModel(this,e.type);
 			});
 		},
@@ -1069,6 +1049,7 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
+						if(!el.hasAttribute('name')) return;
 						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
