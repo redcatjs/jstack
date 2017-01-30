@@ -1085,8 +1085,8 @@ jstack.dataBinder = (function(){
 		createCompilerTextRender: function(text,token){
 			var currentData;
 			return function(){
-				var data = jstack.dataBinder.getValueEval(text[0],token);
 				if(!document.body.contains(text[0])) return text[0];
+				var data = jstack.dataBinder.getValueEval(text[0],token);
 				if(currentData===data) return;
 				currentData = data;
 				text.commentChildren().remove();
