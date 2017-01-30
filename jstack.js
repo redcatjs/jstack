@@ -3109,11 +3109,21 @@ jstack.dataBinder = (function(){
 				}
 			}
 			
-			var value;
-			try{
-				var func = new Function('$controller', '$this', '$scope', "with($scope){ return "+varKey+"; }");
-				value = func(controller, el, scopeValue);
-			}
+			var params = [ '$controller', '$this', '$scope' ];
+			var args = [ controller, el, scopeValue ];
+			$.each(scopeValue,function(param,arg){
+				params.push(param);
+				args.push(arg);
+			});
+			
+			params.push("return "+varKey+";");
+			
+ 			var value;
+ 			try{
+				var func = Function.apply(null,params);
+				value = func.apply(null,args);
+ 			}
+			
 			catch(jstackException){
 				if(jstack.config.debug){
 					var warn = [jstackException.message, ", expression: "+varKey, "element", el];
