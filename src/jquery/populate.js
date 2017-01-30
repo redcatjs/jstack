@@ -19,29 +19,40 @@ var populateSelect = function( input, value, config ) {
 		return;
 	}
 	
-	//if(input.hasClass('select2-hidden-accessible')){
-		//if(config.push){
-			//var v = input.val();
-			//if(v===null){
-				//v = [];
-			//}
-			//if(typeof(v)!='object'){
-				//v = [v];
-			//}
-			//if(v.indexOf(value)===-1){
-				//v.push(value);
-			//}
+	if(isSelect2){
+		var setValue;
+		if(config.preventValEvent){
+			setValue = function(input,val){
+				input.setVal(val);
+			};
+		}
+		else{
+			setValue = function(input,val){
+				input.val(val);
+			};
+		}
+		if(config.push){
+			var v = input.val();
+			if(v===null){
+				v = [];
+			}
+			if(typeof(v)!='object'){
+				v = [v];
+			}
+			if(v.indexOf(value)===-1){
+				v.push(value);
+			}
+			setValue(input,value);
+		}
+		else{
+			setValue(input,value);
+		}
+		if(!config.preventValEvent){
 			//console.log(input,value);
-			//setValue(input,value);
-		//}
-		//else{
-			//setValue(input,value);
-		//}
-		//if(!config.preventValEvent){
-			//input.trigger('change');
-		//}
-		//return;
-	//}
+			input.trigger('change');
+		}
+		return;
+	}
 	
 	var found = false;
 	var optFirstTagName = 'option';
@@ -93,10 +104,6 @@ var populateSelect = function( input, value, config ) {
 		input.append( '<'+optFirstTagName+' value="' + optionValue + '" selected="selected">' + optionText + '</'+optFirstTagName+'>' );
 	}
 	
-	if(isSelect2&&!config.preventValEvent){
-		input.trigger('change');
-	}
-	
 };
 
 $.fn.populateInput = function( value, config ) {
@@ -119,7 +126,8 @@ $.fn.populateInput = function( value, config ) {
 	return this.each(function(){
 		var input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		if ( this.tagName.toLowerCase()=='select' || this.hasAttribute('j-select') ) {
+		var nodeName = this.tagName.toLowerCase();
+		if (nodeName =='select' || nodeName == 'j-select' ) {
 			if ( value instanceof Array ) {
 				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );

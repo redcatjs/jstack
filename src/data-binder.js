@@ -223,7 +223,7 @@ jstack.dataBinder = (function(){
 			textarea: function(element){
 				return $( element ).val();
 			},
-			jselect: function(el){
+			'j-select': function(el){
 				el = $(el);
 				var multiple = el[0].hasAttribute('multiple');
 				var data = el.data('preselect');
@@ -251,11 +251,8 @@ jstack.dataBinder = (function(){
 			return $( element ).html();
 		},
 		getInputVal: function(element){
-			var elementType = element.tagName.toLowerCase();
-			if(elementType!='select'&&element.hasAttribute('j-select')){
-				elementType = 'jselect';
-			}
-			var getter = this.getters[elementType] || this.defaultGetter;
+			var nodeName = element.tagName.toLowerCase();
+			var getter = this.getters[nodeName] || this.defaultGetter;
 			return getter(element);
 		},
 		inputToModel: function(el,eventType){
@@ -1037,6 +1034,7 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
+					console.log(this.tagName.toLowerCase(),(this.hasAttribute('name')||this.hasAttribute(':name')),jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()],this.type!='file');
 					return (this.hasAttribute('name')||this.hasAttribute(':name'))&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
