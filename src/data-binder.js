@@ -432,10 +432,13 @@ jstack.dataBinder = (function(){
 						}
 						$n.data('j:load:state',1);
 						compilerJloads.push(function(){
-							if(n.hasAttribute('j-cloak')){
-								n.removeAttribute('j-cloak');
-							}
 							setTimeout(function(){
+								if($n.is('select')){
+									console.log($n.val());
+								}
+								if(n.hasAttribute('j-cloak')){
+									n.removeAttribute('j-cloak');
+								}
 								if($n.data('j:load:state')==2){
 									return;
 								}
@@ -481,32 +484,21 @@ jstack.dataBinder = (function(){
 		},
 		//mutationObserver: null, //j-once
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
-		inputPseudoNodeNames: {input:1 ,select:1, textarea:1, button:1},
+		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
 			if(n.hasAttribute('j-escape')) return false;
-			var nodeName = n.tagName.toLowerCase();
+			if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
+				return;
+			}
 			var observations = {
 				subtree: false,
+				childList: true,
+				characterData: true,
+				attributes: false,
 				attributeOldValue: false,
 				characterDataOldValue: false,
 			};
-			if(this.noChildListNodeNames[nodeName]){
-				if(!this.inputPseudoNodeNames[nodeName]) return;
-				observations.childList = false;
-				observations.characterData = false;
-			}
-			else{
-				observations.childList = true;
-				observations.characterData = true;
-			}
-			if(this.inputPseudoNodeNames[nodeName]){
-				observations.attributes = true;
-				observations.attributeFilter = ['name','value'];
-			}
-			else{
-				observations.attributes = false;
-			}
 			
 			//this.mutationObserver.observe(n, observations);
 			//j-once
@@ -515,7 +507,6 @@ jstack.dataBinder = (function(){
 				setTimeout(function(){
 					self.loadMutations(m);
 				},0);
-				
 			});
 			mutationObserver.observe(n, observations);
 			$(n).data('j:observer',mutationObserver);
@@ -1068,12 +1059,11 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()];
+					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
 					var $el = $(this);
-					if(this.type=='file') return;
 					
 					var currentData;
 					var getData = function(){
