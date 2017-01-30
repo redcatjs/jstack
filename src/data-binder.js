@@ -523,7 +523,11 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
-				if(e.type=='input'&&$(this).is('select[name], input[name][type=checkbox], input[name][type=radio], input[name][type=file]'))
+				var nodeName = this.tagName.toLowerCase();
+				if(e.type=='input'&&(
+					    nodeName=='select'
+					||  (nodeName=='input'&&(this.type=='checkbox'||this.type=='radio'||this.type=='file'))
+				))
 					return;
 					
 				var value = self.getInputVal(this);
