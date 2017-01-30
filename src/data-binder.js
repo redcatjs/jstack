@@ -432,6 +432,9 @@ jstack.dataBinder = (function(){
 						}
 						$n.data('j:load:state',1);
 						compilerJloads.push(function(){
+							if(n.hasAttribute('j-cloak')){
+								n.removeAttribute('j-cloak');
+							}
 							setTimeout(function(){
 								if($n.data('j:load:state')==2){
 									return;
