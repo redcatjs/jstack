@@ -4006,7 +4006,6 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					console.log(this.tagName.toLowerCase(),(this.hasAttribute('name')||this.hasAttribute(':name')),jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()],this.type!='file');
 					return (this.hasAttribute('name')||this.hasAttribute(':name'))&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
