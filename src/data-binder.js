@@ -370,7 +370,6 @@ jstack.dataBinder = (function(){
 			
 			var self = this;
 			
-			var compilerTexts = [];
 			var compilerJloads = [];
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
@@ -385,10 +384,10 @@ jstack.dataBinder = (function(){
 						var $n = $(n);
 						
 						if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-							var renders = jstack.dataBinder.compilerText.call(n);
 							if(renders){
 								for(var i = 0, l=renders.length;i<l;i++){
-									compilerTexts.push(renders[i]);
+									self.addWatcher(renders[i],99);
+									renders[i]();
 								}
 							}
 							return;
@@ -472,11 +471,6 @@ jstack.dataBinder = (function(){
 				});
 			});
 			
-			for(var i = 0, l=compilerTexts.length;i<l;i++){
-				var render = compilerTexts[i];
-				self.addWatcher(render, 99);
-				render();
-			}
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
 			}
