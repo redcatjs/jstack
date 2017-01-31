@@ -34,9 +34,9 @@ jstack.mvc = function(config){
 	
 	controllerReady.then(function(){
 		
-		var ctrl = jstack.controller(config.controller,target);
+		var ctrlReady = jstack.controller(config.controller,target);
 		
-		$.when(viewReady, ctrl.ready).then(function(view){
+		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
 			ctrl.render(html);
 			ready.resolve(target,ctrl);
