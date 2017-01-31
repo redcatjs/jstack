@@ -956,16 +956,6 @@ var constructor = function(controllerSet,element){
 	this.render = function(html){
 		if(this.noRender) return;
 		
-		html = $(html);
-		
-		//html.find(':input[name],[j-input],j-select[name]').each(function(){
-			//var key = jstack.dataBinder.getScopedInput(this);
-			//var val = jstack.dataBinder.getInputVal(this);
-			//jstack.dataBinder.dotSet(key,self.data,val,true);
-			
-		//});
-		
-		
 		var el = this.element;
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
