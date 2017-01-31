@@ -965,12 +965,12 @@ jstack.controller = function(controller,element){
 				
 				html = $(html);
 				
-				html.find(':input[name],[j-input],j-select[name]').each(function(){
-					var key = jstack.dataBinder.getScopedInput(this);
-					var val = jstack.dataBinder.getInputVal(this);
-					jstack.dataBinder.dotSet(key,self.data,val,true);
+				//html.find(':input[name],[j-input],j-select[name]').each(function(){
+					//var key = jstack.dataBinder.getScopedInput(this);
+					//var val = jstack.dataBinder.getInputVal(this);
+					//jstack.dataBinder.dotSet(key,self.data,val,true);
 					
-				});
+				//});
 				
 				
 				var el = this.element;
@@ -3998,13 +3998,19 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return (this.hasAttribute('name')||this.hasAttribute(':name'))&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
 					var $el = $(this);
 					
 					var currentData;
+					
+					//default to model
+					var key = jstack.dataBinder.getScopedInput(this);
+					var val = jstack.dataBinder.getInputVal(this);
+					jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
 						var key = jstack.dataBinder.getKey( el.getAttribute('name') );
@@ -4012,7 +4018,6 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
-						if(!el.hasAttribute('name')) return;
 						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
