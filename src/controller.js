@@ -52,12 +52,12 @@ var constructor = function(controllerSet,element){
 		
 		html = $(html);
 		
-		//html.find(':input[name],[j-input],j-select[name]').each(function(){
-			//var key = jstack.dataBinder.getScopedInput(this);
-			//var val = jstack.dataBinder.getInputVal(this);
-			//jstack.dataBinder.dotSet(key,self.data,val,true);
+		html.find(':input[name],[j-input],j-select[name]').each(function(){
+			var key = jstack.dataBinder.getScopedInput(this);
+			var val = jstack.dataBinder.getInputVal(this);
+			jstack.dataBinder.dotSet(key,self.data,val,true);
 			
-		//});
+		});
 		
 		
 		var el = this.element;
