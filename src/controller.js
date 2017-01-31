@@ -92,7 +92,7 @@ jstack.controller = function(controller,element){
 						controller[k] = v;
 					}
 				});
-				console.log('extended',controller.name);
+				//console.log('extended',controller.name);
 				extend.resolve();
 			});
 		}		
@@ -127,7 +127,7 @@ jstack.controller = function(controller,element){
 	
 	$.when.apply($, dependencies).then(function(){
 		
-		console.log('construct',controllerSet.name);
+		//console.log('construct',controllerSet.name);
 		var controller = new constructor(controllerSet,element);
 		
 		var dependenciesDataReady = [];
