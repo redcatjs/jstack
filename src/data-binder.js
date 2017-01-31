@@ -1026,7 +1026,7 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return (this.hasAttribute('name')||this.hasAttribute(':name'))&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
@@ -1040,7 +1040,6 @@ jstack.dataBinder = (function(){
 					};
 					
 					var render = function(){
-						if(!el.hasAttribute('name')) return;
 						if(!document.body.contains(el)) return el;
 						
 						var data = getData();
