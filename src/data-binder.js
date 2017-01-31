@@ -1033,6 +1033,12 @@ jstack.dataBinder = (function(){
 					var $el = $(this);
 					
 					var currentData;
+					
+					//default to model
+					var key = jstack.dataBinder.getScopedInput(this);
+					var val = jstack.dataBinder.getInputVal(this);
+					jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
 						var key = jstack.dataBinder.getKey( el.getAttribute('name') );
