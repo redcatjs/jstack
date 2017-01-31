@@ -998,7 +998,7 @@ jstack.controller = function(controller,element){
 						controller[k] = v;
 					}
 				});
-				console.log('extended',controller.name);
+				//console.log('extended',controller.name);
 				extend.resolve();
 			});
 		}		
@@ -1033,7 +1033,7 @@ jstack.controller = function(controller,element){
 	
 	$.when.apply($, dependencies).then(function(){
 		
-		console.log('construct',controllerSet.name);
+		//console.log('construct',controllerSet.name);
 		var controller = new constructor(controllerSet,element);
 		
 		var dependenciesDataReady = [];
@@ -3541,20 +3541,10 @@ jstack.dataBinder = (function(){
 			var controller = $(input).closest('[j-controller]');
 			
 			if(!controller.length){
-				var controller = $(document.body);
-				if(!controller.data('jModel')){
-					controller.data('jModel',{});
-				}
-				var o = jstack.controller('',controller);
+				controller = $(document.body);
+				controller.attr('j-controller','')
+				controller.data('jModel',{});
 			}
-			
-			if(!controller.data('jController')){
-				if(!controller.data('jModel')){
-					controller.data('jModel',{});
-				}
-				jstack.controller('',controller);
-			}
-			
 			
 			return controller;
 		},
