@@ -1,6 +1,15 @@
 jstack.controller = function(controller,element){
 	
 	if(typeof(controller)=='object'){
+		if(controller.mixins){
+			for(var i = 0, l = mixins.length;i<l;i++){
+				mixins[i].forEach(function(k,v){
+					if(typeof(controller[k])=='undefined'){
+						controller[k] = v;
+					}
+				});
+			}
+		}
 		jstack.controllers[controller.name] = function(element){
 			
 			var self = this;
@@ -20,12 +29,13 @@ jstack.controller = function(controller,element){
 				}
 			}
 			
+			
+			
 			var defaults = {
 				domReady: function(){},
 				setData: function(){},
 				data: data,
 			};
-			
 			
 			$.extend(true,this,defaults,controller);
 			
