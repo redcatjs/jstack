@@ -198,15 +198,7 @@ jstack.dataBinder = (function(){
 		},
 		getters: {
 			select: function(el){
-				el = $(el);
-				var options = el.children('option[value]');
-				if(options.length){
-					var selected = options.filter('[selected]');
-					if(!selected.length){
-						selected = options.eq(0);
-					}
-					return selected.attr('value');
-				}
+				return $(el).val();
 			},
 			input: function(element) {
 				var type = $( element ).prop('type');
