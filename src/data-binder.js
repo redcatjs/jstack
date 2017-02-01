@@ -329,7 +329,9 @@ jstack.dataBinder = (function(){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
 				}
-				this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
+				this.updateTimeout = setTimeout(function(){
+					self.runUpdate();
+				}, this.updateWait);
 			}
 			else{
 				this.updateTimeout = true;
