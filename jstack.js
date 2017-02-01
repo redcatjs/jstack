@@ -3511,8 +3511,9 @@ jstack.dataBinder = (function(){
 				if(n.parentNode){
 					var jready = $(n.parentNode).data('j:ready');
 					if(jready){
-						compilerJloads.push(function(){
+						self.deferMutation.push(function(){
 							jready.resolve();
+							$(n.parentNode).removeData('j:ready');
 						});
 					}
 				}
@@ -3535,6 +3536,8 @@ jstack.dataBinder = (function(){
 			});
 			
 		},
+		loadingMutation: 0,
+		deferMutation: [],
 		loadMutations: function(mutations){
 			//console.log('mutations',mutations);
 			
@@ -3571,6 +3574,16 @@ jstack.dataBinder = (function(){
 			for(var i = 0, l=compilerJloads.length;i<l;i++){
 				compilerJloads[i]();
 			}
+			
+			self.loadingMutation--;
+			
+			if(self.loadingMutation==0){
+				while(self.deferMutation.length){
+					self.deferMutation.pop()();
+				}
+			}
+			
+			
 		},
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
@@ -3591,6 +3604,9 @@ jstack.dataBinder = (function(){
 			
 			var self = this;
 			var mutationObserver = new MutationObserver(function(m){
+				
+				self.loadingMutation++;
+				
 				setTimeout(function(){
 					self.loadMutations(m);
 				},0);
