@@ -33,9 +33,8 @@ var constructor = function(controllerSet,element){
 		var buildCallback = function(object,proxy){
 			//console.log('buildCallback',object,proxy);
 			object.set = function(k,v){
-				proxy[k] = v;
-				jstack.dataBinder.updateDeferStateObserver = $.Deferred();
-				return jstack.dataBinder.updateDeferStateObserver.promise();
+				object[k] = v;
+				return jstack.dataBinder.update();
 			};
 		};
 		
