@@ -467,7 +467,7 @@ ObjectObservable.create = function (object,params)
 					if(params.ownKeys){
 						return params.ownKeys(target);
 					}
-					return oTarget.keys();
+					return Object.keys(target);
 				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
