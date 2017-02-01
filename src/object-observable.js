@@ -1,6 +1,3 @@
-//from https://github.com/eface2face/object-observable
-//modified by surikat, added buildCallback param
-
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ObjectObservable = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -319,27 +316,16 @@ ObjectObservable.create = function (object,params)
 	if (!arguments.length)
 		//Create empty object;
 		object = {};
-	
+
 	//Set defaults
 	var params = Object.assign(
 		{},
 		{
 			clone: false,
-			recursive: true,
-			buildCallback: false,
-			get: false, //surikat
-			set: false, //surikat
-			ownKeys: false, //surikat
+			recursive: true
 		},
 		params
 	);
-	
-	//surikat
-	var clone = params.clone;
-	var recursive = params.recursive;
-	delete params.clone;
-	delete params.recursive;
-	
 	//Create emitter
 	var emitter = new EventEmitter();
 	var changes = [];
@@ -392,15 +378,13 @@ ObjectObservable.create = function (object,params)
 	//Do not clone by default
 	var cloned = object;
 	//If we need to do it recursively
-	//if (params.recursive) //surikat
-	if (recursive)
+	if (params.recursive)
 	{
 		//Check if it is an array
 		if (Array.isArray (object))
 		{
 			//Check if we need to clone object
-			//if (params.clone) //surikat
-			if (clone)
+			if (params.clone)
 				//Create empty one
 				cloned = [];
 			//Convert each
@@ -415,8 +399,7 @@ ObjectObservable.create = function (object,params)
 					if( !ObjectObservable.isObservable(value))
 					{
 						//Create a new proxy
-						//value = ObjectObservable.create(value); //surikat
-						value = ObjectObservable.create(value,params);
+						value = ObjectObservable.create(value);
 						//Set it back
 						cloned[i] = value;
 					}
@@ -426,8 +409,7 @@ ObjectObservable.create = function (object,params)
 			}
 		} else {
 			//Check if we need to clone object
-			//if (params.clone) //surikat
-			if (clone)
+			if (params.clone)
 				//Create empty one
 				cloned = {};
 			//Append each property
@@ -445,8 +427,7 @@ ObjectObservable.create = function (object,params)
 						if( !ObjectObservable.isObservable(value))
 						{
 							//Create a new proxy
-							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,params);
+							value = ObjectObservable.create(value);
 							//Set it back
 							cloned[key] = value;
 						}
@@ -457,27 +438,17 @@ ObjectObservable.create = function (object,params)
 			}
 		}
 	}
-	
+
 	//Create proxy for object
-	var proxy = new Proxy(
+	return new Proxy(
 			cloned,
 			//Proxy handler object
 			{
-				ownKeys: function (target) { //surikat
-					if(params.ownKeys){
-						return params.ownKeys(target);
-					}
-					return Object.keys(target);
-				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
 					if (key===prefix)
 						return emitter;
-					
-					if(params.get){ //surikat
-						return params.get(target, key);
-					}
-					
+
 					//debug("%o get %s",target,key);
 					return target[key];
 				},
@@ -492,27 +463,19 @@ ObjectObservable.create = function (object,params)
 					//debug("%o set %s from %o to %o",target,key,old,value);
 
 					//It is a not-null object?
-					//if (params.recursive && typeof(value)==='object' && value ) //surikat
-					if (recursive && typeof(value)==='object' && value )
+					if (params.recursive && typeof(value)==='object' && value )
 					{
 						//Is it already observable?
 						if( !ObjectObservable.isObservable(value))
 							//Create a new proxy
-							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,params);
+							value = ObjectObservable.create(value);
 						//Set it before setting the listener or we will get events that we don't expect
 						target[key] = value;
 						//Set us as listeners
 						ObjectObservable.observeInmediate(value,addListener(key));
 					} else {
 						//Set it
-						
-						if(params.set){ //surikat
-							params.set(target, key, value);
-						}
-						else{
-							target[key] = value;
-						}
+						target[key] = value;
 					}
 
 					//Fire change
@@ -556,12 +519,6 @@ ObjectObservable.create = function (object,params)
 				}
 			}
 		);
-		
-		if(params.buildCallback){ //surikat
-			params.buildCallback(object,proxy);
-		}
-		
-		return proxy;
 };
 
 ObjectObservable.isObservable = function(object)
