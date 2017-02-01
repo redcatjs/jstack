@@ -1,3 +1,5 @@
+(function(){
+
 jstack.mvc = function(config){
 	
 	if(typeof(arguments[0])=='string'){
@@ -44,9 +46,9 @@ jstack.mvc = function(config){
 		
 	});
 
-	return ready;
+	return ready.promise();
 };
-jstack.viewReady = function(el){
+var getViewReady = function(el){
 	if(typeof(arguments[0])=='string'){
 		var selector = '[j-view="'+arguments[0]+'"]';
 		if(typeof(arguments[1])=='object'){
@@ -65,6 +67,9 @@ jstack.viewReady = function(el){
 	}
 	return ready;
 };
+jstack.viewReady = function(el){
+	return getViewReady(el).promise();
+};
 $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	
 	this.setAttribute('j-view-loaded','true');
@@ -79,7 +84,7 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		controller = view;
 	}
 
-	var ready = jstack.viewReady(this);
+	var ready = getViewReady(this);
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
@@ -91,3 +96,5 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		},0);
 	});
 });
+
+})();

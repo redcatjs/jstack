@@ -182,7 +182,7 @@ jstack.controller = function(controller,element){
 		
 	});
 	
-	return ready;
+	return ready.promise();
 };
 
 })();

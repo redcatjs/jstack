@@ -22,7 +22,7 @@
 				}
 			} );
 		}
-		return requests[ templatePath ];
+		return requests[ templatePath ].promise();
 	};
 
 })();

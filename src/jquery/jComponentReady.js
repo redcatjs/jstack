@@ -18,5 +18,5 @@ $.fn.jComponentReady = function(callback){
 		check();
 	});
 	check();	
-	return defer;
+	return defer.promise();
 };
