@@ -325,6 +325,7 @@ jstack.dataBinder = (function(){
 		updateDeferStateObserver: null,
 		updateWait: 100,
 		update: function(){
+			var self = this;
 			if(this.updateTimeout){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
