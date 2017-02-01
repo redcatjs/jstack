@@ -91,9 +91,9 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		target:this,
 	});
 	mvc.then(function(){
-		setTimeout(function(){
+		//setTimeout(function(){
 			ready.resolve();
-		},0);
+		//});
 	});
 });
 
