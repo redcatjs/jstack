@@ -36,6 +36,10 @@ var constructor = function(controllerSet,element){
 				object[k] = v;
 				return jstack.dataBinder.update();
 			};
+			object.__unset = function(k){
+				delete object[k];
+				return jstack.dataBinder.update();
+			};
 		};
 		
 		self.data = ObjectObservable.create(self.data,{},buildCallback);
