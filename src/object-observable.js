@@ -327,8 +327,9 @@ ObjectObservable.create = function (object,params)
 			clone: false,
 			recursive: true,
 			buildCallback: false,
-			__get: false, //surikat
-			__set: false, //surikat
+			get: false, //surikat
+			set: false, //surikat
+			ownKeys: false, //surikat
 		},
 		params
 	);
@@ -462,13 +463,19 @@ ObjectObservable.create = function (object,params)
 			cloned,
 			//Proxy handler object
 			{
+				ownKeys: function (target) { //surikat
+					if(params.ownKeys){
+						return params.ownKeys(target);
+					}
+					return oTarget.keys();
+				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
 					if (key===prefix)
 						return emitter;
 					
-					if(params.__get){ //surikat
-						return params.__get(target, key);
+					if(params.get){ //surikat
+						return params.get(target, key);
 					}
 					
 					//debug("%o get %s",target,key);
@@ -500,8 +507,8 @@ ObjectObservable.create = function (object,params)
 					} else {
 						//Set it
 						
-						if(params.__set){ //surikat
-							params.__set(target, key, value);
+						if(params.set){ //surikat
+							params.set(target, key, value);
 						}
 						else{
 							target[key] = value;
