@@ -1,4 +1,5 @@
 //from https://github.com/eface2face/object-observable
+//modified by surikat, added buildCallback param
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ObjectObservable = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -312,19 +313,20 @@ var prefix = '__OBJECT_OBSERVABLE__PREFIX__' + new Date()+'__';
 
 var ObjectObservable = {};
 
-ObjectObservable.create = function (object,params)
+//ObjectObservable.create = function (object,params)
+ObjectObservable.create = function (object,params,buildCallback) //surikat
 {
 	//IF no args
 	if (!arguments.length)
 		//Create empty object;
 		object = {};
-
+	
 	//Set defaults
 	var params = Object.assign(
 		{},
 		{
 			clone: false,
-			recursive: true
+			recursive: true,
 		},
 		params
 	);
@@ -401,7 +403,8 @@ ObjectObservable.create = function (object,params)
 					if( !ObjectObservable.isObservable(value))
 					{
 						//Create a new proxy
-						value = ObjectObservable.create(value);
+						//value = ObjectObservable.create(value); //surikat
+						value = ObjectObservable.create(value,{},buildCallback);
 						//Set it back
 						cloned[i] = value;
 					}
@@ -429,7 +432,8 @@ ObjectObservable.create = function (object,params)
 						if( !ObjectObservable.isObservable(value))
 						{
 							//Create a new proxy
-							value = ObjectObservable.create(value);
+							//value = ObjectObservable.create(value); //surikat
+							value = ObjectObservable.create(value,{},buildCallback);
 							//Set it back
 							cloned[key] = value;
 						}
@@ -440,9 +444,9 @@ ObjectObservable.create = function (object,params)
 			}
 		}
 	}
-
+	
 	//Create proxy for object
-	return new Proxy(
+	var proxy = new Proxy(
 			cloned,
 			//Proxy handler object
 			{
@@ -470,7 +474,8 @@ ObjectObservable.create = function (object,params)
 						//Is it already observable?
 						if( !ObjectObservable.isObservable(value))
 							//Create a new proxy
-							value = ObjectObservable.create(value);
+							//value = ObjectObservable.create(value); //surikat
+							value = ObjectObservable.create(value,{},buildCallback);
 						//Set it before setting the listener or we will get events that we don't expect
 						target[key] = value;
 						//Set us as listeners
@@ -521,6 +526,12 @@ ObjectObservable.create = function (object,params)
 				}
 			}
 		);
+		
+		if(buildCallback){ //surikat
+			buildCallback(object,proxy);
+		}
+		
+		return proxy;
 };
 
 ObjectObservable.isObservable = function(object)
