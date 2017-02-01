@@ -467,8 +467,8 @@ ObjectObservable.create = function (object,params)
 					if (key===prefix)
 						return emitter;
 					
-					if(param.__get){ //surikat
-						return param.__get(target, key);
+					if(params.__get){ //surikat
+						return params.__get(target, key);
 					}
 					
 					//debug("%o get %s",target,key);
@@ -500,8 +500,8 @@ ObjectObservable.create = function (object,params)
 					} else {
 						//Set it
 						
-						if(param.__set){ //surikat
-							param.__set(target, key, value);
+						if(params.__set){ //surikat
+							params.__set(target, key, value);
 						}
 						else{
 							target[key] = value;
