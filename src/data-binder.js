@@ -115,7 +115,7 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var forCollection = self.getParentsForId(el);
+			var forCollection = self.getParentsForId(el).reverse();
 			
 			for(var i = 0, l = forCollection.length; i<l; i++){
 				var forid = forCollection[i];
