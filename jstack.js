@@ -12,9 +12,6 @@ jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
-//from https://github.com/eface2face/object-observable
-//modified by surikat, added buildCallback param
-
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ObjectObservable = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -333,27 +330,16 @@ ObjectObservable.create = function (object,params)
 	if (!arguments.length)
 		//Create empty object;
 		object = {};
-	
+
 	//Set defaults
 	var params = Object.assign(
 		{},
 		{
 			clone: false,
-			recursive: true,
-			buildCallback: false,
-			get: false, //surikat
-			set: false, //surikat
-			ownKeys: false, //surikat
+			recursive: true
 		},
 		params
 	);
-	
-	//surikat
-	var clone = params.clone;
-	var recursive = params.recursive;
-	delete params.clone;
-	delete params.recursive;
-	
 	//Create emitter
 	var emitter = new EventEmitter();
 	var changes = [];
@@ -406,15 +392,13 @@ ObjectObservable.create = function (object,params)
 	//Do not clone by default
 	var cloned = object;
 	//If we need to do it recursively
-	//if (params.recursive) //surikat
-	if (recursive)
+	if (params.recursive)
 	{
 		//Check if it is an array
 		if (Array.isArray (object))
 		{
 			//Check if we need to clone object
-			//if (params.clone) //surikat
-			if (clone)
+			if (params.clone)
 				//Create empty one
 				cloned = [];
 			//Convert each
@@ -429,8 +413,7 @@ ObjectObservable.create = function (object,params)
 					if( !ObjectObservable.isObservable(value))
 					{
 						//Create a new proxy
-						//value = ObjectObservable.create(value); //surikat
-						value = ObjectObservable.create(value,params);
+						value = ObjectObservable.create(value);
 						//Set it back
 						cloned[i] = value;
 					}
@@ -440,8 +423,7 @@ ObjectObservable.create = function (object,params)
 			}
 		} else {
 			//Check if we need to clone object
-			//if (params.clone) //surikat
-			if (clone)
+			if (params.clone)
 				//Create empty one
 				cloned = {};
 			//Append each property
@@ -459,8 +441,7 @@ ObjectObservable.create = function (object,params)
 						if( !ObjectObservable.isObservable(value))
 						{
 							//Create a new proxy
-							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,params);
+							value = ObjectObservable.create(value);
 							//Set it back
 							cloned[key] = value;
 						}
@@ -471,27 +452,17 @@ ObjectObservable.create = function (object,params)
 			}
 		}
 	}
-	
+
 	//Create proxy for object
-	var proxy = new Proxy(
+	return new Proxy(
 			cloned,
 			//Proxy handler object
 			{
-				ownKeys: function (target) { //surikat
-					if(params.ownKeys){
-						return params.ownKeys(target);
-					}
-					return Object.keys(target);
-				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
 					if (key===prefix)
 						return emitter;
-					
-					if(params.get){ //surikat
-						return params.get(target, key);
-					}
-					
+
 					//debug("%o get %s",target,key);
 					return target[key];
 				},
@@ -506,27 +477,19 @@ ObjectObservable.create = function (object,params)
 					//debug("%o set %s from %o to %o",target,key,old,value);
 
 					//It is a not-null object?
-					//if (params.recursive && typeof(value)==='object' && value ) //surikat
-					if (recursive && typeof(value)==='object' && value )
+					if (params.recursive && typeof(value)==='object' && value )
 					{
 						//Is it already observable?
 						if( !ObjectObservable.isObservable(value))
 							//Create a new proxy
-							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,params);
+							value = ObjectObservable.create(value);
 						//Set it before setting the listener or we will get events that we don't expect
 						target[key] = value;
 						//Set us as listeners
 						ObjectObservable.observeInmediate(value,addListener(key));
 					} else {
 						//Set it
-						
-						if(params.set){ //surikat
-							params.set(target, key, value);
-						}
-						else{
-							target[key] = value;
-						}
+						target[key] = value;
 					}
 
 					//Fire change
@@ -570,12 +533,6 @@ ObjectObservable.create = function (object,params)
 				}
 			}
 		);
-		
-		if(params.buildCallback){ //surikat
-			params.buildCallback(object,proxy);
-		}
-		
-		return proxy;
 };
 
 ObjectObservable.isObservable = function(object)
@@ -977,43 +934,7 @@ var constructor = function(controllerSet,element){
 	this.startDataObserver = function(){
 		var object = self.data;
 		
-		self.data = ObjectObservable.create(self.data,{
-			ownKeys: function(target){
-				return Object.keys(target).filter(function(k){
-					return !( k.substr(0,2)=='__' && typeof target[k] == 'function' );
-				});
-			},
-			buildCallback: function(object,proxy){
-				//console.log('buildCallback',object,proxy);
-				object.__set = function(k,v){
-					object[k] = v;
-					return jstack.dataBinder.update();
-				};
-				object.__unset = function(k){
-					delete object[k];
-					return jstack.dataBinder.update();
-				};
-				if(object instanceof Array){
-					object.__push = function(v){
-						object.push(v);
-						return jstack.dataBinder.update();
-					};
-					object.__unshift = function(v){
-						object.unshift(v);
-						return jstack.dataBinder.update();
-					};
-					object.__shift = function(){
-						return jstack.dataBinder.update(null,object.shift());
-					};
-					object.__pop = function(){
-						return jstack.dataBinder.update(null,object.pop());
-					};
-					object.__splice = function(){
-						return jstack.dataBinder.update(null,object.splice.apply(object,arguments));
-					};
-				}
-			}
-		});
+		self.data = ObjectObservable.create(self.data);
 		
 		ObjectObservable.observe(self.data,function(change){
 			//console.log('j:model:update',change);
@@ -3083,6 +3004,20 @@ jstack.route = ( function( w, url ) {
 	return routie;
 
 } )( window, jstack.url );
+jstack.ready = function(callback){
+	var deferMutation = $.Deferred();
+	jstack.dataBinder.deferMutation.push(function(){
+		deferMutation.resolve();
+	});
+	var when = $.when(deferMutation,jstack.dataBinder.updateDeferStateObserver);
+	if(callback){
+		when.then(function(){
+			callback();
+		});
+	}
+	return when.promise();
+};
+
 jstack.dataBinder = (function(){
 	var dataBinder = function(){
 		
@@ -3406,46 +3341,29 @@ jstack.dataBinder = (function(){
 			
 		},
 		
-		updateTimeout: null,
+		updateDeferState: 0,
 		updateDeferStateObserver: null,
-		updateWait: 100,
-		update: function(defer,deferValue){
+		update: function(){
+			//console.log('update');
 			var self = this;
-			if(!defer){
-				defer = $.Deferred();
-			}
-			if(this.updateTimeout){
-				if(this.updateTimeout!==true){
-					clearTimeout(this.updateTimeout);
+			this.updateDeferState++;
+			var callback = function(){
+				self.runWatchers();
+				self.updateDeferState--;
+				if(self.updateDeferState==0){
+					self.updateDeferStateObserver.resolve();
+					self.updateDeferStateObserver = null;
 				}
-				this.updateTimeout = setTimeout(function(){
-					self.runUpdate(defer,deferValue);
-				}, this.updateWait);
+			};
+			if(!this.updateDeferStateObserver){
+				this.updateDeferStateObserver = $.Deferred();
+				callback();
 			}
-			else{
-				this.updateTimeout = true;
-				this.runUpdate(defer,deferValue);
-			}
-			return defer.promise();
-		},
-		runUpdate: function(defer,deferValue){
-			var self = this;
-			if(this.updateDeferStateObserver){
+			else{			
 				this.updateDeferStateObserver.then(function(){
-					self.update(defer);
+					callback();
 				});
-				return;
 			}
-			
-			this.updateDeferStateObserver = $.Deferred();
-			
-			this.runWatchers();
-			
-			this.updateDeferStateObserver.resolve();
-			this.updateDeferStateObserver = false;
-			this.updateTimeout = false;
-			
-			defer.resolve(deferValue);
 		},
 		
 		compileNode: function(node,compilerJloads){
@@ -3503,10 +3421,6 @@ jstack.dataBinder = (function(){
 				});
 				
 				if(!document.body.contains(n)) return false;
-				if($n.data('j:load:state')){
-					return;
-				}
-				$n.data('j:load:state',1);
 				
 				if(n.parentNode){
 					var jready = $(n.parentNode).data('j:ready');
@@ -3519,18 +3433,16 @@ jstack.dataBinder = (function(){
 				}
 				
 				compilerJloads.push(function(){
-					setTimeout(function(){
+					//setTimeout(function(){
 						if(n.hasAttribute('j-cloak')){
 							n.removeAttribute('j-cloak');
 						}
-						if($n.data('j:load:state')==2){
+						if($n.data('j:load:state')){
 							return;
 						}
-						
-						$n.data('j:load:state',2);
 						$n.trigger('j:load');
-						$n.data('j:load:state',3);
-					},0);
+						$n.data('j:load:state',true);
+					//});
 				});
 				
 			});
@@ -3564,25 +3476,24 @@ jstack.dataBinder = (function(){
 							return false;
 						}
 						
-						setTimeout(function(){
-							$(n).trigger('j:unload');
-						},0);
+						$(n).trigger('j:unload');
 					});
 				});
 			});
 			
-			for(var i = 0, l=compilerJloads.length;i<l;i++){
-				compilerJloads[i]();
-			}
-			
-			self.loadingMutation--;
-			
-			if(self.loadingMutation==0){
-				while(self.deferMutation.length){
-					self.deferMutation.pop()();
+			setTimeout(function(){
+				self.loadingMutation--;
+				
+				if(self.loadingMutation==0){
+					while(self.deferMutation.length){
+						self.deferMutation.pop()();
+					}
 				}
-			}
 			
+				for(var i = 0, l=compilerJloads.length;i<l;i++){
+					compilerJloads[i]();
+				}
+			});
 			
 		},
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
@@ -3593,25 +3504,23 @@ jstack.dataBinder = (function(){
 			if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
 				return;
 			}
-			var observations = {
+			
+			var self = this;
+			var mutationObserver = new MutationObserver(function(m){
+				//console.log(m);
+				self.loadingMutation++;
+				setTimeout(function(){
+					self.loadMutations(m);
+				});
+			});
+			mutationObserver.observe(n, {
 				subtree: false,
 				childList: true,
 				characterData: true,
 				attributes: false,
 				attributeOldValue: false,
 				characterDataOldValue: false,
-			};
-			
-			var self = this;
-			var mutationObserver = new MutationObserver(function(m){
-				
-				self.loadingMutation++;
-				
-				setTimeout(function(){
-					self.loadMutations(m);
-				},0);
 			});
-			mutationObserver.observe(n, observations);
 			$(n).data('j:observer',mutationObserver);
 		},
 		eventListener: function(){
@@ -4473,9 +4382,9 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		target:this,
 	});
 	mvc.then(function(){
-		setTimeout(function(){
+		//setTimeout(function(){
 			ready.resolve();
-		},0);
+		//});
 	});
 });
 
