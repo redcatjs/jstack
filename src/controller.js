@@ -40,6 +40,25 @@ var constructor = function(controllerSet,element){
 				delete object[k];
 				return jstack.dataBinder.update();
 			};
+			if(object instanceof Array){
+				object.__push = function(v){
+					object.push(v);
+					return jstack.dataBinder.update();
+				};
+				object.__unshift = function(v){
+					object.unshift(v);
+					return jstack.dataBinder.update();
+				};
+				object.__shift = function(){
+					return jstack.dataBinder.update(null,object.shift());
+				};
+				object.__pop = function(){
+					return jstack.dataBinder.update(null,object.pop());
+				};
+				object.__splice = function(){
+					return jstack.dataBinder.update(null,object.splice.apply(object,arguments));
+				};
+			}
 		};
 		
 		self.data = ObjectObservable.create(self.data,{},buildCallback);
