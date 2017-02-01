@@ -30,38 +30,43 @@ var constructor = function(controllerSet,element){
 	this.startDataObserver = function(){
 		var object = self.data;
 		
-		var buildCallback = function(object,proxy){
-			//console.log('buildCallback',object,proxy);
-			object.__set = function(k,v){
-				object[k] = v;
-				return jstack.dataBinder.update();
-			};
-			object.__unset = function(k){
-				delete object[k];
-				return jstack.dataBinder.update();
-			};
-			if(object instanceof Array){
-				object.__push = function(v){
-					object.push(v);
+		self.data = ObjectObservable.create(self.data,{
+			ownKeys: function(target){
+				return Object.keys(target).filter(function(k){
+					return !( k.substr(0,2)=='__' && typeof target[k] == 'function' );
+				});
+			},
+			buildCallback: function(object,proxy){
+				//console.log('buildCallback',object,proxy);
+				object.__set = function(k,v){
+					object[k] = v;
 					return jstack.dataBinder.update();
 				};
-				object.__unshift = function(v){
-					object.unshift(v);
+				object.__unset = function(k){
+					delete object[k];
 					return jstack.dataBinder.update();
 				};
-				object.__shift = function(){
-					return jstack.dataBinder.update(null,object.shift());
-				};
-				object.__pop = function(){
-					return jstack.dataBinder.update(null,object.pop());
-				};
-				object.__splice = function(){
-					return jstack.dataBinder.update(null,object.splice.apply(object,arguments));
-				};
+				if(object instanceof Array){
+					object.__push = function(v){
+						object.push(v);
+						return jstack.dataBinder.update();
+					};
+					object.__unshift = function(v){
+						object.unshift(v);
+						return jstack.dataBinder.update();
+					};
+					object.__shift = function(){
+						return jstack.dataBinder.update(null,object.shift());
+					};
+					object.__pop = function(){
+						return jstack.dataBinder.update(null,object.pop());
+					};
+					object.__splice = function(){
+						return jstack.dataBinder.update(null,object.splice.apply(object,arguments));
+					};
+				}
 			}
-		};
-		
-		self.data = ObjectObservable.create(self.data,{},buildCallback);
+		});
 		
 		ObjectObservable.observe(self.data,function(change){
 			//console.log('j:model:update',change);
