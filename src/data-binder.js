@@ -430,6 +430,13 @@ jstack.dataBinder = (function(){
 						});
 					}
 				}
+				var jready2 = $n.data('j:ready');
+				if(jready2){
+					self.deferMutation.push(function(){
+						jready2.resolve();
+						$n.removeData('j:ready');
+					});
+				}
 				
 				compilerJloads.push(function(){
 					//setTimeout(function(){
