@@ -481,7 +481,7 @@ ObjectObservable.create = function (object,params)
 					if(params.ownKeys){
 						return params.ownKeys(target);
 					}
-					return oTarget.keys();
+					return Object.keys(target);
 				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
@@ -1041,9 +1041,6 @@ var constructor = function(controllerSet,element){
 		el[0].setAttribute('j-controller',this.name);
 		
 		html = $(html);
-		html.on('j:load',function(){
-			self.domReady();
-		});
 		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
@@ -1052,7 +1049,7 @@ var constructor = function(controllerSet,element){
 			el.html( html );
 		}
 		
-		//this.domReady();
+		this.domReady();
 	};
 	
 };
