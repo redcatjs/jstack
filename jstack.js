@@ -13,6 +13,7 @@ jstackClass.prototype.extend = function(c,parent){
 };
 jstack = new jstackClass();
 //from https://github.com/eface2face/object-observable
+//modified by surikat, added buildCallback param
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ObjectObservable = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -332,16 +333,27 @@ ObjectObservable.create = function (object,params)
 	if (!arguments.length)
 		//Create empty object;
 		object = {};
-
+	
 	//Set defaults
 	var params = Object.assign(
 		{},
 		{
 			clone: false,
-			recursive: true
+			recursive: true,
+			buildCallback: false,
+			get: false, //surikat
+			set: false, //surikat
+			ownKeys: false, //surikat
 		},
 		params
 	);
+	
+	//surikat
+	var clone = params.clone;
+	var recursive = params.recursive;
+	delete params.clone;
+	delete params.recursive;
+	
 	//Create emitter
 	var emitter = new EventEmitter();
 	var changes = [];
@@ -394,13 +406,15 @@ ObjectObservable.create = function (object,params)
 	//Do not clone by default
 	var cloned = object;
 	//If we need to do it recursively
-	if (params.recursive)
+	//if (params.recursive) //surikat
+	if (recursive)
 	{
 		//Check if it is an array
 		if (Array.isArray (object))
 		{
 			//Check if we need to clone object
-			if (params.clone)
+			//if (params.clone) //surikat
+			if (clone)
 				//Create empty one
 				cloned = [];
 			//Convert each
@@ -415,7 +429,8 @@ ObjectObservable.create = function (object,params)
 					if( !ObjectObservable.isObservable(value))
 					{
 						//Create a new proxy
-						value = ObjectObservable.create(value);
+						//value = ObjectObservable.create(value); //surikat
+						value = ObjectObservable.create(value,params);
 						//Set it back
 						cloned[i] = value;
 					}
@@ -425,7 +440,8 @@ ObjectObservable.create = function (object,params)
 			}
 		} else {
 			//Check if we need to clone object
-			if (params.clone)
+			//if (params.clone) //surikat
+			if (clone)
 				//Create empty one
 				cloned = {};
 			//Append each property
@@ -443,7 +459,8 @@ ObjectObservable.create = function (object,params)
 						if( !ObjectObservable.isObservable(value))
 						{
 							//Create a new proxy
-							value = ObjectObservable.create(value);
+							//value = ObjectObservable.create(value); //surikat
+							value = ObjectObservable.create(value,params);
 							//Set it back
 							cloned[key] = value;
 						}
@@ -454,17 +471,27 @@ ObjectObservable.create = function (object,params)
 			}
 		}
 	}
-
+	
 	//Create proxy for object
-	return new Proxy(
+	var proxy = new Proxy(
 			cloned,
 			//Proxy handler object
 			{
+				ownKeys: function (target) { //surikat
+					if(params.ownKeys){
+						return params.ownKeys(target);
+					}
+					return oTarget.keys();
+				},
 				get: function (target, key) {
 					//Check if it is requesting listeners
 					if (key===prefix)
 						return emitter;
-
+					
+					if(params.get){ //surikat
+						return params.get(target, key);
+					}
+					
 					//debug("%o get %s",target,key);
 					return target[key];
 				},
@@ -479,19 +506,27 @@ ObjectObservable.create = function (object,params)
 					//debug("%o set %s from %o to %o",target,key,old,value);
 
 					//It is a not-null object?
-					if (params.recursive && typeof(value)==='object' && value )
+					//if (params.recursive && typeof(value)==='object' && value ) //surikat
+					if (recursive && typeof(value)==='object' && value )
 					{
 						//Is it already observable?
 						if( !ObjectObservable.isObservable(value))
 							//Create a new proxy
-							value = ObjectObservable.create(value);
+							//value = ObjectObservable.create(value); //surikat
+							value = ObjectObservable.create(value,params);
 						//Set it before setting the listener or we will get events that we don't expect
 						target[key] = value;
 						//Set us as listeners
 						ObjectObservable.observeInmediate(value,addListener(key));
 					} else {
 						//Set it
-						target[key] = value;
+						
+						if(params.set){ //surikat
+							params.set(target, key, value);
+						}
+						else{
+							target[key] = value;
+						}
 					}
 
 					//Fire change
@@ -535,6 +570,12 @@ ObjectObservable.create = function (object,params)
 				}
 			}
 		);
+		
+		if(params.buildCallback){ //surikat
+			params.buildCallback(object,proxy);
+		}
+		
+		return proxy;
 };
 
 ObjectObservable.isObservable = function(object)
@@ -934,7 +975,46 @@ var constructor = function(controllerSet,element){
 	element.data('jController',this);
 	
 	this.startDataObserver = function(){
-		self.data = ObjectObservable.create(self.data);
+		var object = self.data;
+		
+		self.data = ObjectObservable.create(self.data,{
+			ownKeys: function(target){
+				return Object.keys(target).filter(function(k){
+					return !( k.substr(0,2)=='__' && typeof target[k] == 'function' );
+				});
+			},
+			buildCallback: function(object,proxy){
+				//console.log('buildCallback',object,proxy);
+				object.__set = function(k,v){
+					object[k] = v;
+					return jstack.dataBinder.update();
+				};
+				object.__unset = function(k){
+					delete object[k];
+					return jstack.dataBinder.update();
+				};
+				if(object instanceof Array){
+					object.__push = function(v){
+						object.push(v);
+						return jstack.dataBinder.update();
+					};
+					object.__unshift = function(v){
+						object.unshift(v);
+						return jstack.dataBinder.update();
+					};
+					object.__shift = function(){
+						return jstack.dataBinder.update(null,object.shift());
+					};
+					object.__pop = function(){
+						return jstack.dataBinder.update(null,object.pop());
+					};
+					object.__splice = function(){
+						return jstack.dataBinder.update(null,object.splice.apply(object,arguments));
+					};
+				}
+			}
+		});
+		
 		ObjectObservable.observe(self.data,function(change){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
@@ -1077,7 +1157,7 @@ jstack.controller = function(controller,element){
 		
 	});
 	
-	return ready;
+	return ready.promise();
 };
 
 })();
@@ -2082,7 +2162,7 @@ $.fn.jComponentReady = function(callback){
 		check();
 	});
 	check();	
-	return defer;
+	return defer.promise();
 };
 /**
  * jQuery serializeObject
@@ -2561,7 +2641,7 @@ $.fn.jData = function(key){
 				}
 			} );
 		}
-		return requests[ templatePath ];
+		return requests[ templatePath ].promise();
 	};
 
 })();
@@ -3111,7 +3191,7 @@ jstack.dataBinder = (function(){
 			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
-			var forCollection = self.getParentsForId(el);
+			var forCollection = self.getParentsForId(el).reverse();
 			
 			for(var i = 0, l = forCollection.length; i<l; i++){
 				var forid = forCollection[i];
@@ -3320,35 +3400,43 @@ jstack.dataBinder = (function(){
 		updateTimeout: null,
 		updateDeferStateObserver: null,
 		updateWait: 100,
-		update: function(){
+		update: function(defer,deferValue){
+			var self = this;
+			if(!defer){
+				defer = $.Deferred();
+			}
 			if(this.updateTimeout){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
 				}
-				this.updateTimeout = setTimeout(this.runUpdate, this.updateWait);
+				this.updateTimeout = setTimeout(function(){
+					self.runUpdate(defer,deferValue);
+				}, this.updateWait);
 			}
 			else{
 				this.updateTimeout = true;
-				this.runUpdate();
+				this.runUpdate(defer,deferValue);
 			}
+			return defer.promise();
 		},
-		runUpdate: function(element){
+		runUpdate: function(defer,deferValue){
 			var self = this;
 			if(this.updateDeferStateObserver){
 				this.updateDeferStateObserver.then(function(){
-					self.update();
+					self.update(defer);
 				});
 				return;
 			}
-			else{
-				this.updateDeferStateObserver = $.Deferred();
-			}
+			
+			this.updateDeferStateObserver = $.Deferred();
 			
 			this.runWatchers();
 			
 			this.updateDeferStateObserver.resolve();
 			this.updateDeferStateObserver = false;
 			this.updateTimeout = false;
+			
+			defer.resolve(deferValue);
 		},
 		
 		compileNode: function(node,compilerJloads){
@@ -4256,6 +4344,8 @@ $.on('reset','form',function(){
 	};
 
 } )( jQuery, jstack );
+(function(){
+
 jstack.mvc = function(config){
 	
 	if(typeof(arguments[0])=='string'){
@@ -4302,9 +4392,9 @@ jstack.mvc = function(config){
 		
 	});
 
-	return ready;
+	return ready.promise();
 };
-jstack.viewReady = function(el){
+var getViewReady = function(el){
 	if(typeof(arguments[0])=='string'){
 		var selector = '[j-view="'+arguments[0]+'"]';
 		if(typeof(arguments[1])=='object'){
@@ -4323,6 +4413,9 @@ jstack.viewReady = function(el){
 	}
 	return ready;
 };
+jstack.viewReady = function(el){
+	return getViewReady(el).promise();
+};
 $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	
 	this.setAttribute('j-view-loaded','true');
@@ -4337,7 +4430,7 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		controller = view;
 	}
 
-	var ready = jstack.viewReady(this);
+	var ready = getViewReady(this);
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
@@ -4349,6 +4442,8 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		},0);
 	});
 });
+
+})();
 (function(){
 
 	jstack.app = function(el,app){
