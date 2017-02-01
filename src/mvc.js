@@ -37,11 +37,12 @@ jstack.mvc = function(config){
 	controllerReady.then(function(){
 		
 		var ctrlReady = jstack.controller(config.controller,target);
-		
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
-			ctrl.render(html);
-			ready.resolve(target,ctrl);
+			var domReady = ctrl.render(html);
+			domReady.then(function(){
+				ready.resolve(target,ctrl);
+			});
 		});		
 		
 	});

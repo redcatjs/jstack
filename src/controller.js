@@ -69,9 +69,13 @@ var constructor = function(controllerSet,element){
 			el.html( html );
 		}
 		
+		var domReady = $.Deferred();
 		defer.then(function(){
 			self.domReady();
+			domReady.resolve();
 		});
+		
+		return domReady;
 	};
 	
 };
