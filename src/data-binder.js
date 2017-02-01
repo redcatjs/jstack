@@ -340,29 +340,29 @@ jstack.dataBinder = (function(){
 		update: function(){
 			//console.log('update');
 			var self = this;
-			this.updateDeferState++;
-			var callback = function(){
-				if(this.updateTimeout){
-					clearTimeout(this.updateTimeout);
-				}
-				this.updateTimeout = setTimeout(function(){
+			if(self.updateTimeout){
+				clearTimeout(self.updateTimeout);
+			}
+			self.updateTimeout = setTimeout(function(){
+				self.updateDeferState++;
+				var callback = function(){
 					self.runWatchers();
 					self.updateDeferState--;
 					if(self.updateDeferState==0){
 						self.updateDeferStateObserver.resolve();
 						self.updateDeferStateObserver = null;
 					}
-				},100);
-			};
-			if(!this.updateDeferStateObserver){
-				this.updateDeferStateObserver = $.Deferred();
-				callback();
-			}
-			else{
-				this.updateDeferStateObserver.then(function(){
+				};
+				if(!self.updateDeferStateObserver){
+					self.updateDeferStateObserver = $.Deferred();
 					callback();
-				});
-			}
+				}
+				else{
+					self.updateDeferStateObserver.then(function(){
+						callback();
+					});
+				}
+			},100);
 		},
 		
 		compileNode: function(node,compilerJloads){
