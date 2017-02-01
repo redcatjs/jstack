@@ -1042,6 +1042,9 @@ var constructor = function(controllerSet,element){
 		
 		html = $(html);
 		
+		var defer = $.Deferred();
+		html.data('j:ready',defer);
+		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
@@ -1049,7 +1052,9 @@ var constructor = function(controllerSet,element){
 			el.html( html );
 		}
 		
-		this.domReady();
+		defer.then(function(){
+			self.domReady();
+		});
 	};
 	
 };
@@ -3502,6 +3507,16 @@ jstack.dataBinder = (function(){
 					return;
 				}
 				$n.data('j:load:state',1);
+				
+				if(n.parentNode){
+					var jready = $(n.parentNode).data('j:ready');
+					if(jready){
+						compilerJloads.push(function(){
+							jready.resolve();
+						});
+					}
+				}
+				
 				compilerJloads.push(function(){
 					setTimeout(function(){
 						if(n.hasAttribute('j-cloak')){
@@ -3510,7 +3525,8 @@ jstack.dataBinder = (function(){
 						if($n.data('j:load:state')==2){
 							return;
 						}
-						$n.data('j:load:state',3);
+						
+						$n.data('j:load:state',2);
 						$n.trigger('j:load');
 						$n.data('j:load:state',3);
 					},0);
