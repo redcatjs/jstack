@@ -324,38 +324,43 @@ jstack.dataBinder = (function(){
 		updateTimeout: null,
 		updateDeferStateObserver: null,
 		updateWait: 100,
-		update: function(){
+		update: function(defer){
 			var self = this;
+			if(!defer){
+				defer = $.Deferred();
+			}
 			if(this.updateTimeout){
 				if(this.updateTimeout!==true){
 					clearTimeout(this.updateTimeout);
 				}
 				this.updateTimeout = setTimeout(function(){
-					self.runUpdate();
+					self.runUpdate(defer);
 				}, this.updateWait);
 			}
 			else{
 				this.updateTimeout = true;
-				this.runUpdate();
+				this.runUpdate(defer);
 			}
+			return defer.promise();
 		},
-		runUpdate: function(element){
+		runUpdate: function(defer){
 			var self = this;
 			if(this.updateDeferStateObserver){
 				this.updateDeferStateObserver.then(function(){
-					self.update();
+					self.update(defer);
 				});
 				return;
 			}
-			else{
-				this.updateDeferStateObserver = $.Deferred();
-			}
+			
+			this.updateDeferStateObserver = $.Deferred();
 			
 			this.runWatchers();
 			
 			this.updateDeferStateObserver.resolve();
 			this.updateDeferStateObserver = false;
 			this.updateTimeout = false;
+			
+			defer.resolve();
 		},
 		
 		compileNode: function(node,compilerJloads){
