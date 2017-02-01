@@ -324,7 +324,7 @@ jstack.dataBinder = (function(){
 		updateTimeout: null,
 		updateDeferStateObserver: null,
 		updateWait: 100,
-		update: function(defer){
+		update: function(defer,deferValue){
 			var self = this;
 			if(!defer){
 				defer = $.Deferred();
@@ -334,16 +334,16 @@ jstack.dataBinder = (function(){
 					clearTimeout(this.updateTimeout);
 				}
 				this.updateTimeout = setTimeout(function(){
-					self.runUpdate(defer);
+					self.runUpdate(defer,deferValue);
 				}, this.updateWait);
 			}
 			else{
 				this.updateTimeout = true;
-				this.runUpdate(defer);
+				this.runUpdate(defer,deferValue);
 			}
 			return defer.promise();
 		},
-		runUpdate: function(defer){
+		runUpdate: function(defer,deferValue){
 			var self = this;
 			if(this.updateDeferStateObserver){
 				this.updateDeferStateObserver.then(function(){
@@ -360,7 +360,7 @@ jstack.dataBinder = (function(){
 			this.updateDeferStateObserver = false;
 			this.updateTimeout = false;
 			
-			defer.resolve();
+			defer.resolve(deferValue);
 		},
 		
 		compileNode: function(node,compilerJloads){
