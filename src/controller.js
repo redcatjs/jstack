@@ -32,7 +32,7 @@ var constructor = function(controllerSet,element){
 		
 		var buildCallback = function(object,proxy){
 			//console.log('buildCallback',object,proxy);
-			object.set = function(k,v){
+			object.__set = function(k,v){
 				object[k] = v;
 				return jstack.dataBinder.update();
 			};
