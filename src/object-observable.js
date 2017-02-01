@@ -313,8 +313,7 @@ var prefix = '__OBJECT_OBSERVABLE__PREFIX__' + new Date()+'__';
 
 var ObjectObservable = {};
 
-//ObjectObservable.create = function (object,params)
-ObjectObservable.create = function (object,params,buildCallback) //surikat
+ObjectObservable.create = function (object,params)
 {
 	//IF no args
 	if (!arguments.length)
@@ -327,9 +326,19 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 		{
 			clone: false,
 			recursive: true,
+			buildCallback: false,
+			__get: false, //surikat
+			__set: false, //surikat
 		},
 		params
 	);
+	
+	//surikat
+	var clone = params.clone;
+	var recursive = params.recursive;
+	delete params.clone;
+	delete params.recursive;
+	
 	//Create emitter
 	var emitter = new EventEmitter();
 	var changes = [];
@@ -382,13 +391,15 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 	//Do not clone by default
 	var cloned = object;
 	//If we need to do it recursively
-	if (params.recursive)
+	//if (params.recursive) //surikat
+	if (recursive)
 	{
 		//Check if it is an array
 		if (Array.isArray (object))
 		{
 			//Check if we need to clone object
-			if (params.clone)
+			//if (params.clone) //surikat
+			if (clone)
 				//Create empty one
 				cloned = [];
 			//Convert each
@@ -404,7 +415,7 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 					{
 						//Create a new proxy
 						//value = ObjectObservable.create(value); //surikat
-						value = ObjectObservable.create(value,{},buildCallback);
+						value = ObjectObservable.create(value,params);
 						//Set it back
 						cloned[i] = value;
 					}
@@ -414,7 +425,8 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 			}
 		} else {
 			//Check if we need to clone object
-			if (params.clone)
+			//if (params.clone) //surikat
+			if (clone)
 				//Create empty one
 				cloned = {};
 			//Append each property
@@ -433,7 +445,7 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 						{
 							//Create a new proxy
 							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,{},buildCallback);
+							value = ObjectObservable.create(value,params);
 							//Set it back
 							cloned[key] = value;
 						}
@@ -454,7 +466,11 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 					//Check if it is requesting listeners
 					if (key===prefix)
 						return emitter;
-
+					
+					if(param.__get){ //surikat
+						return param.__get(target, key);
+					}
+					
 					//debug("%o get %s",target,key);
 					return target[key];
 				},
@@ -469,20 +485,27 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 					//debug("%o set %s from %o to %o",target,key,old,value);
 
 					//It is a not-null object?
-					if (params.recursive && typeof(value)==='object' && value )
+					//if (params.recursive && typeof(value)==='object' && value ) //surikat
+					if (recursive && typeof(value)==='object' && value )
 					{
 						//Is it already observable?
 						if( !ObjectObservable.isObservable(value))
 							//Create a new proxy
 							//value = ObjectObservable.create(value); //surikat
-							value = ObjectObservable.create(value,{},buildCallback);
+							value = ObjectObservable.create(value,params);
 						//Set it before setting the listener or we will get events that we don't expect
 						target[key] = value;
 						//Set us as listeners
 						ObjectObservable.observeInmediate(value,addListener(key));
 					} else {
 						//Set it
-						target[key] = value;
+						
+						if(param.__set){ //surikat
+							param.__set(target, key, value);
+						}
+						else{
+							target[key] = value;
+						}
 					}
 
 					//Fire change
@@ -527,8 +550,8 @@ ObjectObservable.create = function (object,params,buildCallback) //surikat
 			}
 		);
 		
-		if(buildCallback){ //surikat
-			buildCallback(object,proxy);
+		if(params.buildCallback){ //surikat
+			params.buildCallback(object,proxy);
 		}
 		
 		return proxy;
