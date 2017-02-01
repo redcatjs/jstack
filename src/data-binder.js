@@ -422,6 +422,16 @@ jstack.dataBinder = (function(){
 					return;
 				}
 				$n.data('j:load:state',1);
+				
+				if(n.parentNode){
+					var jready = $(n.parentNode).data('j:ready');
+					if(jready){
+						compilerJloads.push(function(){
+							jready.resolve();
+						});
+					}
+				}
+				
 				compilerJloads.push(function(){
 					setTimeout(function(){
 						if(n.hasAttribute('j-cloak')){
@@ -430,7 +440,8 @@ jstack.dataBinder = (function(){
 						if($n.data('j:load:state')==2){
 							return;
 						}
-						$n.data('j:load:state',3);
+						
+						$n.data('j:load:state',2);
 						$n.trigger('j:load');
 						$n.data('j:load:state',3);
 					},0);

@@ -95,6 +95,9 @@ var constructor = function(controllerSet,element){
 		
 		html = $(html);
 		
+		var defer = $.Deferred();
+		html.data('j:ready',defer);
+		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
@@ -102,7 +105,9 @@ var constructor = function(controllerSet,element){
 			el.html( html );
 		}
 		
-		this.domReady();
+		defer.then(function(){
+			self.domReady();
+		});
 	};
 	
 };
