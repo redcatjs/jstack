@@ -342,18 +342,23 @@ jstack.dataBinder = (function(){
 			var self = this;
 			this.updateDeferState++;
 			var callback = function(){
-				self.runWatchers();
-				self.updateDeferState--;
-				if(self.updateDeferState==0){
-					self.updateDeferStateObserver.resolve();
-					self.updateDeferStateObserver = null;
+				if(this.updateTimeout){
+					clearTimeout(this.updateTimeout);
 				}
+				this.updateTimeout = setTimeout(function(){
+					self.runWatchers();
+					self.updateDeferState--;
+					if(self.updateDeferState==0){
+						self.updateDeferStateObserver.resolve();
+						self.updateDeferStateObserver = null;
+					}
+				},100);
 			};
 			if(!this.updateDeferStateObserver){
 				this.updateDeferStateObserver = $.Deferred();
 				callback();
 			}
-			else{			
+			else{
 				this.updateDeferStateObserver.then(function(){
 					callback();
 				});
