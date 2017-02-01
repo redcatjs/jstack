@@ -28,7 +28,18 @@ var constructor = function(controllerSet,element){
 	element.data('jController',this);
 	
 	this.startDataObserver = function(){
-		self.data = ObjectObservable.create(self.data);
+		var object = self.data;
+		
+		var buildCallback = function(object,proxy){
+			//console.log('buildCallback',object,proxy);
+			object.set = function(k,v){
+				proxy[k] = v;
+				return jstack.dataBinder.updateDeferStateObserver;
+			};
+		};
+		
+		self.data = ObjectObservable.create(self.data,{},buildCallback);
+		
 		ObjectObservable.observe(self.data,function(change){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
