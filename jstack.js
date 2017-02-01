@@ -973,9 +973,13 @@ var constructor = function(controllerSet,element){
 			el.html( html );
 		}
 		
+		var domReady = $.Deferred();
 		defer.then(function(){
 			self.domReady();
+			domReady.resolve();
 		});
+		
+		return domReady;
 	};
 	
 };
@@ -3348,18 +3352,23 @@ jstack.dataBinder = (function(){
 			var self = this;
 			this.updateDeferState++;
 			var callback = function(){
-				self.runWatchers();
-				self.updateDeferState--;
-				if(self.updateDeferState==0){
-					self.updateDeferStateObserver.resolve();
-					self.updateDeferStateObserver = null;
+				if(this.updateTimeout){
+					clearTimeout(this.updateTimeout);
 				}
+				this.updateTimeout = setTimeout(function(){
+					self.runWatchers();
+					self.updateDeferState--;
+					if(self.updateDeferState==0){
+						self.updateDeferStateObserver.resolve();
+						self.updateDeferStateObserver = null;
+					}
+				},100);
 			};
 			if(!this.updateDeferStateObserver){
 				this.updateDeferStateObserver = $.Deferred();
 				callback();
 			}
-			else{			
+			else{
 				this.updateDeferStateObserver.then(function(){
 					callback();
 				});
@@ -4328,11 +4337,12 @@ jstack.mvc = function(config){
 	controllerReady.then(function(){
 		
 		var ctrlReady = jstack.controller(config.controller,target);
-		
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
-			ctrl.render(html);
-			ready.resolve(target,ctrl);
+			var domReady = ctrl.render(html);
+			domReady.then(function(){
+				ready.resolve(target,ctrl);
+			});
 		});		
 		
 	});
