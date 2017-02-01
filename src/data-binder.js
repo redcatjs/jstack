@@ -1,3 +1,17 @@
+jstack.ready = function(callback){
+	var deferMutation = $.Deferred();
+	jstack.dataBinder.deferMutation.push(function(){
+		deferMutation.resolve();
+	});
+	var when = $.when(deferMutation,jstack.dataBinder.updateDeferStateObserver);
+	if(callback){
+		when.then(function(){
+			callback();
+		});
+	}
+	return when.promise();
+};
+
 jstack.dataBinder = (function(){
 	var dataBinder = function(){
 		
@@ -321,46 +335,29 @@ jstack.dataBinder = (function(){
 			
 		},
 		
-		updateTimeout: null,
+		updateDeferState: 0,
 		updateDeferStateObserver: null,
-		updateWait: 100,
-		update: function(defer,deferValue){
+		update: function(){
+			//console.log('update');
 			var self = this;
-			if(!defer){
-				defer = $.Deferred();
-			}
-			if(this.updateTimeout){
-				if(this.updateTimeout!==true){
-					clearTimeout(this.updateTimeout);
+			this.updateDeferState++;
+			var callback = function(){
+				self.runWatchers();
+				self.updateDeferState--;
+				if(self.updateDeferState==0){
+					self.updateDeferStateObserver.resolve();
+					self.updateDeferStateObserver = null;
 				}
-				this.updateTimeout = setTimeout(function(){
-					self.runUpdate(defer,deferValue);
-				}, this.updateWait);
+			};
+			if(!this.updateDeferStateObserver){
+				this.updateDeferStateObserver = $.Deferred();
+				callback();
 			}
-			else{
-				this.updateTimeout = true;
-				this.runUpdate(defer,deferValue);
-			}
-			return defer.promise();
-		},
-		runUpdate: function(defer,deferValue){
-			var self = this;
-			if(this.updateDeferStateObserver){
+			else{			
 				this.updateDeferStateObserver.then(function(){
-					self.update(defer);
+					callback();
 				});
-				return;
 			}
-			
-			this.updateDeferStateObserver = $.Deferred();
-			
-			this.runWatchers();
-			
-			this.updateDeferStateObserver.resolve();
-			this.updateDeferStateObserver = false;
-			this.updateTimeout = false;
-			
-			defer.resolve(deferValue);
 		},
 		
 		compileNode: function(node,compilerJloads){
@@ -418,10 +415,6 @@ jstack.dataBinder = (function(){
 				});
 				
 				if(!document.body.contains(n)) return false;
-				if($n.data('j:load:state')){
-					return;
-				}
-				$n.data('j:load:state',1);
 				
 				if(n.parentNode){
 					var jready = $(n.parentNode).data('j:ready');
@@ -434,18 +427,16 @@ jstack.dataBinder = (function(){
 				}
 				
 				compilerJloads.push(function(){
-					setTimeout(function(){
+					//setTimeout(function(){
 						if(n.hasAttribute('j-cloak')){
 							n.removeAttribute('j-cloak');
 						}
-						if($n.data('j:load:state')==2){
+						if($n.data('j:load:state')){
 							return;
 						}
-						
-						$n.data('j:load:state',2);
 						$n.trigger('j:load');
-						$n.data('j:load:state',3);
-					},0);
+						$n.data('j:load:state',true);
+					//});
 				});
 				
 			});
@@ -479,25 +470,24 @@ jstack.dataBinder = (function(){
 							return false;
 						}
 						
-						setTimeout(function(){
-							$(n).trigger('j:unload');
-						},0);
+						$(n).trigger('j:unload');
 					});
 				});
 			});
 			
-			for(var i = 0, l=compilerJloads.length;i<l;i++){
-				compilerJloads[i]();
-			}
-			
-			self.loadingMutation--;
-			
-			if(self.loadingMutation==0){
-				while(self.deferMutation.length){
-					self.deferMutation.pop()();
+			setTimeout(function(){
+				self.loadingMutation--;
+				
+				if(self.loadingMutation==0){
+					while(self.deferMutation.length){
+						self.deferMutation.pop()();
+					}
 				}
-			}
 			
+				for(var i = 0, l=compilerJloads.length;i<l;i++){
+					compilerJloads[i]();
+				}
+			});
 			
 		},
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
@@ -508,25 +498,23 @@ jstack.dataBinder = (function(){
 			if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
 				return;
 			}
-			var observations = {
+			
+			var self = this;
+			var mutationObserver = new MutationObserver(function(m){
+				//console.log(m);
+				self.loadingMutation++;
+				setTimeout(function(){
+					self.loadMutations(m);
+				});
+			});
+			mutationObserver.observe(n, {
 				subtree: false,
 				childList: true,
 				characterData: true,
 				attributes: false,
 				attributeOldValue: false,
 				characterDataOldValue: false,
-			};
-			
-			var self = this;
-			var mutationObserver = new MutationObserver(function(m){
-				
-				self.loadingMutation++;
-				
-				setTimeout(function(){
-					self.loadMutations(m);
-				},0);
 			});
-			mutationObserver.observe(n, observations);
 			$(n).data('j:observer',mutationObserver);
 		},
 		eventListener: function(){
