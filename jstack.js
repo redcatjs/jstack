@@ -1039,13 +1039,20 @@ var constructor = function(controllerSet,element){
 		var el = this.element;
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
+		
+		html = $(html);
+		html.on('j:load',function(){
+			self.domReady();
+		});
+		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
 		else{
 			el.html( html );
 		}
-		this.domReady();
+		
+		//this.domReady();
 	};
 	
 };
