@@ -421,22 +421,6 @@ jstack.dataBinder = (function(){
 				
 				if(!document.body.contains(n)) return false;
 				
-				if(n.parentNode){
-					var jready = $(n.parentNode).data('j:ready');
-					if(jready){
-						self.deferMutation.push(function(){
-							jready.resolve();
-							$(n.parentNode).removeData('j:ready');
-						});
-					}
-				}
-				var jready2 = $n.data('j:ready');
-				if(jready2){
-					self.deferMutation.push(function(){
-						jready2.resolve();
-						$n.removeData('j:ready');
-					});
-				}
 				
 				compilerJloads.push(function(){
 					//setTimeout(function(){

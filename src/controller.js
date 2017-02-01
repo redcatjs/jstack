@@ -57,11 +57,6 @@ var constructor = function(controllerSet,element){
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
-		html = $(html);
-		
-		var defer = $.Deferred();
-		html.data('j:ready',defer);
-		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
@@ -70,7 +65,8 @@ var constructor = function(controllerSet,element){
 		}
 		
 		var domReady = $.Deferred();
-		defer.then(function(){
+		
+		jstack.ready(function(){
 			self.domReady();
 			domReady.resolve();
 		});
