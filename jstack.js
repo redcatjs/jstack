@@ -961,11 +961,6 @@ var constructor = function(controllerSet,element){
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
-		html = $(html);
-		
-		var defer = $.Deferred();
-		html.data('j:ready',defer);
-		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
@@ -974,7 +969,8 @@ var constructor = function(controllerSet,element){
 		}
 		
 		var domReady = $.Deferred();
-		defer.then(function(){
+		
+		jstack.ready(function(){
 			self.domReady();
 			domReady.resolve();
 		});
@@ -3350,29 +3346,29 @@ jstack.dataBinder = (function(){
 		update: function(){
 			//console.log('update');
 			var self = this;
-			this.updateDeferState++;
-			var callback = function(){
-				if(this.updateTimeout){
-					clearTimeout(this.updateTimeout);
-				}
-				this.updateTimeout = setTimeout(function(){
+			if(self.updateTimeout){
+				clearTimeout(self.updateTimeout);
+			}
+			self.updateTimeout = setTimeout(function(){
+				self.updateDeferState++;
+				var callback = function(){
 					self.runWatchers();
 					self.updateDeferState--;
 					if(self.updateDeferState==0){
 						self.updateDeferStateObserver.resolve();
 						self.updateDeferStateObserver = null;
 					}
-				},100);
-			};
-			if(!this.updateDeferStateObserver){
-				this.updateDeferStateObserver = $.Deferred();
-				callback();
-			}
-			else{
-				this.updateDeferStateObserver.then(function(){
+				};
+				if(!self.updateDeferStateObserver){
+					self.updateDeferStateObserver = $.Deferred();
 					callback();
-				});
-			}
+				}
+				else{
+					self.updateDeferStateObserver.then(function(){
+						callback();
+					});
+				}
+			},100);
 		},
 		
 		compileNode: function(node,compilerJloads){
@@ -3431,15 +3427,6 @@ jstack.dataBinder = (function(){
 				
 				if(!document.body.contains(n)) return false;
 				
-				if(n.parentNode){
-					var jready = $(n.parentNode).data('j:ready');
-					if(jready){
-						self.deferMutation.push(function(){
-							jready.resolve();
-							$(n.parentNode).removeData('j:ready');
-						});
-					}
-				}
 				
 				compilerJloads.push(function(){
 					//setTimeout(function(){
