@@ -18,7 +18,7 @@
 				cache:true,
 				success:function( html ) {
 					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
+					requests[ templatePath ].resolve( html, templatePath );
 				}
 			} );
 		}
