@@ -1296,6 +1296,14 @@ jstack.log = function(){
 	var args = jstack.flatObservable.apply(jstack,arguments);
 	console.log.apply(console,args);
 };
+jstack.randomColor = function(){
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+};
 String.prototype.camelCase = function() {
 	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
 };
@@ -2567,7 +2575,7 @@ $.fn.jData = function(key){
 				cache:true,
 				success:function( html ) {
 					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( templates[ templatePath ], templatePath );
+					requests[ templatePath ].resolve( html, templatePath );
 				}
 			} );
 		}

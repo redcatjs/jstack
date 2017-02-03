@@ -17,6 +17,7 @@ grunt.initConfig({
 				"src/std/isIntKey.js",
 				"src/std/arrayRemove.js",
 				"src/std/log.js",
+				"src/std/randomColor.js",
 				
 				"src/string/camelCase.js",
 				"src/string/lcfirst.js",
