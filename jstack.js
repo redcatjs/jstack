@@ -4253,14 +4253,21 @@ $.on('reset','form',function(){
 		}
 	};
 	
-	var recurseCleanNull = function(o){
+	var recurseFormat = function(o){
 		for(var k in o){
 			if(hasOwnProperty2(o,k)){
-				if(typeof(o[k])=='undefined'||o[k]===null){
+				if(typeof(o[k])=='undefined'||o[k]===null){ //clean null
 					o[k] = '';
 				}
 				else if(typeof(o[k])=='object'){
-					o[k] = recurseCleanNull(o[k]);
+					if(o[k] instanceof Array){ //fix array
+						var obj = {};
+						o[k].forEach(function(v, i){
+							obj[i] = v;
+						});
+						o[k] = obj;
+					}
+					o[k] = recurseFormat(o[k]);
 				}
 			}
 		}
@@ -4311,7 +4318,7 @@ $.on('reset','form',function(){
 				settings.data = fd;
 			}
 		}
-		settings.data = recurseCleanNull(settings.data);
+		settings.data = recurseFormat(settings.data);
 		return $.ajax( settings );
 	};
 
