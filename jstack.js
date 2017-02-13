@@ -4047,13 +4047,12 @@ jstack.dataBinder = (function(){
 							el.setAttribute(key,v);
 						}
 						else{
-							attrsVars[k] = tokens;
+							attrsVars[key] = tokens;
 						}
 						el.removeAttribute(k);
 					});
 					var render = function(){
 						if(!document.body.contains(el)||attrsVars.length==0) return el;
-						
 						$.each(attrsVars,function(k,v){
 							var value = jstack.dataBinder.compilerAttrRender(el,v);
 							if(attrsVarsCurrent[k]===value) return;
