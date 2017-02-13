@@ -4254,22 +4254,20 @@ $.on('reset','form',function(){
 	};
 	
 	var recurseFormat = function(o){
-		for(var k in o){
-			if(hasOwnProperty2(o,k)){
-				if(typeof(o[k])=='undefined'||o[k]===null){ //clean null
-					o[k] = '';
-				}
-				else if(typeof(o[k])=='object'){
-					if(o[k] instanceof Array){ //fix array
-						var obj = {};
-						o[k].forEach(function(v, i){
-							obj[i] = v;
-						});
-						o[k] = obj;
-					}
-					o[k] = recurseFormat(o[k]);
-				}
+		if(o instanceof Array){ //fix array
+			var obj = {};
+			for( var i = 0; i < o.length; i++ ) {
+				obj[i] = o[i];
 			}
+			return recurseFormat(obj);
+		}
+		else if(typeof(o)=='undefined'||o===null){ //clean null
+			o = '';
+		}
+		else if(typeof(o)=='object'){
+			Object.keys(o).forEach(function(v,k){
+				o[k] = recurseFormat(v);
+			});
 		}
 		return o;
 	};
@@ -4318,7 +4316,9 @@ $.on('reset','form',function(){
 				settings.data = fd;
 			}
 		}
+		jstack.log(settings.data);
 		settings.data = recurseFormat(settings.data);
+		jstack.log(settings.data);
 		return $.ajax( settings );
 	};
 
