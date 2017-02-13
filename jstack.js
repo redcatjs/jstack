@@ -4226,52 +4226,46 @@ $.on('reset','form',function(){
 		return pair;
 	};
 
-	var recurseExtractFiles = function( data, files, prefix, deepness ) {
-		if ( !prefix )
+
+	var recurseFormat = function( o, files, prefix, deepness ) {
+		if(!prefix){
 			prefix = "";
-		for ( var k in data ) {
-			if ( !data.hasOwnProperty( k ) ) continue;
-			var key = prefix + k;
-			var value = data[ k ];
-			if ( value instanceof FileList ) {
-				if ( value.length == 1 ) {
-					files[ key ] = value[ 0 ];
-				} else {
-					files[ key ] = [];
-					for ( var i = 0; i < value.length; i++ ) {
-						files[ key ].push( value[ i ] );
-					}
-				}
-				delete( data[ k ] );
-			} else if ( value instanceof $ ) {
-				data[ k ] = value.jsonml();
-			} else if ( value instanceof HTMLCollection || value instanceof HTMLElement ) {
-				data[ k ] = $( value ).jsonml();
-			} else if ( typeof( value ) == "object" ) {
-				recurseExtractFiles( value, files, key + "_", deepness + 1 );
-			}
 		}
-	};
-	
-	var recurseFormat = function(o){
-		if(o instanceof Array){ //fix array
+		if(o instanceof Array){ //cast array of value as object
 			var obj = {};
 			for( var i = 0; i < o.length; i++ ) {
 				obj[i] = o[i];
 			}
 			return recurseFormat(obj);
 		}
-		else if(typeof(o)=='undefined'||o===null){ //clean null
+		else if(typeof(o)=='undefined'||o===null){ //cast null and undefined as string
 			o = '';
 		}
 		else if(typeof(o)=='object'){
-			Object.keys(o).forEach(function(v,k){
-				o[k] = recurseFormat(v);
+			var obj = {};
+			Object.keys(o).forEach(function(k){
+				var key = prefix + k;
+				var value = o[k];
+				if(value instanceof FileList){ //extract file
+					if(value.length==1){
+						files[key] = value[0];
+					}
+					else{
+						files[key] = [];
+						for(var i = 0; i < value.length; i++){
+							files[ key ].push( value[ i ] );
+						}
+					}
+				}
+				else{
+					obj[k] = recurseFormat(value, files, key + "_", deepness + 1);
+				}
 			});
+			o = obj;
 		}
 		return o;
 	};
-
+	
 	j.ajax = function() {
 		var settings, files = {};
 		if ( arguments.length == 2 ) {
@@ -4280,9 +4274,9 @@ $.on('reset','form',function(){
 		} else {
 			settings = arguments[ 0 ];
 		}
-
+		
 		if ( settings.data ) {
-			recurseExtractFiles( settings.data, files );
+			recurseFormat( settings.data, files );
 		}
 		if ( !$.isEmptyObject( files ) ) {
 			var haveFiles;
@@ -4316,9 +4310,6 @@ $.on('reset','form',function(){
 				settings.data = fd;
 			}
 		}
-		jstack.log(settings.data);
-		settings.data = recurseFormat(settings.data);
-		jstack.log(settings.data);
 		return $.ajax( settings );
 	};
 
