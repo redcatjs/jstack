@@ -64,7 +64,7 @@
 		}
 		
 		if ( settings.data ) {
-			recurseFormat( settings.data, files );
+			settings.data = recurseFormat( settings.data, files );
 		}
 		if ( !$.isEmptyObject( files ) ) {
 			var haveFiles;
