@@ -761,18 +761,20 @@ jstack.dataBinder = (function(){
 					var currentData2 = null;
 					if(jelseifEl.length){
 						var myvar2 = [];
-						jelseifEl = $( jelseifEl.map(function(){
+						var newJelseifEl = [];
+						jelseifEl.each(function(){
 							myvar2.push( this.getAttribute('j-else-if') );
 							this.removeAttribute('j-else-if');
-							
-							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								//node = jstack.fragmentToHTML(this);
-								node = document.importNode(fragment.content, true);
-								$(this).detach();
+								$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+									newJelseifEl.push(this);
+								});
 							}
-							return node;
-						}) );
+							else{
+								newJelseifEl.push(node);
+							}
+						});
+						jelseifEl = $(newJelseifEl);
 						
 						getData2 = function(){
 							var data = false;
@@ -787,17 +789,19 @@ jstack.dataBinder = (function(){
 					}
 					
 					if(jelseEl.length){
-						jelseEl = $( jelseEl.map(function(){
+						var newJelseEl = [];
+						jelseEl.each(function(){
 							this.removeAttribute('j-else');
-							
-							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								//node = jstack.fragmentToHTML(this);
-								node = document.importNode(fragment.content, true);
-								$(this).detach();
+								$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+									newJelseEl.push(this);
+								});
 							}
-							return node;
-						}) );
+							else{
+								newJelseEl.push(this);
+							}
+						});
+						jelseEl = $(newJelseEl);
 					}
 					
 					var render = function(){
