@@ -18,6 +18,7 @@ grunt.initConfig({
 				"src/std/arrayRemove.js",
 				"src/std/log.js",
 				"src/std/randomColor.js",
+				"src/std/fragmentToElement.js",
 				
 				"src/string/camelCase.js",
 				"src/string/lcfirst.js",
