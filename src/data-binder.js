@@ -730,8 +730,8 @@ jstack.dataBinder = (function(){
 					var jif = $('<!--j:if-->');
 					$this.before(jif);
 					
-					var jelseifEl = $this.nextAll('[j-else-if]');
-					var jelseEl = $this.nextAll('[j-else]');
+					var jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
+					var jelseEl = $this.nextUntil('[j-if]','[j-else]');
 					
 					if(this.tagName.toLowerCase()=='template'){
 						$this = jstack.fragmentToElement(this);
@@ -826,7 +826,6 @@ jstack.dataBinder = (function(){
 							}
 						}
 						else{
-							console.log($this);
 							$this.detach();
 							
 							if(jelseifEl.length){
