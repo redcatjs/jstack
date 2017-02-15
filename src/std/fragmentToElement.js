@@ -1,3 +1,5 @@
 jstack.fragmentToElement = function(fragment){
-	return document.createElement('div').appendChild(document.importNode(fragment.content, true)).innerHTML;
+	var div = document.createElement('div');
+	div.appendChild( document.importNode(fragment.content, true) );
+	return $( div.innerHTML );
 };
