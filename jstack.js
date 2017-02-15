@@ -994,8 +994,19 @@ jstack.controller = function(controller,element){
 			$js.require(controllerPath);
 			$js(controllerPath,function(){
 				$.each(jstack.controllers[controller.extend],function(k,v){
-					if(typeof(controller[k])=='undefined'){						
-						controller[k] = v;
+					switch(k){
+						case 'dependencies':
+							if(v instanceof Array){
+								v.forEach(function(dep){
+									controller.dependencies.push(dep);
+								});
+							}
+						break;
+						default:
+							if(typeof(controller[k])=='undefined'){						
+								controller[k] = v;
+							}
+						break;
 					}
 				});
 				//console.log('extended',controller.name);
