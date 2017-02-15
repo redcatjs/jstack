@@ -1305,6 +1305,11 @@ jstack.randomColor = function(){
     //return color;
     return '#'+Math.random().toString(16).substr(2,6);
 };
+jstack.fragmentToHTML = function(fragment){
+	var div = document.createElement('div');
+	div.appendChild( document.importNode(fragment.content, true) );
+	return div.innerHTML;
+};
 String.prototype.camelCase = function() {
 	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
 };
@@ -3777,12 +3782,12 @@ jstack.dataBinder = (function(){
 					var jif = $('<!--j:if-->');
 					$this.before(jif);
 					
-					var jelseifEl = $this.nextAll('[j-else-if]');
-					var jelseEl = $this.nextAll('[j-else]');
+					var jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
+					var jelseEl = $this.nextUntil('[j-if]','[j-else]');
 					
 					if(this.tagName.toLowerCase()=='template'){
-						$this.detach();
-						$this = $(document.importNode(this.content, true));
+						$this = $(jstack.fragmentToHTML(this));
+						$(el).detach();
 					}
 					
 					var lastBlock;
@@ -3808,17 +3813,20 @@ jstack.dataBinder = (function(){
 					var currentData2 = null;
 					if(jelseifEl.length){
 						var myvar2 = [];
-						jelseifEl = $( jelseifEl.map(function(){
+						var newJelseifEl = [];
+						jelseifEl.each(function(){
 							myvar2.push( this.getAttribute('j-else-if') );
 							this.removeAttribute('j-else-if');
-							
-							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								$(this).detach();
-								node = document.importNode(this.content, true);
+								$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+									newJelseifEl.push(this);
+								});
 							}
-							return node;
-						}) );
+							else{
+								newJelseifEl.push(node);
+							}
+						});
+						jelseifEl = $(newJelseifEl);
 						
 						getData2 = function(){
 							var data = false;
@@ -3833,16 +3841,19 @@ jstack.dataBinder = (function(){
 					}
 					
 					if(jelseEl.length){
-						jelseEl = $( jelseEl.map(function(){
+						var newJelseEl = [];
+						jelseEl.each(function(){
 							this.removeAttribute('j-else');
-							
-							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								$(this).detach();
-								node = document.importNode(this.content, true);
+								$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+									newJelseEl.push(this);
+								});
 							}
-							return node;
-						}) );
+							else{
+								newJelseEl.push(this);
+							}
+						});
+						jelseEl = $(newJelseEl);
 					}
 					
 					var render = function(){
