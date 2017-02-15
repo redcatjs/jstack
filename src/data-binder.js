@@ -734,7 +734,7 @@ jstack.dataBinder = (function(){
 					var jelseEl = $this.nextUntil('[j-if]','[j-else]');
 					
 					if(this.tagName.toLowerCase()=='template'){
-						$this = jstack.fragmentToElement(this);
+						$this = $(jstack.fragmentToHTML(this));
 						$(el).detach();
 					}
 					
@@ -767,8 +767,8 @@ jstack.dataBinder = (function(){
 							
 							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								node = document.importNode(this.content, true);
-								//node = jstack.fragmentToElement(this).html();
+								//node = jstack.fragmentToHTML(this);
+								node = document.importNode(fragment.content, true);
 								$(this).detach();
 							}
 							return node;
@@ -792,8 +792,8 @@ jstack.dataBinder = (function(){
 							
 							var node = this;
 							if(this.tagName.toLowerCase()=='template'){
-								node = document.importNode(this.content, true);
-								//node = jstack.fragmentToElement(this);
+								//node = jstack.fragmentToHTML(this);
+								node = document.importNode(fragment.content, true);
 								$(this).detach();
 							}
 							return node;
