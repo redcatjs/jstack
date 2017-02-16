@@ -232,7 +232,7 @@ jstack.dataBinder = (function(){
 							});
 							return r;
 						}
-						return checked.length?checked.val():'';
+						return checked.length?$(checked[0]).val():'';
 					break;
 					case 'radio':
 						var form = $el.closest('form');
