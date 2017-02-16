@@ -214,20 +214,56 @@ jstack.dataBinder = (function(){
 			select: function(el){
 				return $(el).val();
 			},
-			input: function(element) {
-				var type = $( element ).prop('type');
+			input: function(el) {
+				var $el = $(el);
+				switch(el.type){
+					case 'checkbox':
+						var form = $el.closest('form');
+						var name = $el.attr('name');
+						var checked = form.find('[name="'+name+'"]:checked');
+						if(name.substr(-2)=='[]'){
+							var r = [];
+							checked.each(function(){
+								r.push( $(this).val() );
+							});
+							return r;
+						}
+						return checked.length?checked.val():'';
+					break;
+					case 'radio':
+						var form = $el.closest('form');
+						var checked = form.find('[name="'+$el.attr('name')+'"]:checked');
+						return checked.length?checked.val():'';
+					break;
+					case 'file':
+						return el.files;
+					break;
+					case 'submit':
+					break;
+					default:					
+						return $el.val();
+					break;
+				}
 				if ( type=="checkbox" || type=="radio" ) {
-					return $( element ).prop( "checked" ) ? $( element ).val() : null;
-				}
-				else if ( type == "file" ) {
-					return element.files;
-				}
-				else if ( type != "submit" ) {
-					return $( element ).val();
+					var siblings = form.find();
+					if(type=="radio"){
+						var r;
+						siblings.each(function(){
+							if($(this).prop('checked')){
+								r = $(this).val();
+							}
+							return false;
+						});
+						return r;
+					}
+					else{
+						
+					}
+					return $el.prop("checked") ? $el.val() : '';
 				}
 			},
-			textarea: function(element){
-				return $( element ).val();
+			textarea: function(el){
+				return $(el).val();
 			},
 			'j-select': function(el){
 				el = $(el);
