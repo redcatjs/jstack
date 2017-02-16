@@ -1891,6 +1891,9 @@ var populateSelect = function( input, value, config ) {
 };
 
 $.fn.populateInput = function( value, config ) {
+	if(typeof(value)||value===null){
+		value = '';
+	}
 	config = $.extend({
 		addMissing: this[0].hasAttribute('j-add-missing'),
 		preventValEvent: false,
@@ -1947,7 +1950,6 @@ $.fn.populateInput = function( value, config ) {
 					if ( input.length >= 1 ) {
 						$.each( input, function( index ) {
 							var elemValue = this.value;
-							var elemValueInData = singleVal = value;
 							if ( elemValue === value ) {
 								$(this).prop( "checked", true );
 							}
