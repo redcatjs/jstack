@@ -244,23 +244,6 @@ jstack.dataBinder = (function(){
 						return $el.val();
 					break;
 				}
-				if ( type=="checkbox" || type=="radio" ) {
-					var siblings = form.find();
-					if(type=="radio"){
-						var r;
-						siblings.each(function(){
-							if($(this).prop('checked')){
-								r = $(this).val();
-							}
-							return false;
-						});
-						return r;
-					}
-					else{
-						
-					}
-					return $el.prop("checked") ? $el.val() : '';
-				}
 			},
 			textarea: function(el){
 				return $(el).val();
