@@ -3056,11 +3056,15 @@ jstack.route = ( function( w, url ) {
 
 } )( window, jstack.url );
 jstack.ready = function(callback){
-	var deferMutation = $.Deferred();
-	jstack.dataBinder.deferMutation.push(function(){
-		deferMutation.resolve();
-	});
-	var when = $.when(deferMutation,jstack.dataBinder.updateDeferStateObserver);
+	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
+	if(self.loadingMutation>0){
+		var deferMutation = $.Deferred();
+		jstack.dataBinder.deferMutation.push(function(){
+			deferMutation.resolve();
+		});
+		defers.push(deferMutation);
+	}
+	var when = $.when.apply($,defers);
 	if(callback){
 		when.then(function(){
 			callback();
