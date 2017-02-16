@@ -3275,12 +3275,27 @@ jstack.dataBinder = (function(){
 			select: function(el){
 				return $(el).val();
 			},
+			/*
+			input: function(element) {
+				var type = $( element ).prop('type');
+				if ( type=="checkbox" || type=="radio" ) {
+					return $( element ).prop( "checked" ) ? $( element ).val() : null;
+				}
+				else if ( type == "file" ) {
+					return element.files;
+				}
+				else if ( type != "submit" ) {
+					return $( element ).val();
+				}
+			},
+			*/
 			input: function(el) {
 				var $el = $(el);
 				switch(el.type){
 					case 'checkbox':
 						var form = $el.closest('form');
 						var name = $el.attr('name');
+						/* //multi for a name
 						var checked = form.find('[name="'+name+'"]:checked');
 						if(name.substr(-2)=='[]'){
 							var r = [];
@@ -3289,7 +3304,10 @@ jstack.dataBinder = (function(){
 							});
 							return r;
 						}
-						return checked.length?$(checked[0]).val():'';
+						return checked.length?checked.val():'';
+						*/
+						//for element itself
+						return $el.prop('checked')?$el.val():'';
 					break;
 					case 'radio':
 						var form = $el.closest('form');
