@@ -107,7 +107,7 @@ var populateSelect = function( input, value, config ) {
 };
 
 $.fn.populateInput = function( value, config ) {
-	if(typeof(value)||value===null){
+	if(typeof(value)=='undefined'||value===null){
 		value = '';
 	}
 	config = $.extend({
