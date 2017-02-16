@@ -163,18 +163,10 @@ $.fn.populateInput = function( value, config ) {
 					setValue(input, value);
 				break;
 				case "radio":
-					if ( input.length >= 1 ) {
-						$.each( input, function( index ) {
-							var elemValue = this.value;
-							if ( elemValue === value ) {
-								$(this).prop( "checked", true );
-							}
-							else {
-								if(!config.push){
-									$(this).prop( "checked", false );
-								}
-							}
-						} );
+					if ( input.length ) {
+						input.each(function(){
+							$(this).prop("checked",this.value==value);
+						});
 					}
 				break;
 				case "checkbox":
