@@ -527,7 +527,7 @@ jstack.dataBinder = (function(){
 			});
 			
 		},
-		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
+		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
