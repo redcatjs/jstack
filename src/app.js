@@ -13,7 +13,7 @@
 		
 		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			return jstack.mvc(path, hash);
+			return jstack.mvc(path, path, hash);
 		});
 	};
 

@@ -1,11 +1,11 @@
 (function(){
 
-jstack.mvc = function(config, hash){
+jstack.mvc = function(config, controllerName, hash){
 	
-	if(typeof(arguments[0])=='string'){
+	if(typeof(config)=='string'){
 		config = {
-			view: arguments[0],
-			controller: typeof(arguments[1])=='string'?arguments[1]:arguments[0]
+			view: config,
+			controller: typeof(controllerName)=='string'?controllerName:config
 		};
 	}
 	
@@ -35,7 +35,6 @@ jstack.mvc = function(config, hash){
 	var ready = $.Deferred();
 	
 	controllerReady.then(function(){
-		
 		var ctrlReady = jstack.controller(config.controller, target, hash);
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
@@ -86,6 +85,7 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	}
 
 	var ready = getViewReady(this);
+	
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
