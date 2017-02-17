@@ -7,6 +7,10 @@
 		jstack.config.templatesPath += app+'/';
 		jstack.config.controllersPath += app+'/';
 		
+		$(document).on('j:route:unload',function(){
+			$.xhrPool.abortAll();
+		});
+		
 		jstack.route('*', function(path){
 			path = jstack.url.getPath(path);
 			return jstack.mvc(path);
