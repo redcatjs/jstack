@@ -28,6 +28,7 @@ jstack.route = ( function( w, url ) {
 	};
 
 	Route.prototype.run = function( params ) {
+		$(document).trigger('j:route:unload');
 		for ( var i = 0, c = this.fns.length; i < c; i++ ) {
 			var defer = this.fns[ i ].apply( this, params );
 			if($.type(defer)=='object'&&'then' in defer){
