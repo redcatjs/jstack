@@ -1,4 +1,4 @@
-$.xhrPool = {};
+$.xhrPool = [];
 $.xhrPool.abortAll = function(namespace){
 	$(this).each(function(i, jqXHR){
 		if(namespace===true||namespace==jqXHR.jstackNS){
