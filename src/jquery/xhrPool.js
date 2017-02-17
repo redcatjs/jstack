@@ -1,8 +1,10 @@
 $.xhrPool = [];
-$.xhrPool.abortAll = function(){
+$.xhrPool.abortAll = function(namespace){
 	$(this).each(function(i, jqXHR){
-		jqXHR.abort();
-		$.xhrPool.splice(i, 1);
+		if(namespace===true||namespace==jqXHR.jstackNS){
+			jqXHR.abort();
+			$.xhrPool.splice(i, 1);
+		}
 	});
 };
 $(document).ajaxStart(function(jqXHR){
