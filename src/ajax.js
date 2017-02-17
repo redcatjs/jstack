@@ -1,4 +1,4 @@
-( function( $, j ) {
+( function() {
 	var hasOwnProperty2 = function(o,k){
 		var v = o[k];
 		return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
@@ -54,7 +54,9 @@
 		return o;
 	};
 	
-	j.ajax = function() {
+	jstack.ajaxNamespace = undefined;
+	
+	jstack.ajax = function() {
 		var settings, files = {};
 		if ( arguments.length == 2 ) {
 			settings = arguments[ 1 ] || {};
@@ -98,11 +100,13 @@
 				settings.data = fd;
 			}
 		}
-		return $.ajax( settings );
+		var jqXHR = $.ajax( settings );
+		jqXHR.jstackNS = settings.namespace || jstack.ajaxNamespace;
+		return jqXHR;
 	};
 
-	j.post = function( url, data, success, dataType ) {
-		return j.ajax( {
+	jstack.post = function( url, data, success, dataType ) {
+		return jstack.ajax( {
 			type: "POST",
 			url: url,
 			data: data,
@@ -111,4 +115,4 @@
 		} );
 	};
 
-} )( jQuery, jstack );
+} )();
