@@ -2598,6 +2598,20 @@ $.fn.onJstackReady = function(types,selector,data){
 $.onJstackReady = function(event,selector,callback){
 	return $(document).onReady(event,selector,callback);
 };
+$.xhrPool = [];
+$.xhrPool.abortAll = function(){
+	$(this).each(function(i, jqXHR){
+		jqXHR.abort();
+		$.xhrPool.splice(i, 1);
+	});
+};
+$(document).ajaxStart(function(jqXHR){
+	$.xhrPool.push(jqXHR);
+});
+$(document).ajaxComplete(function(jqXHR){
+	var i = $.xhrPool.indexOf(jqXHR);
+	if (i > -1) $.xhrPool.splice(i, 1);
+});
 (function(){
 	var templates = {};
 	var requests = {};
