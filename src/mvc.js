@@ -13,7 +13,7 @@ jstack.mvc = function(config, controllerName, hash){
 		config.controller = config.view;
 	}
 	if(!config.target){
-		config.target = jstack.config.defaultTarget;
+		config.target = $(jstack.config.defaultTarget).empty().append('<div/>');
 	}
 	
 	var target = $(config.target);

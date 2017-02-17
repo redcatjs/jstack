@@ -126,18 +126,15 @@ jstack.controller = function(controller, element, hash){
 	}
 	
 	if(!hash){
-		if(!document.body.contains(element[0])){
-			return;
-		}
 		var parent = element.parent().closest('[j-controller]');
 		if(parent.length){
 			hash = parent.data('jController').hash;
 		}
-		else{
-			hash = document.location.hash;
+		if(!hash){
+			hash = window.location.hash;
 		}
-		//console.log('hash',hash,parent[0],element[0],document.body.contains(element[0]),$(document.body).html());
 	}
+	console.log(hash);
 	
 	
 	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
@@ -157,7 +154,6 @@ jstack.controller = function(controller, element, hash){
 	
 	$.when.apply($, dependencies).then(function(){
 		
-		//console.log('construct',controllerSet.name);
 		var controller = new constructor(controllerSet,element,hash);
 		
 		var dependenciesDataReady = [];
