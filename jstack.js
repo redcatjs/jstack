@@ -903,8 +903,9 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 },{}]},{},[2])(2)
 });
 (function(){
-var constructor = function(controllerSet,element){			
+var constructor = function(controllerSet,element,hash){			
 	var self = this;
+	
 	
 	var data = element.data('jModel') || {};
 	if(element[0].hasAttribute('j-view-inherit')){
@@ -928,6 +929,7 @@ var constructor = function(controllerSet,element){
 	$.extend(true,this,defaults,controllerSet);
 	
 	this.element = element;
+	this.hash = hash;
 	this.data = data;
 	element.data('jController',this);
 	
@@ -980,7 +982,7 @@ var constructor = function(controllerSet,element){
 	
 };
 
-jstack.controller = function(controller,element){
+jstack.controller = function(controller, element, hash){
 	
 	if(typeof(controller)=='object'){
 		
@@ -1027,6 +1029,17 @@ jstack.controller = function(controller,element){
 		return jstack.controllers[controller.name];
 	}
 	
+	if(!hash){
+		var parent = element.closest('[j-controller]');
+		if(parent.length){
+			hash = parent.data('jController').hash;
+		}
+		else{
+			hash = document.location.hash;
+		}
+	}
+	
+	
 	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
 	
 	var name = controllerSet.name;
@@ -1045,7 +1058,7 @@ jstack.controller = function(controller,element){
 	$.when.apply($, dependencies).then(function(){
 		
 		//console.log('construct',controllerSet.name);
-		var controller = new constructor(controllerSet,element);
+		var controller = new constructor(controllerSet,element,hash);
 		
 		var dependenciesDataReady = [];
 		var dependenciesData = controller.dependenciesData;
@@ -2764,17 +2777,18 @@ jstack.route = ( function( w, url ) {
 		}
 	};
 
-	Route.prototype.run = function( params ) {
+	Route.prototype.run = function( params, hash ) {
 		$(document).trigger('j:route:unload');
+		var path = params.shift();
 		for ( var i = 0, c = this.fns.length; i < c; i++ ) {
-			var defer = this.fns[ i ].apply( this, params );
+			var defer = this.fns[ i ].call( this, path, params, hash );
 			if($.type(defer)=='object'&&'then' in defer){
 				defer.then(function(){
-					$(document).trigger('j:route:loaded');
+					$(document).trigger('j:route:loaded',[path, params, hash]);
 				});
 			}
 			else{
-				$(document).trigger('j:route:loaded');
+				$(document).trigger('j:route:loaded',[path, params, hash]);
 			}
 		}
 	};
@@ -2912,7 +2926,8 @@ jstack.route = ( function( w, url ) {
 
 	var getHash2 = function() {
 		var h2 = "";
-		var h = w.location.hash.substring( 1 );
+		//var h = w.location.hash.substring( 1 );
+		var h = hashLocation.substring( 1 );
 		var i = h.indexOf( "#" );
 		if ( i !== -1 ) {
 			h2 = h.substr( i + 1 );
@@ -2920,7 +2935,8 @@ jstack.route = ( function( w, url ) {
 		return h2;
 	};
 	var getHash = function() {
-		var h = w.location.hash.substring( 1 );
+		//var h = w.location.hash.substring( 1 );
+		var h = hashLocation.substring( 1 );
 		var i = h.indexOf( "#" );
 		if ( i !== -1 ) {
 			h = h.substr( 0, i );
@@ -2931,7 +2947,7 @@ jstack.route = ( function( w, url ) {
 	var checkRoute = function( hash, route ) {
 		var params = [];
 		if ( route.match( hash, params ) ) {
-			route.run( params );
+			route.run( params, hash );
 			return true;
 		}
 		return false;
@@ -2948,7 +2964,9 @@ jstack.route = ( function( w, url ) {
 	routie.load = hashLoad;
 
 	var currentHash;
-	var hashChanged = function() {
+	var hashLocation = w.location.hash;
+	var hashChanged = function(e) {
+		hashLocation = e ? e.newURL.substr(e.newURL.indexOf('#')):w.location.hash;
 		var h = getHash();
 		if ( h != currentHash ) {
 			currentHash = h;
@@ -4406,7 +4424,7 @@ $.on('reset','form',function(){
 } )();
 (function(){
 
-jstack.mvc = function(config){
+jstack.mvc = function(config, hash){
 	
 	if(typeof(arguments[0])=='string'){
 		config = {
@@ -4442,7 +4460,7 @@ jstack.mvc = function(config){
 	
 	controllerReady.then(function(){
 		
-		var ctrlReady = jstack.controller(config.controller,target);
+		var ctrlReady = jstack.controller(config.controller, target, hash);
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
 			var domReady = ctrl.render(html);
@@ -4518,9 +4536,9 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 			$.xhrPool.abortAll();
 		});
 		
-		jstack.route('*', function(path){
+		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			return jstack.mvc(path);
+			return jstack.mvc(path, hash);
 		});
 	};
 
