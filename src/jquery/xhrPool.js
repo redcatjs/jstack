@@ -1,4 +1,4 @@
-$.xhrPool = [];
+$.xhrPool = {};
 $.xhrPool.abortAll = function(namespace){
 	$(this).each(function(i, jqXHR){
 		if(namespace===true||namespace==jqXHR.jstackNS){
@@ -13,4 +13,7 @@ $(document).ajaxStart(function(jqXHR){
 $(document).ajaxComplete(function(jqXHR){
 	var i = $.xhrPool.indexOf(jqXHR);
 	if (i > -1) $.xhrPool.splice(i, 1);
+});
+$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+	jqXHR.jstackNS = settings.namespace || jstack.ajaxNamespace;
 });

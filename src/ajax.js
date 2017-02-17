@@ -100,9 +100,7 @@
 				settings.data = fd;
 			}
 		}
-		var jqXHR = $.ajax( settings );
-		jqXHR.jstackNS = settings.namespace || jstack.ajaxNamespace;
-		return jqXHR;
+		return $.ajax( settings );
 	};
 
 	jstack.post = function( url, data, success, dataType ) {
