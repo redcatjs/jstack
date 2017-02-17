@@ -15,5 +15,5 @@ $(document).ajaxComplete(function(jqXHR){
 	if (i > -1) $.xhrPool.splice(i, 1);
 });
 $.ajaxPrefilter(function(options, originalOptions, jqXHR){
-	jqXHR.jstackNS = settings.namespace || jstack.ajaxNamespace;
+	jqXHR.jstackNS = options.namespace || jstack.ajaxNamespace;
 });
