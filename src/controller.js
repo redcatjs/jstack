@@ -134,7 +134,6 @@ jstack.controller = function(controller, element, hash){
 			hash = window.location.hash;
 		}
 	}
-	console.log(hash);
 	
 	
 	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));

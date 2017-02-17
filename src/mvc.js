@@ -1,26 +1,13 @@
 (function(){
 
-jstack.mvc = function(config, controllerName, hash){
-	
-	if(typeof(config)=='string'){
-		config = {
-			view: config,
-			controller: typeof(controllerName)=='string'?controllerName:config
-		};
-	}
-	
-	if(!config.controller){
-		config.controller = config.view;
-	}
-	if(!config.target){
-		config.target = $(jstack.config.defaultTarget).empty().append('<div/>');
-	}
+jstack.mvc = function(config){
 	
 	var target = $(config.target);
 	var controller = config.controller;
 	
 	var controllerPath = jstack.config.controllersPath+config.controller;
 	
+	var controllerReady = $.Deferred();
 	var controllerReady = $.Deferred();
 	var processor;
 	
@@ -35,8 +22,11 @@ jstack.mvc = function(config, controllerName, hash){
 	var ready = $.Deferred();
 	
 	controllerReady.then(function(){
-		var ctrlReady = jstack.controller(config.controller, target, hash);
+		var ctrlReady = jstack.controller(config.controller, target, config.hash);
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
+			if(config.clear){
+				$(config.clear).contents().not(target).remove();
+			}
 			var html = view[0];
 			var domReady = ctrl.render(html);
 			domReady.then(function(){
@@ -85,6 +75,7 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 	}
 
 	var ready = getViewReady(this);
+	
 	
 	var mvc = jstack.mvc({
 		view:view,

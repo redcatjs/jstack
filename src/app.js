@@ -13,7 +13,14 @@
 		
 		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			return jstack.mvc(path, path, hash);
+			var promise = jstack.mvc({
+				view:path,
+				controller:path,
+				hash:hash,
+				target:$('<div/>').appendTo(el),
+				clear:el[0],
+			});
+			return promise;
 		});
 	};
 
