@@ -27,17 +27,18 @@ jstack.route = ( function( w, url ) {
 		}
 	};
 
-	Route.prototype.run = function( params ) {
+	Route.prototype.run = function( params, hash ) {
 		$(document).trigger('j:route:unload');
+		var path = params.shift();
 		for ( var i = 0, c = this.fns.length; i < c; i++ ) {
-			var defer = this.fns[ i ].apply( this, params );
+			var defer = this.fns[ i ].call( this, path, params, hash );
 			if($.type(defer)=='object'&&'then' in defer){
 				defer.then(function(){
-					$(document).trigger('j:route:loaded');
+					$(document).trigger('j:route:loaded',[path, params, hash]);
 				});
 			}
 			else{
-				$(document).trigger('j:route:loaded');
+				$(document).trigger('j:route:loaded',[path, params, hash]);
 			}
 		}
 	};
@@ -175,7 +176,8 @@ jstack.route = ( function( w, url ) {
 
 	var getHash2 = function() {
 		var h2 = "";
-		var h = w.location.hash.substring( 1 );
+		//var h = w.location.hash.substring( 1 );
+		var h = hashLocation.substring( 1 );
 		var i = h.indexOf( "#" );
 		if ( i !== -1 ) {
 			h2 = h.substr( i + 1 );
@@ -183,7 +185,8 @@ jstack.route = ( function( w, url ) {
 		return h2;
 	};
 	var getHash = function() {
-		var h = w.location.hash.substring( 1 );
+		//var h = w.location.hash.substring( 1 );
+		var h = hashLocation.substring( 1 );
 		var i = h.indexOf( "#" );
 		if ( i !== -1 ) {
 			h = h.substr( 0, i );
@@ -194,7 +197,7 @@ jstack.route = ( function( w, url ) {
 	var checkRoute = function( hash, route ) {
 		var params = [];
 		if ( route.match( hash, params ) ) {
-			route.run( params );
+			route.run( params, hash );
 			return true;
 		}
 		return false;
@@ -211,7 +214,9 @@ jstack.route = ( function( w, url ) {
 	routie.load = hashLoad;
 
 	var currentHash;
-	var hashChanged = function() {
+	var hashLocation = w.location.hash;
+	var hashChanged = function(e) {
+		hashLocation = e ? e.newURL.substr(e.newURL.indexOf('#')):w.location.hash;
 		var h = getHash();
 		if ( h != currentHash ) {
 			currentHash = h;

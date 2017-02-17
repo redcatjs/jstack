@@ -11,9 +11,9 @@
 			$.xhrPool.abortAll();
 		});
 		
-		jstack.route('*', function(path){
+		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			return jstack.mvc(path);
+			return jstack.mvc(path, hash);
 		});
 	};
 

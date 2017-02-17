@@ -1,6 +1,7 @@
 (function(){
-var constructor = function(controllerSet,element){			
+var constructor = function(controllerSet,element,hash){			
 	var self = this;
+	
 	
 	var data = element.data('jModel') || {};
 	if(element[0].hasAttribute('j-view-inherit')){
@@ -24,6 +25,7 @@ var constructor = function(controllerSet,element){
 	$.extend(true,this,defaults,controllerSet);
 	
 	this.element = element;
+	this.hash = hash;
 	this.data = data;
 	element.data('jController',this);
 	
@@ -76,7 +78,7 @@ var constructor = function(controllerSet,element){
 	
 };
 
-jstack.controller = function(controller,element){
+jstack.controller = function(controller, element, hash){
 	
 	if(typeof(controller)=='object'){
 		
@@ -123,6 +125,17 @@ jstack.controller = function(controller,element){
 		return jstack.controllers[controller.name];
 	}
 	
+	if(!hash){
+		var parent = element.closest('[j-controller]');
+		if(parent.length){
+			hash = parent.data('jController').hash;
+		}
+		else{
+			hash = document.location.hash;
+		}
+	}
+	
+	
 	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
 	
 	var name = controllerSet.name;
@@ -141,7 +154,7 @@ jstack.controller = function(controller,element){
 	$.when.apply($, dependencies).then(function(){
 		
 		//console.log('construct',controllerSet.name);
-		var controller = new constructor(controllerSet,element);
+		var controller = new constructor(controllerSet,element,hash);
 		
 		var dependenciesDataReady = [];
 		var dependenciesData = controller.dependenciesData;

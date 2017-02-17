@@ -1,6 +1,6 @@
 (function(){
 
-jstack.mvc = function(config){
+jstack.mvc = function(config, hash){
 	
 	if(typeof(arguments[0])=='string'){
 		config = {
@@ -36,7 +36,7 @@ jstack.mvc = function(config){
 	
 	controllerReady.then(function(){
 		
-		var ctrlReady = jstack.controller(config.controller,target);
+		var ctrlReady = jstack.controller(config.controller, target, hash);
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			var html = view[0];
 			var domReady = ctrl.render(html);
