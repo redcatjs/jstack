@@ -126,13 +126,17 @@ jstack.controller = function(controller, element, hash){
 	}
 	
 	if(!hash){
-		var parent = element.closest('[j-controller]');
+		if(!document.body.contains(element[0])){
+			return;
+		}
+		var parent = element.parent().closest('[j-controller]');
 		if(parent.length){
 			hash = parent.data('jController').hash;
 		}
 		else{
 			hash = document.location.hash;
 		}
+		//console.log('hash',hash,parent[0],element[0],document.body.contains(element[0]),$(document.body).html());
 	}
 	
 	
