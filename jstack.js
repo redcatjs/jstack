@@ -2599,18 +2599,23 @@ $.onJstackReady = function(event,selector,callback){
 	return $(document).onReady(event,selector,callback);
 };
 $.xhrPool = [];
-$.xhrPool.abortAll = function(){
+$.xhrPool.abortAll = function(namespace){
 	$(this).each(function(i, jqXHR){
-		jqXHR.abort();
-		$.xhrPool.splice(i, 1);
+		if(namespace===true||namespace==jqXHR.jstackNS){
+			jqXHR.abort();
+			$.xhrPool.splice(i, 1);
+		}
 	});
 };
-$(document).ajaxStart(function(jqXHR){
+$(document).ajaxSend(function(e,jqXHR){
 	$.xhrPool.push(jqXHR);
 });
-$(document).ajaxComplete(function(jqXHR){
+$(document).ajaxComplete(function(e,jqXHR){
 	var i = $.xhrPool.indexOf(jqXHR);
 	if (i > -1) $.xhrPool.splice(i, 1);
+});
+$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+	jqXHR.jstackNS = options.namespace || jstack.ajaxNamespace;
 });
 (function(){
 	var templates = {};
@@ -2760,6 +2765,7 @@ jstack.route = ( function( w, url ) {
 	};
 
 	Route.prototype.run = function( params ) {
+		$(document).trigger('j:route:unload');
 		for ( var i = 0, c = this.fns.length; i < c; i++ ) {
 			var defer = this.fns[ i ].apply( this, params );
 			if($.type(defer)=='object'&&'then' in defer){
@@ -3542,8 +3548,8 @@ jstack.dataBinder = (function(){
 						if($n.data('j:load:state')){
 							return;
 						}
-						$n.trigger('j:load');
 						$n.data('j:load:state',true);
+						$n.trigger('j:load');
 					//});
 				});
 				
@@ -3598,11 +3604,13 @@ jstack.dataBinder = (function(){
 			});
 			
 		},
-		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1},
+		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1},
 		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
-			if(n.hasAttribute('j-escape')) return false;
+			if(n.hasAttribute('j-escape')){
+				return false;
+			}
 			if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
 				return;
 			}
@@ -4280,7 +4288,7 @@ jstack.dataBinder = (function(){
 $.on('reset','form',function(){
 	$(this).populateReset();
 });
-( function( $, j ) {
+( function() {
 	var hasOwnProperty2 = function(o,k){
 		var v = o[k];
 		return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
@@ -4336,7 +4344,9 @@ $.on('reset','form',function(){
 		return o;
 	};
 	
-	j.ajax = function() {
+	jstack.ajaxNamespace = undefined;
+	
+	jstack.ajax = function() {
 		var settings, files = {};
 		if ( arguments.length == 2 ) {
 			settings = arguments[ 1 ] || {};
@@ -4383,8 +4393,8 @@ $.on('reset','form',function(){
 		return $.ajax( settings );
 	};
 
-	j.post = function( url, data, success, dataType ) {
-		return j.ajax( {
+	jstack.post = function( url, data, success, dataType ) {
+		return jstack.ajax( {
 			type: "POST",
 			url: url,
 			data: data,
@@ -4393,7 +4403,7 @@ $.on('reset','form',function(){
 		} );
 	};
 
-} )( jQuery, jstack );
+} )();
 (function(){
 
 jstack.mvc = function(config){
@@ -4503,6 +4513,10 @@ $.on('j:load','[j-view]:not([j-view-loaded])',function(){
 		}
 		jstack.config.templatesPath += app+'/';
 		jstack.config.controllersPath += app+'/';
+		
+		$(document).on('j:route:unload',function(){
+			$.xhrPool.abortAll();
+		});
 		
 		jstack.route('*', function(path){
 			path = jstack.url.getPath(path);
