@@ -7,10 +7,10 @@ $.xhrPool.abortAll = function(namespace){
 		}
 	});
 };
-$(document).ajaxStart(function(jqXHR){
+$(document).ajaxSend(function(e,jqXHR){
 	$.xhrPool.push(jqXHR);
 });
-$(document).ajaxComplete(function(jqXHR){
+$(document).ajaxComplete(function(e,jqXHR){
 	var i = $.xhrPool.indexOf(jqXHR);
 	if (i > -1) $.xhrPool.splice(i, 1);
 });
