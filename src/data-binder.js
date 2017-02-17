@@ -471,8 +471,8 @@ jstack.dataBinder = (function(){
 						if($n.data('j:load:state')){
 							return;
 						}
-						$n.trigger('j:load');
 						$n.data('j:load:state',true);
+						$n.trigger('j:load');
 					//});
 				});
 				
