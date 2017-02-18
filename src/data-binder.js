@@ -136,7 +136,6 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
 			
-			var controllerData = self.getControllerData(el);
 			var controller = self.getControllerObject(el);
 			
 			var forCollection = self.getParentsForId(el).reverse();
