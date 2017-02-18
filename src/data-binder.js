@@ -77,27 +77,30 @@ jstack.dataBinder = (function(){
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
 		},
-		getValue: function(el,varKey,defaultValue){
-			var self = this;
-			var data = self.getControllerData(el);
-			
-			var key = '';
-			
-			var form;
-			var p = el.parentNode;
+		getClosestFormNamespace:function(p){
 			while(p){
 				if(p.tagName.toLowerCase()=='form'){
 					if(p.hasAttribute('j-name')){
-						key += p.getAttribute('j-name')+'.';
+						return p.getAttribute('j-name');
 					}
 					break;
 				}
 				p = p.parentNode;
 			}
+		},
+		getValue: function(el,varKey,defaultValue){
+			var data = this.getControllerData(el);
+			
+			var key = '';
+			
+			var ns = this.getClosestFormNamespace(el.parentNode);
+			if(ns){
+				key += ns+'.';
+			}
 			
 			key += varKey;
 
-			return self.dotGet(key,data,defaultValue);
+			return this.dotGet(key,data,defaultValue);
 		},
 		getParentsForId: function(el){
 			var a = [];
