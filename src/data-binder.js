@@ -263,7 +263,7 @@ jstack.dataBinder = (function(){
 						return $el.prop('checked')?$el.val():'';
 					break;
 					case 'radio':
-						var checked = $el.closest('form').find('[name="'+$el.attr('name')+'"]:checked');
+						var checked = $el.parent().closest('form').find('[name="'+$el.attr('name')+'"]:checked');
 						return checked.length?checked.val():'';
 					break;
 					case 'file':
