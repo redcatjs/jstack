@@ -82,10 +82,19 @@ jstack.dataBinder = (function(){
 			var data = self.getControllerData(el);
 			
 			var key = '';
-			var form = $(el).closest('form[j-name]');
-			if(form.length){
-				key += form.attr('j-name')+'.';
+			
+			var form;
+			var p = el.parentNode;
+			while(p){
+				if(p.tagName.toLowerCase()=='form'){
+					if(p.hasAttribute('j-name')){
+						key += p.getAttribute('j-name')+'.';
+					}
+					break;
+				}
+				p = p.parentNode;
 			}
+			
 			key += varKey;
 
 			return self.dotGet(key,data,defaultValue);
