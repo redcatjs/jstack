@@ -22,6 +22,9 @@ jstack.dataBinder = (function(){
 	};
 	dataBinder.prototype = {
 		dotGet: function(key,data,defaultValue){
+			if(typeof(data)!='object'||data===null){
+				return;
+			}
 			return key.split('.').reduce(function(obj,i){
 				if(typeof(obj)=='object'&&obj!==null){
 					return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
@@ -32,7 +35,7 @@ jstack.dataBinder = (function(){
 			}, data);
 		},
 		dotSet: function(key,data,value,isDefault){
-			if(typeof(data)!='object'){
+			if(typeof(data)!='object'||data===null){
 				return;
 			}
 			key.split('.').reduce(function(obj,k,index,array){
@@ -54,6 +57,9 @@ jstack.dataBinder = (function(){
 			return value;
 		},
 		dotDel: function(key,data,value){
+			if(typeof(data)!='object'||data===null){
+				return;
+			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(typeof(obj)!='object'){
 					return;
