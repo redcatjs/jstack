@@ -3115,6 +3115,9 @@ jstack.dataBinder = (function(){
 	};
 	dataBinder.prototype = {
 		dotGet: function(key,data,defaultValue){
+			if(typeof(data)!='object'||data===null){
+				return;
+			}
 			return key.split('.').reduce(function(obj,i){
 				if(typeof(obj)=='object'&&obj!==null){
 					return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
@@ -3125,7 +3128,7 @@ jstack.dataBinder = (function(){
 			}, data);
 		},
 		dotSet: function(key,data,value,isDefault){
-			if(typeof(data)!='object'){
+			if(typeof(data)!='object'||data===null){
 				return;
 			}
 			key.split('.').reduce(function(obj,k,index,array){
@@ -3147,6 +3150,9 @@ jstack.dataBinder = (function(){
 			return value;
 		},
 		dotDel: function(key,data,value){
+			if(typeof(data)!='object'||data===null){
+				return;
+			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(typeof(obj)!='object'){
 					return;
@@ -3206,9 +3212,17 @@ jstack.dataBinder = (function(){
 			return a;
 		},
 		getValueEval: function(el,varKey){
+			
 			var self = this;
-			var scopeValue = self.getControllerData(el);
-			scopeValue = JSON.parse(JSON.stringify(scopeValue)); //clone Proxy
+			var controllerEl = self.getController(el);
+			var controller = controllerEl.data('jController');
+			var scopeValue = controllerEl.data('jModel');
+			
+			if(!document.contains(el)){
+				return;
+			}
+			
+			scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
 			if(typeof(varKey)=='undefined'){
 				varKey = 'undefined';
 			}
@@ -3223,8 +3237,6 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
 			
-			var controllerData = self.getControllerData(el);
-			var controller = self.getControllerObject(el);
 			
 			var forCollection = self.getParentsForId(el).reverse();
 			
