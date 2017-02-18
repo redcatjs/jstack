@@ -231,9 +231,9 @@ jstack.dataBinder = (function(){
 				key += index;
 			}
 			var scopeKey = '';
-			var form = $input.closest('form[j-name]');
-			if(form.length){
-				scopeKey += form.attr('j-name')+'.';
+			var ns = this.getClosestFormNamespace(el.parentNode);
+			if(ns){
+				scopeKey += ns+'.';
 			}
 			scopeKey += key;
 			return scopeKey;
