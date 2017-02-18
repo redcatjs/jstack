@@ -2365,7 +2365,7 @@ $.fn.replaceTagName = function(replaceWith) {
 };
 $.fn.jModel = function(key,defaultValue){
 	if(this.length<=1){
-		var r = jstack.dataBinder.getControllerData(this);
+		var r = jstack.dataBinder.getControllerData(this[0]);
 		if(typeof(key)!='undefined'){
 			return typeof(r[key])=='undefined'?defaultValue:r[key];
 		}
@@ -3170,18 +3170,30 @@ jstack.dataBinder = (function(){
 		getKey: function(key){
 			return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
 		},
+		getClosestFormNamespace:function(p){
+			while(p){
+				if(p.tagName&&p.tagName.toLowerCase()=='form'){
+					if(p.hasAttribute('j-name')){
+						return p.getAttribute('j-name');
+					}
+					break;
+				}
+				p = p.parentNode;
+			}
+		},
 		getValue: function(el,varKey,defaultValue){
-			var self = this;
-			var data = self.getControllerData(el);
+			var data = this.getControllerData(el);
 			
 			var key = '';
-			var form = $(el).closest('form[j-name]');
-			if(form.length){
-				key += form.attr('j-name')+'.';
+			
+			var ns = this.getClosestFormNamespace(el.parentNode);
+			if(ns){
+				key += ns+'.';
 			}
+			
 			key += varKey;
 
-			return self.dotGet(key,data,defaultValue);
+			return this.dotGet(key,data,defaultValue);
 		},
 		getParentsForId: function(el){
 			var a = [];
@@ -3213,8 +3225,7 @@ jstack.dataBinder = (function(){
 		},
 		getValueEval: function(el,varKey){
 			
-			var self = this;
-			var controllerEl = self.getController(el);
+			var controllerEl = $(this.getController(el));
 			var controller = controllerEl.data('jController');
 			var scopeValue = controllerEl.data('jModel');
 			
@@ -3238,7 +3249,7 @@ jstack.dataBinder = (function(){
 			}
 			
 			
-			var forCollection = self.getParentsForId(el).reverse();
+			var forCollection = this.getParentsForId(el).reverse();
 			
 			for(var i = 0, l = forCollection.length; i<l; i++){
 				var forid = forCollection[i];
@@ -3296,14 +3307,11 @@ jstack.dataBinder = (function(){
 			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
-			var self = this;
-			var $input = $(input);
 			var name = input.getAttribute('name');
-			var key = self.getKey(name);
-			if(key.substr(-1)=='.'&&$input.is(':checkbox')){
+			var key = this.getKey(name);
+			if(key.substr(-1)=='.'&&input.type=='checkbox'){
 				var index;
-				var scope = self.getController(input);
-				scope.find(':checkbox[name="'+name+'"]').each(function(i){
+				$(this.getController(input.parentNode)).find(':checkbox[name="'+name+'"]').each(function(i){
 					if(this===input){
 						index = i;
 						return false;
@@ -3312,9 +3320,9 @@ jstack.dataBinder = (function(){
 				key += index;
 			}
 			var scopeKey = '';
-			var form = $input.closest('form[j-name]');
-			if(form.length){
-				scopeKey += form.attr('j-name')+'.';
+			var ns = this.getClosestFormNamespace(input.parentNode);
+			if(ns){
+				scopeKey += ns+'.';
 			}
 			scopeKey += key;
 			return scopeKey;
@@ -3338,37 +3346,34 @@ jstack.dataBinder = (function(){
 			},
 			*/
 			input: function(el) {
-				var $el = $(el);
 				switch(el.type){
 					case 'checkbox':
-						var form = $el.closest('form');
-						var name = $el.attr('name');
-						/* //multi for a name
-						var checked = form.find('[name="'+name+'"]:checked');
-						if(name.substr(-2)=='[]'){
-							var r = [];
-							checked.each(function(){
-								r.push( $(this).val() );
-							});
-							return r;
-						}
-						return checked.length?checked.val():'';
-						*/
-						//for element itself
+						var $el = $(el);
 						return $el.prop('checked')?$el.val():'';
 					break;
 					case 'radio':
-						var form = $el.closest('form');
-						var checked = form.find('[name="'+$el.attr('name')+'"]:checked');
-						return checked.length?checked.val():'';
+						var form;
+						var p = el.parentNode;
+						while(p){
+							if(p.tagName&&p.tagName.toLowerCase()=='form'){
+								form = p;
+								break;
+							}
+							p = p.parentNode;
+						}
+						if(form){
+							var checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
+							return checked.length?checked.val():'';
+						}
+						return '';
 					break;
 					case 'file':
 						return el.files;
 					break;
 					case 'submit':
 					break;
-					default:					
-						return $el.val();
+					default:
+						return $(el).val();
 					break;
 				}
 			},
@@ -3412,7 +3417,7 @@ jstack.dataBinder = (function(){
 
 			var self = this;
 			
-			var data = self.getControllerData(el);
+			var data = this.getControllerData(el);
 			var name = el.getAttribute('name');
 
 			var performInputToModel = function(){
@@ -3439,8 +3444,8 @@ jstack.dataBinder = (function(){
 				}
 			};
 			
-			var value = self.getInputVal(el);
-			var filteredValue = self.filter(el,value);
+			var value = this.getInputVal(el);
+			var filteredValue = this.filter(el,value);
 			
 			
 			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
@@ -3486,10 +3491,10 @@ jstack.dataBinder = (function(){
 		update: function(){
 			//console.log('update');
 			var self = this;
-			if(self.updateTimeout){
-				clearTimeout(self.updateTimeout);
+			if(this.updateTimeout){
+				clearTimeout(this.updateTimeout);
 			}
-			self.updateTimeout = setTimeout(function(){
+			this.updateTimeout = setTimeout(function(){
 				self.updateDeferState++;
 				var callback = function(){
 					self.runWatchers();
@@ -3695,22 +3700,31 @@ jstack.dataBinder = (function(){
 			}
 			return filter;
 		},
-		getControllerData:function(input){
-			return this.getController(input).data('jModel');
+		getControllerData:function(el){
+			return $(this.getController(el)).data('jModel');
 		},
-		getController:function(input){
-			var controller = $(input).closest('[j-controller]');
+		getController:function(p){
 			
-			if(!controller.length){
-				controller = $(document.body);
-				controller.attr('j-controller','')
-				controller.data('jModel',{});
+			var controller;
+			while(p){
+				if(p.hasAttribute&&p.hasAttribute('j-controller')){
+					controller = p;
+					break;
+				}
+				p = p.parentNode;
+			}
+			
+			
+			if(!controller){
+				controller = document.body;
+				controller.setAttribute('j-controller','')
+				$(controller).data('jModel',{});
 			}
 			
 			return controller;
 		},
-		getControllerObject:function(input){
-			return this.getController(input).data('jController');
+		getControllerObject:function(el){
+			return $(this.getController(el)).data('jController');
 		},
 		
 		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
