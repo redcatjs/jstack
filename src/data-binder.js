@@ -120,7 +120,9 @@ jstack.dataBinder = (function(){
 		},
 		getValueEval: function(el,varKey){
 			var self = this;
-			var scopeValue = self.getControllerData(el);
+			var controllerEl = self.getController(el);
+			var controller = controllerEl.data('jController');
+			var scopeValue = controllerEl.data('jModel');
 			scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
 			if(typeof(varKey)=='undefined'){
 				varKey = 'undefined';
@@ -136,7 +138,6 @@ jstack.dataBinder = (function(){
 				varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 			}
 			
-			var controller = self.getControllerObject(el);
 			
 			var forCollection = self.getParentsForId(el).reverse();
 			
