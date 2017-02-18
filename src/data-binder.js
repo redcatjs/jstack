@@ -218,7 +218,7 @@ jstack.dataBinder = (function(){
 			var key = this.getKey(name);
 			if(key.substr(-1)=='.'&&input.type=='checkbox'){
 				var index;
-				$(this.getController(input)).find(':checkbox[name="'+name+'"]').each(function(i){
+				$(this.getController(input.parentNode)).find(':checkbox[name="'+name+'"]').each(function(i){
 					if(this===input){
 						index = i;
 						return false;
@@ -607,13 +607,12 @@ jstack.dataBinder = (function(){
 			}
 			return filter;
 		},
-		getControllerData:function(input){
-			return $(this.getController(input)).data('jModel');
+		getControllerData:function(el){
+			return $(this.getController(el)).data('jModel');
 		},
-		getController:function(input){
+		getController:function(p){
 			
 			var controller;
-			var p = input.parentNode;
 			while(p){
 				if(p.hasAttribute&&p.hasAttribute('j-controller')){
 					controller = p;
@@ -631,8 +630,8 @@ jstack.dataBinder = (function(){
 			
 			return controller;
 		},
-		getControllerObject:function(input){
-			return $(this.getController(input)).data('jController');
+		getControllerObject:function(el){
+			return $(this.getController(el)).data('jController');
 		},
 		
 		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
