@@ -1,6 +1,6 @@
 $.fn.jModel = function(key,defaultValue){
 	if(this.length<=1){
-		var r = jstack.dataBinder.getControllerData(this);
+		var r = jstack.dataBinder.getControllerData(this[0]);
 		if(typeof(key)!='undefined'){
 			return typeof(r[key])=='undefined'?defaultValue:r[key];
 		}
