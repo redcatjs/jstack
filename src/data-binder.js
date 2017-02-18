@@ -79,7 +79,7 @@ jstack.dataBinder = (function(){
 		},
 		getClosestFormNamespace:function(p){
 			while(p){
-				if(p.tagName.toLowerCase()=='form'){
+				if(p.tagName&&p.tagName.toLowerCase()=='form'){
 					if(p.hasAttribute('j-name')){
 						return p.getAttribute('j-name');
 					}
@@ -214,10 +214,9 @@ jstack.dataBinder = (function(){
 			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
-			var $input = $(input);
 			var name = input.getAttribute('name');
 			var key = this.getKey(name);
-			if(key.substr(-1)=='.'&&$input.is(':checkbox')){
+			if(key.substr(-1)=='.'&&input.type=='checkbox'){
 				var index;
 				$(this.getController(input)).find(':checkbox[name="'+name+'"]').each(function(i){
 					if(this===input){
@@ -228,7 +227,7 @@ jstack.dataBinder = (function(){
 				key += index;
 			}
 			var scopeKey = '';
-			var ns = this.getClosestFormNamespace(el.parentNode);
+			var ns = this.getClosestFormNamespace(input.parentNode);
 			if(ns){
 				scopeKey += ns+'.';
 			}
@@ -254,22 +253,34 @@ jstack.dataBinder = (function(){
 			},
 			*/
 			input: function(el) {
-				var $el = $(el);
 				switch(el.type){
 					case 'checkbox':
+						var $el = $(el);
 						return $el.prop('checked')?$el.val():'';
 					break;
 					case 'radio':
-						var checked = $el.parent().closest('form').find('[name="'+$el.attr('name')+'"]:checked');
-						return checked.length?checked.val():'';
+						var form;
+						var p = el.parentNode;
+						while(p){
+							if(p.tagName&&p.tagName.toLowerCase()=='form'){
+								form = p;
+								break;
+							}
+							p = p.parentNode;
+						}
+						if(form){
+							var checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
+							return checked.length?checked.val():'';
+						}
+						return '';
 					break;
 					case 'file':
 						return el.files;
 					break;
 					case 'submit':
 					break;
-					default:					
-						return $el.val();
+					default:
+						return $(el).val();
 					break;
 				}
 			},
@@ -604,7 +615,7 @@ jstack.dataBinder = (function(){
 			var controller;
 			var p = input.parentNode;
 			while(p){
-				if(p.hasAttribute('j-controller')){
+				if(p.hasAttribute&&p.hasAttribute('j-controller')){
 					controller = p;
 					break;
 				}
