@@ -119,10 +119,16 @@ jstack.dataBinder = (function(){
 			return a;
 		},
 		getValueEval: function(el,varKey){
+			
 			var self = this;
 			var controllerEl = self.getController(el);
 			var controller = controllerEl.data('jController');
 			var scopeValue = controllerEl.data('jModel');
+			
+			if(!document.contains(el)){
+				return;
+			}
+			
 			scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
 			if(typeof(varKey)=='undefined'){
 				varKey = 'undefined';
