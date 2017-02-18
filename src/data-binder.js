@@ -132,8 +132,7 @@ jstack.dataBinder = (function(){
 		},
 		getValueEval: function(el,varKey){
 			
-			var self = this;
-			var controllerEl = self.getController(el);
+			var controllerEl = $(this.getController(el));
 			var controller = controllerEl.data('jController');
 			var scopeValue = controllerEl.data('jModel');
 			
@@ -157,7 +156,7 @@ jstack.dataBinder = (function(){
 			}
 			
 			
-			var forCollection = self.getParentsForId(el).reverse();
+			var forCollection = this.getParentsForId(el).reverse();
 			
 			for(var i = 0, l = forCollection.length; i<l; i++){
 				var forid = forCollection[i];
@@ -215,14 +214,12 @@ jstack.dataBinder = (function(){
 			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
-			var self = this;
 			var $input = $(input);
 			var name = input.getAttribute('name');
-			var key = self.getKey(name);
+			var key = this.getKey(name);
 			if(key.substr(-1)=='.'&&$input.is(':checkbox')){
 				var index;
-				var scope = self.getController(input);
-				scope.find(':checkbox[name="'+name+'"]').each(function(i){
+				$(this.getController(input)).find(':checkbox[name="'+name+'"]').each(function(i){
 					if(this===input){
 						index = i;
 						return false;
@@ -316,7 +313,7 @@ jstack.dataBinder = (function(){
 
 			var self = this;
 			
-			var data = self.getControllerData(el);
+			var data = this.getControllerData(el);
 			var name = el.getAttribute('name');
 
 			var performInputToModel = function(){
@@ -343,8 +340,8 @@ jstack.dataBinder = (function(){
 				}
 			};
 			
-			var value = self.getInputVal(el);
-			var filteredValue = self.filter(el,value);
+			var value = this.getInputVal(el);
+			var filteredValue = this.filter(el,value);
 			
 			
 			if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
@@ -390,10 +387,10 @@ jstack.dataBinder = (function(){
 		update: function(){
 			//console.log('update');
 			var self = this;
-			if(self.updateTimeout){
-				clearTimeout(self.updateTimeout);
+			if(this.updateTimeout){
+				clearTimeout(this.updateTimeout);
 			}
-			self.updateTimeout = setTimeout(function(){
+			this.updateTimeout = setTimeout(function(){
 				self.updateDeferState++;
 				var callback = function(){
 					self.runWatchers();
@@ -600,21 +597,31 @@ jstack.dataBinder = (function(){
 			return filter;
 		},
 		getControllerData:function(input){
-			return this.getController(input).data('jModel');
+			return $(this.getController(input)).data('jModel');
 		},
 		getController:function(input){
-			var controller = $(input).closest('[j-controller]');
 			
-			if(!controller.length){
-				controller = $(document.body);
-				controller.attr('j-controller','')
-				controller.data('jModel',{});
+			var controller;
+			var p = input.parentNode;
+			while(p){
+				if(p.hasAttribute('j-controller')){
+					controller = p;
+					break;
+				}
+				p = p.parentNode;
+			}
+			
+			
+			if(!controller){
+				controller = document.body;
+				controller.setAttribute('j-controller','')
+				$(controller).data('jModel',{});
 			}
 			
 			return controller;
 		},
 		getControllerObject:function(input){
-			return this.getController(input).data('jController');
+			return $(this.getController(input)).data('jController');
 		},
 		
 		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
