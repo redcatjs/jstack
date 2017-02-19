@@ -3093,7 +3093,7 @@ jstack.route = ( function( w, url ) {
 } )( window, jstack.url );
 jstack.ready = function(callback){
 	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
-	if(self.loadingMutation>0){
+	if(this.loadingMutation>0){
 		var deferMutation = $.Deferred();
 		jstack.dataBinder.deferMutation.push(function(){
 			deferMutation.resolve();
@@ -3680,21 +3680,19 @@ jstack.dataBinder = (function(){
 			});
 		},
 		filter:function(el,value){
-			var self = this;
-			var filter = self.getFilter(el);
+			var filter = this.getFilter(el);
 			if(typeof(filter)=='function'){
 				value = filter(value);
 			}
 			return value;
 		},
 		getFilter:function(el){
-			var self = this;
 			$el = $(el);
 			var filter = $el.data('j-filter');
 			if(!filter){
 				var attrFilter = el.getAttribute('j-filter');
 				if(attrFilter){
-					var method = self.getValue(el,attrFilter);
+					var method = this.getValue(el,attrFilter);
 					$el.data('j-filter',method);
 				}
 			}
