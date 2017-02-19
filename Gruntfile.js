@@ -19,6 +19,7 @@ grunt.initConfig({
 				"src/std/log.js",
 				"src/std/randomColor.js",
 				"src/std/fragmentToHTML.js",
+				"src/std/isMobile.js",
 				
 				"src/string/camelCase.js",
 				"src/string/lcfirst.js",
