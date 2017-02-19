@@ -587,21 +587,19 @@ jstack.dataBinder = (function(){
 			});
 		},
 		filter:function(el,value){
-			var self = this;
-			var filter = self.getFilter(el);
+			var filter = this.getFilter(el);
 			if(typeof(filter)=='function'){
 				value = filter(value);
 			}
 			return value;
 		},
 		getFilter:function(el){
-			var self = this;
 			$el = $(el);
 			var filter = $el.data('j-filter');
 			if(!filter){
 				var attrFilter = el.getAttribute('j-filter');
 				if(attrFilter){
-					var method = self.getValue(el,attrFilter);
+					var method = this.getValue(el,attrFilter);
 					$el.data('j-filter',method);
 				}
 			}
