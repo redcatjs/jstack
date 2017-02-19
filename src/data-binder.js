@@ -1,6 +1,6 @@
 jstack.ready = function(callback){
 	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
-	if(self.loadingMutation>0){
+	if(this.loadingMutation>0){
 		var deferMutation = $.Deferred();
 		jstack.dataBinder.deferMutation.push(function(){
 			deferMutation.resolve();
