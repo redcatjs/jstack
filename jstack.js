@@ -1332,6 +1332,15 @@ jstack.fragmentToHTML = function(fragment){
 	div.appendChild( document.importNode(fragment.content, true) );
 	return div.innerHTML;
 };
+(function(){
+
+var re = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+jstack.isMobile = function(userAgent){
+	if(!userAgent) userAgent = navigator.userAgent;
+	return re.test()
+};
+
+})();
 String.prototype.camelCase = function() {
 	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
 };
