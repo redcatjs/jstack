@@ -2613,7 +2613,7 @@ $.fn.onJstackReady = function(types,selector,data){
 			fn.apply(el,args);
 		});
 	});
-	return this.on.apply(this,param);
+	return this.on.apply(this,params);
 };
 $.onJstackReady = function(event,selector,callback){
 	return $(document).onReady(event,selector,callback);
