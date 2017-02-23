@@ -24,7 +24,7 @@
 			for( var i = 0; i < o.length; i++ ) {
 				obj[i] = o[i];
 			}
-			return recurseFormat(obj);
+			return recurseFormat(obj, files, prefix, deepness);
 		}
 		else if(typeof(o)=='undefined'||o===null){ //cast null and undefined as string
 			o = '';
