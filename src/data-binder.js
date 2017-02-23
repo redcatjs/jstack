@@ -1112,7 +1112,6 @@ jstack.dataBinder = (function(){
 				},
 				callback:function(){
 					$(this).on('input change', function(e){
-						console.log(e.type);
 						jstack.dataBinder.inputToModel(this,e.type);
 					});
 				}
