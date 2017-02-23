@@ -3683,7 +3683,7 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
-				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'||this.type=='file'))
+				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
 				self.inputToModel(this,e.type);
 			});
@@ -4363,7 +4363,7 @@ $.on('reset','form',function(){
 			for( var i = 0; i < o.length; i++ ) {
 				obj[i] = o[i];
 			}
-			return recurseFormat(obj);
+			return recurseFormat(obj, files, prefix, deepness);
 		}
 		else if(typeof(o)=='undefined'||o===null){ //cast null and undefined as string
 			o = '';
