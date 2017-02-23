@@ -581,7 +581,7 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
-				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'||this.type=='file'))
+				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
 				self.inputToModel(this,e.type);
 			});
