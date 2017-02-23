@@ -581,6 +581,7 @@ jstack.dataBinder = (function(){
 			});
 			
 			$(document.body).on('input change j:update', ':input[name]', function(e){
+				if(this.type=='file') return;
 				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
 				self.inputToModel(this,e.type);
@@ -1103,6 +1104,18 @@ jstack.dataBinder = (function(){
 					};
 					return render;
 				},
+			},
+			jInputFile:{
+				level: 8,
+				match: function(){
+					return this.hasAttribute('name')&&this.tagName.toLowerCase()=='input'&&this.type=='file';
+				},
+				callback:function(){
+					$(this).on('input change', function(e){
+						console.log(e.type);
+						jstack.dataBinder.inputToModel(this,e.type);
+					});
+				}
 			},
 			jInput:{
 				level: 8,
