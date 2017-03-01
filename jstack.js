@@ -2645,9 +2645,9 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR){
 			templatePath = jstack.config.templatesPath+templatePath;
 		}
 		if ( !requests[ templatePath ] ) {
-			if ( $js.dev ) {
+			var url = templatePath;
+			if ( jstack.config.debug ) {
 				var ts = ( new Date().getTime() ).toString();
-				var url = templatePath;
 				if ( url.indexOf( "_t=" ) === -1 )
 					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
 			}
@@ -4482,7 +4482,8 @@ jstack.mvc = function(config){
 		controllerReady.resolve();
 	}
 	else{
-		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
+		//$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
+		$js(controllerPath,controllerReady.resolve);
 	}
 	var viewReady = jstack.getTemplate(config.view+'.jml');
 	
