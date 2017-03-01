@@ -15,7 +15,8 @@ jstack.mvc = function(config){
 		controllerReady.resolve();
 	}
 	else{
-		$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
+		//$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
+		$js(controllerPath,controllerReady.resolve);
 	}
 	var viewReady = jstack.getTemplate(config.view+'.jml');
 	
