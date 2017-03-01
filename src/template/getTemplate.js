@@ -6,9 +6,9 @@
 			templatePath = jstack.config.templatesPath+templatePath;
 		}
 		if ( !requests[ templatePath ] ) {
-			if ( $js.dev ) {
+			var url = templatePath;
+			if ( jstack.config.debug ) {
 				var ts = ( new Date().getTime() ).toString();
-				var url = templatePath;
 				if ( url.indexOf( "_t=" ) === -1 )
 					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
 			}
