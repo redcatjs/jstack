@@ -63,6 +63,7 @@ grunt.initConfig({
 				"src/jquery/jData.js",
 				"src/jquery/onJstackReady.js",
 				"src/jquery/xhrPool.js",
+				"src/jquery/onFirst-onLast.js",
 				
 				"src/template/getTemplate.js",
 				
