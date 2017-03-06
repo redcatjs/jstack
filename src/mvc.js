@@ -61,7 +61,7 @@ var getViewReady = function(el){
 jstack.viewReady = function(el){
 	return getViewReady(el).promise();
 };
-$.one('j:load','[j-view]:not([j-view-loaded])',function(){
+jstack.loader('[j-view]:not([j-view-loaded])',function(){
 
 	this.setAttribute('j-view-loaded','true');
 
