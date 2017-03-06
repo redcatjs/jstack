@@ -2,11 +2,11 @@ jstack.component = {};
 
 //use j:load event to make loader definition helper
 jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',selector,function(){
+	$.one('j:load',selector,function(){
 		handler.call(this);
 	});
 	if(typeof(unloader)=='function'){
-		$.on('j:unload',selector,function(){
+		$.one('j:unload',selector,function(){
 			unloader.call(this);
 		});
 	}
@@ -64,7 +64,7 @@ jstack.loader('[j-component]',function(){
 		else{
 			o = new c(el,config);
 		}
-		$el.data('j:component',o);			
+		$el.data('j:component',o);
 		if(o.deferred){
 			o.deferred.then(function(){
 				$el.data('j.component.loaded',true);
@@ -79,7 +79,7 @@ jstack.loader('[j-component]',function(){
 	if(jstack.component[component]){
 		load();
 	}
-	else{					
+	else{
 		$js('jstack.'+component,load);
 	}
 },function(){
