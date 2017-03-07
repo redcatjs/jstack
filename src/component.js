@@ -2,18 +2,18 @@ jstack.component = {};
 
 //use j:load event to make loader definition helper
 jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',function(e){
-		e.stopPropagation();
-		if($(this).is(selector)){
+	$.on('j:load',selector,function(e){
+		//e.stopPropagation();
+		//if($(this).is(selector)){
 			handler.call(this);
-		}
+		//}
 	});
 	if(typeof(unloader)=='function'){
-		$.on('j:unload',function(e){
-			e.stopPropagation();
-			if($(this).is(selector)){
+		$.on('j:unload',selector,function(e){
+			//e.stopPropagation();
+			//if($(this).is(selector)){
 				unloader.call(this);
-			}
+			//}
 		});
 	}
 	$(selector).each(function(){
