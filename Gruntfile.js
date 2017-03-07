@@ -67,9 +67,10 @@ grunt.initConfig({
 				
 				"src/template/getTemplate.js",
 				
-				"src/component.js",
 				"src/route.js",
 				"src/data-binder.js",
+				"src/load.js",
+				"src/component.js",
 				"src/ajax.js",
 				"src/mvc.js",
 				"src/app.js",
