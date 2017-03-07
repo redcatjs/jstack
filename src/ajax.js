@@ -103,14 +103,17 @@
 		return $.ajax( settings );
 	};
 
-	jstack.post = function( url, data, success, dataType ) {
-		return jstack.ajax( {
+	jstack.post = function( url, data, callback, dataType ) {
+		let xhr = jstack.ajax( {
 			type: "POST",
 			url: url,
 			data: data,
-			success: success,
 			dataType: dataType
 		} );
+		if(typeof(callback)=='function'){
+			xhr.then(callback);
+		}
+		return xhr;
 	};
 
 } )();

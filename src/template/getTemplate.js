@@ -13,14 +13,13 @@
 					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
 			}
 			requests[ templatePath ] = $.Deferred();
-			$.ajax( {
+			$.ajax({
 				url:url,
 				cache:true,
-				success:function( html ) {
-					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( html, templatePath );
-				}
-			} );
+			}).then(function(html){
+				templates[ templatePath ] = html;
+				requests[ templatePath ].resolve( html, templatePath );				
+			});
 		}
 		return requests[ templatePath ].promise();
 	};
