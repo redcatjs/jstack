@@ -2698,35 +2698,35 @@ $.fn.onLast = function(event, cbFunc){
 					url += ( url.indexOf( "?" ) < 0 ? "?" : "&" ) + "_t=" + ts;
 			}
 			requests[ templatePath ] = $.Deferred();
-			$.ajax( {
+			$.ajax({
 				url:url,
 				cache:true,
-				success:function( html ) {
-					templates[ templatePath ] = html;
-					requests[ templatePath ].resolve( html, templatePath );
-				}
-			} );
+			}).then(function(html){
+				templates[ templatePath ] = html;
+				requests[ templatePath ].resolve( html, templatePath );				
+			});
 		}
 		return requests[ templatePath ].promise();
 	};
 
 })();
+
 jstack.component = {};
 
 //use j:load event to make loader definition helper
 jstack.loader = function(selector,handler,unloader){
-	$.on('j:load',function(e){
-		e.stopPropagation();
-		if($(this).is(selector)){
+	$.on('j:load',selector,function(e){
+		//e.stopPropagation();
+		//if($(this).is(selector)){
 			handler.call(this);
-		}
+		//}
 	});
 	if(typeof(unloader)=='function'){
-		$.on('j:unload',function(e){
-			e.stopPropagation();
-			if($(this).is(selector)){
+		$.on('j:unload',selector,function(e){
+			//e.stopPropagation();
+			//if($(this).is(selector)){
 				unloader.call(this);
-			}
+			//}
 		});
 	}
 	$(selector).each(function(){
@@ -4508,17 +4508,21 @@ $.on('reset','form',function(){
 		return $.ajax( settings );
 	};
 
-	jstack.post = function( url, data, success, dataType ) {
-		return jstack.ajax( {
+	jstack.post = function( url, data, callback, dataType ) {
+		let xhr = jstack.ajax( {
 			type: "POST",
 			url: url,
 			data: data,
-			success: success,
 			dataType: dataType
 		} );
+		if(typeof(callback)=='function'){
+			xhr.then(callback);
+		}
+		return xhr;
 	};
 
 } )();
+
 (function(){
 
 jstack.mvc = function(config){
