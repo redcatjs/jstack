@@ -489,7 +489,8 @@ jstack.dataBinder = (function(){
 							return;
 						}
 						$n.data('j:load:state',true);
-						$n.trigger('j:load');
+						//$n.trigger('j:load');
+						jstack.trigger(n,'load');
 					//});
 				});
 
@@ -524,7 +525,8 @@ jstack.dataBinder = (function(){
 							return false;
 						}
 
-						$(n).trigger('j:unload');
+						//$(n).trigger('j:unload');
+						jstack.trigger(n,'unload');
 					});
 				});
 			});
