@@ -104,7 +104,7 @@
 	};
 
 	jstack.post = function( url, data, callback, dataType ) {
-		let xhr = jstack.ajax( {
+		var xhr = jstack.ajax( {
 			type: "POST",
 			url: url,
 			data: data,

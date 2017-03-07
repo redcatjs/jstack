@@ -13,7 +13,7 @@ jstack.loader = function(selector,handler,unloader){
 			//e.stopPropagation();
 			//if($(this).is(selector)){
 				unloader.call(this);
-			//}
+			//} 
 		});
 	}
 	$(selector).each(function(){
