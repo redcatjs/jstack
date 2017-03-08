@@ -30,9 +30,14 @@ jstack.mvc = function(config){
 			}
 			var html = view[0];
 			var domReady = ctrl.render(html);
-			domReady.then(function(){
+			if(domReady){
+				domReady.then(function(){
+					ready.resolve(target,ctrl);
+				});
+			}
+			else{
 				ready.resolve(target,ctrl);
-			});
+			}
 		});
 
 	});
