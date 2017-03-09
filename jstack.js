@@ -4433,11 +4433,17 @@ jstack.loader('[j-component]',function(){
 			o.deferred.then(function(){
 				$el.data('j.component.loaded',true);
 				$el.trigger('j:component:loaded');
+				if(typeof(o.unload)=='function'){
+					jstack.on('unload',el,o.unload);
+				}
 			});
 		}
 		else{
 			$el.data('j.component.loaded',true);
 			$el.trigger('j:component:loaded');
+			if(typeof(o.unload)=='function'){
+				jstack.on('unload',el,o.unload);
+			}
 		}
 	};
 	if(jstack.component[component]){
@@ -4445,11 +4451,6 @@ jstack.loader('[j-component]',function(){
 	}
 	else{
 		$js('jstack.'+component,load);
-	}
-},function(){
-	var o = $(this).data('j:component');
-	if(o&&typeof(o.unload)=='function'){
-		o.unload();
 	}
 });
 
