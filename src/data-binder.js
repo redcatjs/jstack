@@ -319,7 +319,7 @@ jstack.dataBinder = (function(){
 			var getter = this.getters[nodeName] || this.defaultGetter;
 			return getter(element);
 		},
-		inputToModel: function(el,eventType){
+		inputToModel: function(el,eventType,triggeredValue){
 			var input = $(el);
 
 			var self = this;
@@ -351,7 +351,14 @@ jstack.dataBinder = (function(){
 				}
 			};
 
-			var value = this.getInputVal(el);
+			var value;
+			if(typeof(triggeredValue)!=='undefined'){
+				value = triggeredValue;
+			}
+			else{
+				value = this.getInputVal(el);
+			}
+			
 			var filteredValue = this.filter(el,value);
 
 
@@ -582,11 +589,11 @@ jstack.dataBinder = (function(){
 				return self.observe(el);
 			});
 
-			$(document.body).on('input change j:update', ':input[name]', function(e){
+			$(document.body).on('input change j:update', ':input[name]', function(e,value){
 				if(this.type=='file') return;
 				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
-				self.inputToModel(this,e.type);
+				self.inputToModel(this,e.type,value);
 			});
 		},
 		filter:function(el,value){
