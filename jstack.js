@@ -1586,6 +1586,7 @@ jstack.walkTheDOM = function(node, func){
 		this.walkTheDOM(children[i], func);
 	}
 };
+
 $.arrayCompare = function (a, b) {
 	return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
 };
@@ -3678,7 +3679,8 @@ jstack.dataBinder = (function(){
 		},
 		getController:function(p){
 
-			var controller;
+			let controller;
+			
 			while(p){
 				if(p.hasAttribute&&p.hasAttribute('j-controller')){
 					controller = p;
@@ -3686,7 +3688,7 @@ jstack.dataBinder = (function(){
 				}
 				p = p.parentNode;
 			}
-
+			
 
 			if(!controller){
 				controller = document.body;
@@ -3702,6 +3704,21 @@ jstack.dataBinder = (function(){
 
 		inputPseudoNodeNamesExtended: {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1},
 		compilers:{
+			jFixedController:{
+				level: 0,
+				match: function(){
+					return this.hasAttribute('j-fixed-controller');
+				},
+				callback: function(){
+					this.removeAttribute('j-fixed-controller');
+					let controllerData = $(jstack.dataBinder.getController(this)).data();
+					$(this).data({
+						jController:controllerData.jController,
+						jModel:controllerData.jModel,
+					});
+					this.setAttribute('j-controller','__fixed');
+				}
+			},
 			jFor:{
 				level: 1,
 				match:function(){
