@@ -110,17 +110,17 @@ jstack.dataBinder = (function(){
 		},
 		getParentsForId: function(el){
 			var a = [];
-			if(el.hasAttribute&&el.hasAttribute('j-for-id')){
-				a.push(el);
-			}
+			//if(el.hasAttribute&&el.hasAttribute('j-for-id')){
+				//a.push(el);
+			//}
 			var n = el;
 			while(n){
 				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
 					a.push(n);
 					n = n.parentNode;
-					if(n.hasAttribute&&n.hasAttribute('j-for-id')){
-						a.push(n);
-					}
+					//if(n.hasAttribute&&n.hasAttribute('j-for-id')){
+						//a.push(n);
+					//}
 				}
 				if(n){
 					if(n.previousSibling){
@@ -128,11 +128,12 @@ jstack.dataBinder = (function(){
 					}
 					else{
 						n = n.parentNode;
-						if(n&&n.hasAttribute&&n.hasAttribute('j-for-id')){
-							a.push(n);
-						}
+						//if(n&&n.hasAttribute&&n.hasAttribute('j-for-id')){
+							//a.push(n);
+						//}
 					}
 				}
+				if(n===document.body) break;
 			}
 			return a;
 		},
@@ -175,9 +176,10 @@ jstack.dataBinder = (function(){
 				var jforCommentData = parentForList.dataCommentJSON();
 				var value = jforCommentData.value;
 
-				var isComment = forid.nodeType===Node.COMMENT_NODE;
+				//var isComment = forid.nodeType===Node.COMMENT_NODE;
 
-				var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
+				//var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
+				var forData = parentFor.dataComment('j:for:data');
 
 				scopeValue[value] = forData;
 
@@ -187,7 +189,8 @@ jstack.dataBinder = (function(){
 					scopeValue[index] = parentFor.index()+1;
 				}
 				if(key){
-					var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
+					//var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
+					var id = forid.nodeValue.split(' ')[1];
 					scopeValue[key] = id;
 				}
 			}
@@ -486,6 +489,11 @@ jstack.dataBinder = (function(){
 								self.addWatcher(render, compiler.level);
 							}
 							render();
+							
+							//if(!document.contains(n)){
+								//return false;
+							//}
+							
 						}
 					}
 				});
@@ -672,7 +680,6 @@ jstack.dataBinder = (function(){
 					return this.hasAttribute('j-for');
 				},
 				callback:function(){
-
 					var el = this;
 					var $this = $(this);
 					var jfor = $('<!--j:for-->');
@@ -727,8 +734,9 @@ jstack.dataBinder = (function(){
 					});
 
 					var render;
-
-					if(el.tagName.toLowerCase()=='template'){
+					
+					let isTemplate = el.tagName.toLowerCase()=='template';
+					//if(el.tagName.toLowerCase()=='template'){
 						var content = this.content;
 
 						render = function(){
@@ -759,7 +767,16 @@ jstack.dataBinder = (function(){
 								row.dataComment('j:for:data',v);
 								if(create){
 									row.insertBefore(jforClose);
-									$(document.importNode(content, true)).insertBefore(jforClose);
+									let addRow;
+									if(isTemplate){
+										addRow = $(document.importNode(content, true));
+									}
+									else{
+										addRow = $this.clone();
+										addRow.attr('j-for-id',k);
+									}
+									addRow.insertBefore(jforClose);
+									
 									$('<!--/j:for:id-->').insertBefore(jforClose);
 								}
 								forIdList.push(k.toString());
@@ -775,7 +792,7 @@ jstack.dataBinder = (function(){
 							});
 
 						};
-					}
+					/*}
 					else{
 						render = function(){
 							if(!document.body.contains(jfor[0])) return jfor[0];
@@ -804,6 +821,7 @@ jstack.dataBinder = (function(){
 
 							//remove
 							collection.each(function(){
+								if(!this.getAttribute) return;
 								var forId = this.getAttribute('j-for-id');
 								if(forIdList.indexOf(forId)===-1){
 									$(this).remove();
@@ -811,7 +829,7 @@ jstack.dataBinder = (function(){
 							});
 
 						};
-					}
+					}*/
 
 					return render;
 
@@ -821,7 +839,7 @@ jstack.dataBinder = (function(){
 			jIf:{
 				level: 2,
 				match:function(){
-					return this.hasAttribute('j-if');
+					return this.hasAttribute('j-if')&&document.contains(this);
 				},
 				callback:function(){
 					var el = this;
