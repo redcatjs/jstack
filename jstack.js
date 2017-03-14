@@ -3060,15 +3060,21 @@ jstack.route = ( function( w, url ) {
 } )( window, jstack.url );
 
 jstack.ready = function(callback){
-	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
-	if(this.loadingMutation>0){
-		var deferMutation = $.Deferred();
-		jstack.dataBinder.deferMutation.push(function(){
-			deferMutation.resolve();
+	var when = $.Deferred();
+	setTimeout(function(){
+		var defers = [ jstack.dataBinder.updateDeferStateObserver ];
+		if(this.loadingMutation>0){
+			var deferMutation = $.Deferred();
+			jstack.dataBinder.deferMutation.push(function(){
+				deferMutation.resolve();
+			});
+			defers.push(deferMutation);
+		}
+		$.when.apply($,defers).then(function(){
+			when.resolve();
 		});
-		defers.push(deferMutation);
-	}
-	var when = $.when.apply($,defers);
+		
+	});
 	if(callback){
 		when.then(function(){
 			callback();
