@@ -2761,7 +2761,8 @@ jstack.route = ( function( w, url ) {
 		var m = this.regex.exec( path );
 
 		if ( !m ) return false;
-
+		
+		params.push(path);
 		for ( var i = 1, len = m.length; i < len; ++i ) {
 			var key = this.keys[ i - 1 ];
 
@@ -3057,6 +3058,7 @@ jstack.route = ( function( w, url ) {
 	return routie;
 
 } )( window, jstack.url );
+
 jstack.ready = function(callback){
 	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
 	if(this.loadingMutation>0){
