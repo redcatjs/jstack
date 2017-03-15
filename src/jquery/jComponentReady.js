@@ -1,7 +1,13 @@
 $.fn.jComponentReady = function(callback){
 	var self = this;
 	var defer = $.Deferred();
-	defer.then(callback);
+	if(callback){
+		defer.then(function(){
+			self.each(function(){
+				callback.call(this);
+			});
+		});
+	}
 	var check = function(){
 		var ok = true;
 		self.each(function(){
