@@ -110,7 +110,14 @@ jstack.route = ( function( w, url ) {
 			return routes.indexOf(a) > routes.indexOf(b);
 		});
 		
+		
+		if(routie.singleHandler){
+			map[ path ].fns = [];
+		}
+		
+		
 		map[ path ].addHandler( fn );
+		
 	};
 
 	var routie = function( path, fn, extendParams ) {
@@ -195,9 +202,9 @@ jstack.route = ( function( w, url ) {
 		return h;
 	};
 
-	var checkRoute = function( hash, route ) {
+	var checkRoute = function( hashPath, route, hash ) {
 		var params = [];
-		if ( route.match( hash, params ) ) {
+		if ( route.match( hashPath, params ) ) {
 			route.run( params, hash );
 			return true;
 		}
@@ -205,9 +212,10 @@ jstack.route = ( function( w, url ) {
 	};
 
 	var hashLoad = function( hash ) {
+		var hashPath = routie.getPath(hash);
 		for ( var i = 0, c = routes.length; i < c; i++ ) {
 			var route = routes[ i ];
-			if ( checkRoute( hash, route ) ) {
+			if ( checkRoute( hashPath, route, hash ) ) {
 				return;
 			}
 		}
@@ -306,6 +314,8 @@ jstack.route = ( function( w, url ) {
 
 	routie.setMainHash = mainHashchange;
 	routie.setSubHash = subHashchange;
+	
+	routie.singleHandler = true;
 
 	var base = document.getElementsByTagName( "base" )[ 0 ];
 	if ( base ) {
