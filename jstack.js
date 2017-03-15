@@ -2115,7 +2115,13 @@ $.fn.hasAttr = function(attr){
 $.fn.jComponentReady = function(callback){
 	var self = this;
 	var defer = $.Deferred();
-	defer.then(callback);
+	if(callback){
+		defer.then(function(){
+			self.each(function(){
+				callback.call(this);
+			});
+		});
+	}
 	var check = function(){
 		var ok = true;
 		self.each(function(){
@@ -2134,6 +2140,7 @@ $.fn.jComponentReady = function(callback){
 	check();	
 	return defer.promise();
 };
+
 /**
  * jQuery serializeObject
  * @copyright 2014, macek <paulmacek@gmail.com>
@@ -3073,7 +3080,7 @@ jstack.routeMVC = function(path,obj){
 	return jstack.route(path,function(path,params,hash){
 		let container = $('[j-app]');
 		if(typeof(obj)=='string')
-			obj = {view:obj}
+			obj = {view:obj};
 		container.empty();
 		return jstack.mvc({
 			view:obj.view,
