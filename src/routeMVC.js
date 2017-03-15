@@ -8,5 +8,5 @@ jstack.routeMVC = function(path,obj){
 			hash:hash,
 			target:$('<div/>').appendTo(container),
 		});
-	};
+	});
 };
