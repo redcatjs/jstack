@@ -1,19 +1,18 @@
 jstack.ready = function(callback){
 	var when = $.Deferred();
-	setTimeout(function(){
-		var defers = [ jstack.dataBinder.updateDeferStateObserver ];
-		if(this.loadingMutation>0){
-			var deferMutation = $.Deferred();
-			jstack.dataBinder.deferMutation.push(function(){
-				deferMutation.resolve();
-			});
-			defers.push(deferMutation);
-		}
-		$.when.apply($,defers).then(function(){
-			when.resolve();
+	
+	var defers = [ jstack.dataBinder.updateDeferStateObserver ];
+	if(jstack.dataBinder.loadingMutation>0){
+		var deferMutation = $.Deferred();
+		jstack.dataBinder.deferMutation.push(function(){
+			deferMutation.resolve();
 		});
-		
+		defers.push(deferMutation);
+	}
+	$.when.apply($,defers).then(function(){
+		when.resolve();
 	});
+
 	if(callback){
 		when.then(function(){
 			callback();
@@ -409,34 +408,75 @@ jstack.dataBinder = (function(){
 
 		},
 
-		updateDeferState: 0,
+		//updateDeferState: 0,
+		updateDeferQueued: false,
+		updateDeferInProgress: false,
 		updateDeferStateObserver: null,
 		update: function(){
 			//console.log('update');
 			var self = this;
-			if(this.updateTimeout){
-				clearTimeout(this.updateTimeout);
+			if(this.updateDeferQueued){
+				return;
 			}
-			this.updateTimeout = setTimeout(function(){
-				self.updateDeferState++;
-				var callback = function(){
+			if(this.updateDeferInProgress){
+				this.updateDeferQueued = true;
+			}
+			else{
+				this.updateDeferInProgress = true;
+				if(!this.updateDeferStateObserver){
+					this.updateDeferStateObserver = $.Deferred();
+				}
+				setTimeout(function(){
 					self.runWatchers();
-					self.updateDeferState--;
-					if(self.updateDeferState==0){
+					self.updateDeferInProgress = false;
+					if(self.updateDeferQueued){
+						self.updateDeferQueued = false;
+						self.update();
+					}
+					else{
 						self.updateDeferStateObserver.resolve();
 						self.updateDeferStateObserver = null;
 					}
-				};
-				if(!self.updateDeferStateObserver){
-					self.updateDeferStateObserver = $.Deferred();
-					callback();
-				}
-				else{
-					self.updateDeferStateObserver.then(function(){
-						callback();
-					});
-				}
-			},100);
+				},10);
+				
+			}
+			//this.updateDeferStateObserver.then(function(){
+				//self.updateDeferStateObserver = $.Deferred();
+				//self.runWatchers();
+				//self.updateDeferState--;
+				//if(self.updateDeferState==0){
+					//self.updateDeferStateObserver.resolve();
+				//}
+			//})
+			//var updater = function(){
+				//self.updateDeferState++;
+				//var callback = function(){
+					//self.runWatchers();
+					//self.updateDeferState--;
+					//if(self.updateDeferState==0){
+						//self.updateDeferStateObserver.resolve();
+						//self.updateDeferStateObserver = null;
+					//}
+				//};
+				//if(!self.updateDeferStateObserver){
+					//self.updateDeferStateObserver = $.Deferred();
+					//callback();
+				//}
+				//else{
+					//self.updateDeferStateObserver.then(function(){
+						//callback();
+					//});
+				//}
+			//};
+			//if(this.updateTimeout){
+				//clearTimeout(this.updateTimeout);
+			//}
+			//if(self.updateDeferStateObserver){
+				//this.updateTimeout = setTimeout(updater,100);
+			//}
+			//else{
+				//updater();
+			//}
 		},
 
 		compileNode: function(node,compilerJloads){
