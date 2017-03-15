@@ -68,6 +68,7 @@ grunt.initConfig({
 				"src/template/getTemplate.js",
 				
 				"src/route.js",
+				"src/routeMVC.js",
 				"src/data-binder.js",
 				"src/load.js",
 				"src/component.js",
