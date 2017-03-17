@@ -39,9 +39,13 @@ jstack.observe = function(obj, callback, rootObject){
 			return r;
 		},
 		deleteProperty: function (target, key) {
-			let r = Reflect.deleteProperty(target,key);
+			//let r = Reflect.deleteProperty(target,key);
+			if (Array.isArray (target))
+				target.splice(key,1);
+			else
+				delete(target[key]);
 			callback('unset', key, target, rootObject);
-			return r;
+			return true;
 		},
 		ownKeys: function(target){
 			return Reflect.ownKeys(target);
