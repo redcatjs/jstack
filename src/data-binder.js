@@ -785,7 +785,11 @@ jstack.dataBinder = (function(){
 							var data = getData();
 							if(currentData===data) return;
 							currentData = data;
-
+							
+							if(!data){
+								data = [];
+							}
+							
 							var forIdList = [];
 							var collection = $( jfor.commentChildren().map(function(){
 								if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
