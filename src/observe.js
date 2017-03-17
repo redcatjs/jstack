@@ -11,29 +11,29 @@ jstack.observe = function(obj, callback, rootObject){
 		}
 	});
 	let proxy = new Proxy(obj,{
-		get: function (target, key) {
-			//console.log('get',key);
+		get: function (target, key, receiver) {
 			if(key===prefix){
 				return true;
 			}
-			return target[key];
+			return Reflect.get(target,key,receiver);
 		},
-		set: function(target, key, value){
-			//console.log('set',key);
+		set: function(target, key, value, receiver){
 			if(typeof(value)=='object'&&value!==null){
 				value = jstack.observe(value,callback,obj);
 			}
-			target[key] = value;
+			let r = Reflect.set(target, key, value, receiver);
 			callback('set', {key:key, value:value}, target, rootObject);
-			return true;
+			return r;
 		},
 		deleteProperty: function (target, key) {
-			if(key in target){
-				delete target[key];
-				callback('unset', key, target, rootObject);
-			}
-			return true;
+			let r = Reflect.deleteProperty(target,key);
+			callback('unset', key, target, rootObject);
+			return r;
 		},
+		ownKeys: function(target){
+			return Reflect.ownKeys(target);
+		},
+		
 	});
 	return proxy;
 };
