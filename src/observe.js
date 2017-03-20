@@ -108,7 +108,7 @@ jstack.observe = function(){
 			options.recursive = arguments[3];
 			options.namespace = arguments[4];
 			for(var i=0, l = arg1.length; i<l; i++){
-				observe( $.extend({}, arg1[i], { key :arg1[i] }) );
+				observe( $.extend({}, options, { key :arg1[i] }) );
 			}
 			return;
 		}
