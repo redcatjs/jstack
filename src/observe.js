@@ -9,6 +9,7 @@ var observe = function(options,rootObject){
 	let recursive = options.recursive;
 	let key = options.key;
 	let namespace = options.namespace;
+	let enableAddObserver = options.enableAddObserver;
 	if(!rootObject){
 		rootObject = obj;
 	}
@@ -80,7 +81,7 @@ var observe = function(options,rootObject){
 	
 	let proxy = new Proxy(obj,{
 		get: function (target, key) {
-			if(key=='addObserver'){
+			if(enableAddObserver&&key=='addObserver'){
 				return addObserver;
 			}
 			if(key===prefix){
@@ -150,6 +151,7 @@ jstack.observe = function(){
 jstack.observable = function(obj){
 	return observe({
 		object:obj,
+		enableAddObserver:true,
 	});
 };
 
