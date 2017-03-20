@@ -31,18 +31,25 @@ var observe = function(options,rootObject){
 		prefix += namespace;
 	}
 	
-	let callbackDef = {
-		key:key,
-		callback:callbackUser
-	};
+	let callbackDef;
+	if(callbackUser){
+		 callbackDef = {
+			key:key,
+			callback:callbackUser
+		};
+	}
 	
 	let callbackStack = obj[prefix];
 	if(callbackStack){
-		callbackStack.push(callbackDef);
+		if(callbackDef){
+			callbackStack.push(callbackDef);
+		}
 		return obj;
 	}
 	callbackStack = [];
-	callbackStack.push(callbackDef);
+	if(callbackDef){
+		callbackStack.push(callbackDef);
+	}
 	if(recursive){
 		$.each(obj,function(k,v){
 			if(typeof(v)=='object'&&v!==null){
@@ -72,26 +79,44 @@ var observe = function(options,rootObject){
 		}
 	};
 	
+	let addObserver = function(key,callback){
+		if(typeof(key)=='string'){
+			key = [key];
+		}
+		for(let i=0, l=key.length; i<l; i++){
+			callbackStack.push({
+				key: key[i],
+				callback: callback,
+			});
+		}
+	};
+	
 	let proxy = new Proxy(obj,{
-		get: function (target, key, receiver) {
+		get: function (target, key) {
+			if(key=='addObserver'){
+				return addObserver;
+			}
 			if(key===prefix){
 				return callbackStack;
 			}
-			return Reflect.get(target,key,receiver);
+			return target[key];
 		},
-		set: function(target, key, value, receiver){
+		set: function(target, key, value){
 			if(recursive){
 				if(typeof(value)=='object'&&value!==null){
 					value = observe($.extend({},options,{object:value}), rootObject);
 				}
 			}
-			let r = Reflect.set(target, key, value, receiver);
+			if(Array.isArray(target)){
+				target.splice(key,0,value);
+			}
+			else{
+				target[key] = value;
+			}
 			callback('set', {key:key, value:value}, target, rootObject);
-			return r;
 		},
 		deleteProperty: function (target, key) {
-			//let r = Reflect.deleteProperty(target,key);
-			if (Array.isArray (target))
+			if (Array.isArray(target))
 				target.splice(key,1);
 			else
 				delete(target[key]);
@@ -121,7 +146,7 @@ jstack.observe = function(){
 			options.recursive = arguments[3];
 			options.namespace = arguments[4];
 			for(var i=0, l = arg1.length; i<l; i++){
-				observe( $.extend({}, options, { key :arg1[i] }) );
+				observe( $.extend({}, options, { key : arg1[i] }) );
 			}
 			return;
 		}
@@ -133,6 +158,12 @@ jstack.observe = function(){
 		
 	}
 	return observe(options);
+};
+
+jstack.observable = function(obj){
+	return observe({
+		object:obj,
+	});
 };
 
 
@@ -226,6 +257,7 @@ var constructor = function(controllerSet,element,hash){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
 		},true,'jstack.model');
+		
 	};
 	
 	this.setDataArguments = [];
