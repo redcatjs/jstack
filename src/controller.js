@@ -36,6 +36,7 @@ var constructor = function(controllerSet,element,hash){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
 		},true,'jstack.model');
+		
 	};
 	
 	this.setDataArguments = [];
