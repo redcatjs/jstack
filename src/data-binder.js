@@ -428,7 +428,6 @@ jstack.dataBinder = (function(){
 				}
 				setTimeout(function(){
 					self.runWatchers();
-					self.updateDeferInProgress = false;
 					if(self.updateDeferQueued){
 						self.updateDeferQueued = false;
 						self.update();
@@ -437,6 +436,7 @@ jstack.dataBinder = (function(){
 						self.updateDeferStateObserver.resolve();
 						self.updateDeferStateObserver = null;
 					}
+					self.updateDeferInProgress = false;
 				},10);
 				
 			}
