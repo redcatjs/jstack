@@ -2677,14 +2677,15 @@ jstack.dataBinder = (function(){
 				setTimeout(function(){
 					self.runWatchers();
 					if(self.updateDeferQueued){
+						self.updateDeferInProgress = false;
 						self.updateDeferQueued = false;
 						self.update();
 					}
 					else{
 						self.updateDeferStateObserver.resolve();
 						self.updateDeferStateObserver = null;
+						self.updateDeferInProgress = false;
 					}
-					self.updateDeferInProgress = false;
 				},10);
 				
 			}
