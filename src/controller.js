@@ -32,10 +32,10 @@ var constructor = function(controllerSet,element,hash){
 	this.startDataObserver = function(){
 		var object = self.data;
 				
-		self.data = jstack.observe(self.data,function(changeType,data,target,rootObject){
+		self.data = jstack.observe(self.data,function(change){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
-		});
+		},true,'jstack.model');
 	};
 	
 	this.setDataArguments = [];
