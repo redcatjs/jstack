@@ -108,12 +108,7 @@ var observe = function(options,rootObject){
 					value = observe($.extend({},options,{object:value}), rootObject);
 				}
 			}
-			if(Array.isArray(target)){
-				target.splice(key,0,value);
-			}
-			else{
-				target[key] = value;
-			}
+			target[key] = value;
 			callback('set', {key:key, value:value}, target, rootObject);
 			return true;
 		},
