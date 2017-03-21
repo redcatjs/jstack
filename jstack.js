@@ -115,6 +115,7 @@ var observe = function(options,rootObject){
 				target[key] = value;
 			}
 			callback('set', {key:key, value:value}, target, rootObject);
+			return true;
 		},
 		deleteProperty: function (target, key) {
 			if (Array.isArray(target))
