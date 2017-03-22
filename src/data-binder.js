@@ -163,35 +163,50 @@ jstack.dataBinder = (function(){
 
 
 			var forCollection = this.getParentsForId(el).reverse();
+			
+			//console.log(forCollection);
 
-			for(var i = 0, l = forCollection.length; i<l; i++){
-				var forid = forCollection[i];
+			for(let i = 0, l = forCollection.length; i<l; i++){
+				let forid = forCollection[i];
 
-				var parentFor = $(forid);
-				var parentForList = parentFor.parentComment('j:for');
+				let parentFor = $(forid);
+				let parentForList = parentFor.parentComment('j:for');
 
-				if(!parentForList.length) return;
+				if(!parentForList.length) continue;
 
-				var jforCommentData = parentForList.dataCommentJSON();
-				var value = jforCommentData.value;
+				let jforCommentData = parentForList.dataCommentJSON();
+				let value = jforCommentData.value;
+				
 
 				//var isComment = forid.nodeType===Node.COMMENT_NODE;
 
 				//var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
-				var forData = parentFor.dataComment('j:for:data');
+				let forData = parentFor.dataComment('j:for:data');
+				
+				//console.log(parentForList,jforCommentData,forData);
+				//console.log(parentForList,jforCommentData,forData);
 
+				
 				scopeValue[value] = forData;
 
-				var key = jforCommentData.key;
-				var index = jforCommentData.index;
-				if(index){
-					scopeValue[index] = parentFor.index()+1;
+				let key = jforCommentData.key;
+				let index = jforCommentData.index;
+				let split;
+				if(key || index){
+					split = forid.nodeValue.split(' ');
+					split.shift();
+					let i = split.shift();
+					if(index){
+						scopeValue[index] = i;
+					}
+					if(key){
+						scopeValue[key] = split.join(' ');
+					}
 				}
-				if(key){
-					//var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
-					var id = forid.nodeValue.split(' ')[1];
-					scopeValue[key] = id;
-				}
+			}
+			
+			if(forCollection.length&&varKey=='user.prenom'){
+				//console.log(scopeValue);
 			}
 
 			var params = [ '$controller', '$this', '$scope' ];
@@ -799,15 +814,16 @@ jstack.dataBinder = (function(){
 							}) );
 
 							//add
+							let index = 1;
 							$.each(data,function(k,v){
 								var row = $( collection.map(function(){
-									if(this.nodeValue == 'j:for:id '+k){
+									if(this.nodeValue == 'j:for:id '+index+' '+k){
 										return this;
 									}
 								}) );
 								var create = !row.length;
 								if(create){
-									row = $('<!--j:for:id '+k+'-->');
+									row = $('<!--j:for:id '+index+' '+k+'-->');
 								}
 								row.dataComment('j:for:data',v);
 								if(create){
@@ -825,6 +841,7 @@ jstack.dataBinder = (function(){
 									$('<!--/j:for:id-->').insertBefore(jforClose);
 								}
 								forIdList.push(k.toString());
+								index++;
 							});
 
 							//remove
@@ -1213,7 +1230,7 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+					return document.body.contains(this) && this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
