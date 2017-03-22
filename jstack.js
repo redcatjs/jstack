@@ -74,7 +74,7 @@ var observe = function(options,rootObject){
 		}
 		for(let i=0, l = callbackStack.length; i<l; i++){
 			let callbackDef = callbackStack[i];
-			if( callbackDef.key === data.key ){
+			if( !callbackDef.key || callbackDef.key === data.key ){
 				callbackDef.callback(change);
 			}
 		}
