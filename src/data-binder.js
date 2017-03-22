@@ -177,27 +177,23 @@ jstack.dataBinder = (function(){
 				let jforCommentData = parentForList.dataCommentJSON();
 				let value = jforCommentData.value;
 				
-
-				//var isComment = forid.nodeType===Node.COMMENT_NODE;
-
-				//var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
 				let forData = parentFor.dataComment('j:for:data');
 				
-				//console.log(parentForList,jforCommentData,forData);
-				//console.log(parentForList,jforCommentData,forData);
-
-				
 				scopeValue[value] = forData;
-
+				
+				if(forCollection.length&&varKey=='user.prenom'){
+					console.log(value,forData);
+				}
+				
 				let key = jforCommentData.key;
 				let index = jforCommentData.index;
 				let split;
 				if(key || index){
 					split = forid.nodeValue.split(' ');
 					split.shift();
-					let i = split.shift();
+					let id = split.shift();
 					if(index){
-						scopeValue[index] = i;
+						scopeValue[index] = id;
 					}
 					if(key){
 						scopeValue[key] = split.join(' ');
@@ -205,9 +201,9 @@ jstack.dataBinder = (function(){
 				}
 			}
 			
-			if(forCollection.length&&varKey=='user.prenom'){
-				//console.log(scopeValue);
-			}
+			//if(forCollection.length&&varKey=='user.prenom'){
+				//console.log(scopeValue,forCollection);
+			//}
 
 			var params = [ '$controller', '$this', '$scope' ];
 			var args = [ controller, el, scopeValue ];
