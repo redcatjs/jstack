@@ -1843,7 +1843,7 @@ $.fn.dataComment = function(){
 			setData[arguments[0]] =	arguments[1];
 		}
 		else{
-			var setData = arguments[0];
+			setData = arguments[0];
 		}
 		return this.each(function(){
 			var data = $(this).dataComment();
@@ -1874,6 +1874,7 @@ $.fn.dataComment = function(){
 };
 
 })();
+
 $.fn.jData = function(key){
 	if(this.length>1){
 		var a = [];
@@ -2518,17 +2519,11 @@ jstack.dataBinder = (function(){
 		},
 		getParentsForId: function(el){
 			var a = [];
-			//if(el.hasAttribute&&el.hasAttribute('j-for-id')){
-				//a.push(el);
-			//}
 			var n = el;
 			while(n){
 				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
 					a.push(n);
 					n = n.parentNode;
-					//if(n.hasAttribute&&n.hasAttribute('j-for-id')){
-						//a.push(n);
-					//}
 				}
 				if(n){
 					if(n.previousSibling){
@@ -2536,9 +2531,6 @@ jstack.dataBinder = (function(){
 					}
 					else{
 						n = n.parentNode;
-						//if(n&&n.hasAttribute&&n.hasAttribute('j-for-id')){
-							//a.push(n);
-						//}
 					}
 				}
 				if(n===document.body) break;
@@ -2573,33 +2565,38 @@ jstack.dataBinder = (function(){
 
 			var forCollection = this.getParentsForId(el).reverse();
 
-			for(var i = 0, l = forCollection.length; i<l; i++){
-				var forid = forCollection[i];
+			for(let i = 0, l = forCollection.length; i<l; i++){
+				let forid = forCollection[i];
 
-				var parentFor = $(forid);
-				var parentForList = parentFor.parentComment('j:for');
+				let parentFor = $(forid);
+				let parentForList = parentFor.parentComment('j:for');
 
-				if(!parentForList.length) return;
+				if(!parentForList.length) continue;
 
-				var jforCommentData = parentForList.dataCommentJSON();
-				var value = jforCommentData.value;
-
-				//var isComment = forid.nodeType===Node.COMMENT_NODE;
-
-				//var forData = isComment?parentFor.dataComment('j:for:data'):parentFor.data('j:for:data');
-				var forData = parentFor.dataComment('j:for:data');
-
+				let jforCommentData = parentForList.dataCommentJSON();
+				let value = jforCommentData.value;
+				
+				let forData = parentFor.dataComment('j:for:data');
+				
 				scopeValue[value] = forData;
-
-				var key = jforCommentData.key;
-				var index = jforCommentData.index;
-				if(index){
-					scopeValue[index] = parentFor.index()+1;
+				
+				if(forCollection.length&&varKey=='user.prenom'){
+					console.log(value,forData,parentFor);
 				}
-				if(key){
-					//var id = isComment?forid.nodeValue.split(' ')[1]:forid.getAttribute('j-for-id');
-					var id = forid.nodeValue.split(' ')[1];
-					scopeValue[key] = id;
+				
+				let key = jforCommentData.key;
+				let index = jforCommentData.index;
+				let split;
+				if(key || index){
+					split = forid.nodeValue.split(' ');
+					split.shift();
+					let id = split.shift();
+					if(index){
+						scopeValue[index] = id;
+					}
+					if(key){
+						scopeValue[key] = split.join(' ');
+					}
 				}
 			}
 
@@ -3208,17 +3205,22 @@ jstack.dataBinder = (function(){
 							}) );
 
 							//add
+							let index = 1;
 							$.each(data,function(k,v){
 								var row = $( collection.map(function(){
-									if(this.nodeValue == 'j:for:id '+k){
+									if(this.nodeValue == 'j:for:id'){
 										return this;
 									}
 								}) );
 								var create = !row.length;
 								if(create){
-									row = $('<!--j:for:id '+k+'-->');
+									row = $('<!--j:for:id-->');
 								}
-								row.dataComment('j:for:data',v);
+								row.dataComment({
+									'j:for:data':v,
+									'j:for:index':index,
+									'j:for:key':key,
+								});
 								if(create){
 									row.insertBefore(jforClose);
 									let addRow;
@@ -3234,6 +3236,7 @@ jstack.dataBinder = (function(){
 									$('<!--/j:for:id-->').insertBefore(jforClose);
 								}
 								forIdList.push(k.toString());
+								index++;
 							});
 
 							//remove
@@ -3622,7 +3625,7 @@ jstack.dataBinder = (function(){
 			jInput:{
 				level: 8,
 				match: function(){
-					return this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+					return document.body.contains(this) && this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
 				callback:function(){
 					var el = this;
