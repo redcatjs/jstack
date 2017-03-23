@@ -109,17 +109,11 @@ jstack.dataBinder = (function(){
 		},
 		getParentsForId: function(el){
 			var a = [];
-			//if(el.hasAttribute&&el.hasAttribute('j-for-id')){
-				//a.push(el);
-			//}
 			var n = el;
 			while(n){
 				if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
 					a.push(n);
 					n = n.parentNode;
-					//if(n.hasAttribute&&n.hasAttribute('j-for-id')){
-						//a.push(n);
-					//}
 				}
 				if(n){
 					if(n.previousSibling){
@@ -127,9 +121,6 @@ jstack.dataBinder = (function(){
 					}
 					else{
 						n = n.parentNode;
-						//if(n&&n.hasAttribute&&n.hasAttribute('j-for-id')){
-							//a.push(n);
-						//}
 					}
 				}
 				if(n===document.body) break;
@@ -163,8 +154,6 @@ jstack.dataBinder = (function(){
 
 
 			var forCollection = this.getParentsForId(el).reverse();
-			
-			//console.log(forCollection);
 
 			for(let i = 0, l = forCollection.length; i<l; i++){
 				let forid = forCollection[i];
@@ -182,7 +171,7 @@ jstack.dataBinder = (function(){
 				scopeValue[value] = forData;
 				
 				if(forCollection.length&&varKey=='user.prenom'){
-					console.log(value,forData);
+					console.log(value,forData,parentFor);
 				}
 				
 				let key = jforCommentData.key;
@@ -200,10 +189,6 @@ jstack.dataBinder = (function(){
 					}
 				}
 			}
-			
-			//if(forCollection.length&&varKey=='user.prenom'){
-				//console.log(scopeValue,forCollection);
-			//}
 
 			var params = [ '$controller', '$this', '$scope' ];
 			var args = [ controller, el, scopeValue ];
@@ -813,15 +798,19 @@ jstack.dataBinder = (function(){
 							let index = 1;
 							$.each(data,function(k,v){
 								var row = $( collection.map(function(){
-									if(this.nodeValue == 'j:for:id '+index+' '+k){
+									if(this.nodeValue == 'j:for:id'){
 										return this;
 									}
 								}) );
 								var create = !row.length;
 								if(create){
-									row = $('<!--j:for:id '+index+' '+k+'-->');
+									row = $('<!--j:for:id-->');
 								}
-								row.dataComment('j:for:data',v);
+								row.dataComment({
+									'j:for:data':v,
+									'j:for:index':index,
+									'j:for:key':key,
+								});
 								if(create){
 									row.insertBefore(jforClose);
 									let addRow;

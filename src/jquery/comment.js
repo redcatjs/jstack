@@ -129,7 +129,7 @@ $.fn.dataComment = function(){
 			setData[arguments[0]] =	arguments[1];
 		}
 		else{
-			var setData = arguments[0];
+			setData = arguments[0];
 		}
 		return this.each(function(){
 			var data = $(this).dataComment();
