@@ -133,9 +133,9 @@ jstack.dataBinder = (function(){
 			var controller = controllerEl.data('jController');
 			var scopeValue = controllerEl.data('jModel');
 
-			if(!document.contains(el)){
-				return;
-			}
+			//if(!document.contains(el)){
+				//return;
+			//}
 
 			scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
 			if(typeof(varKey)=='undefined'){
@@ -539,17 +539,15 @@ jstack.dataBinder = (function(){
 
 
 				compilerJloads.push(function(){
-					//setTimeout(function(){
-						if(n.hasAttribute('j-cloak')){
-							n.removeAttribute('j-cloak');
-						}
-						if($n.data('j:load:state')){
-							return;
-						}
-						$n.data('j:load:state',true);
-						//$n.trigger('j:load');
-						jstack.trigger(n,'load');
-					//});
+					if(!document.body.contains(n)) return;
+					if(n.hasAttribute('j-cloak')){
+						n.removeAttribute('j-cloak');
+					}
+					if($n.data('j:load:state')){
+						return;
+					}
+					$n.data('j:load:state',true);
+					jstack.trigger(n,'load');
 				});
 
 			});
