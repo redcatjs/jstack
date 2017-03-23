@@ -437,43 +437,6 @@ jstack.dataBinder = (function(){
 				},10);
 				
 			}
-			//this.updateDeferStateObserver.then(function(){
-				//self.updateDeferStateObserver = $.Deferred();
-				//self.runWatchers();
-				//self.updateDeferState--;
-				//if(self.updateDeferState==0){
-					//self.updateDeferStateObserver.resolve();
-				//}
-			//})
-			//var updater = function(){
-				//self.updateDeferState++;
-				//var callback = function(){
-					//self.runWatchers();
-					//self.updateDeferState--;
-					//if(self.updateDeferState==0){
-						//self.updateDeferStateObserver.resolve();
-						//self.updateDeferStateObserver = null;
-					//}
-				//};
-				//if(!self.updateDeferStateObserver){
-					//self.updateDeferStateObserver = $.Deferred();
-					//callback();
-				//}
-				//else{
-					//self.updateDeferStateObserver.then(function(){
-						//callback();
-					//});
-				//}
-			//};
-			//if(this.updateTimeout){
-				//clearTimeout(this.updateTimeout);
-			//}
-			//if(self.updateDeferStateObserver){
-				//this.updateTimeout = setTimeout(updater,100);
-			//}
-			//else{
-				//updater();
-			//}
 		},
 
 		compileNode: function(node,compilerJloads){
