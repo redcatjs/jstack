@@ -95,8 +95,9 @@ var observe = function(options,rootObject){
 					value = observe($.extend({},options,{object:value}), rootObject);
 				}
 			}
+			let oldValue = target[key];
 			target[key] = value;
-			callback('set', {key:key, value:value}, target, rootObject);
+			callback('set', {key:key, value:value, oldValue:oldValue}, target, rootObject);
 			return true;
 		},
 		deleteProperty: function (target, key) {
