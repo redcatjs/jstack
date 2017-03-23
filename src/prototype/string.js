@@ -109,93 +109,112 @@ function rtrim ( str, charlist ) {
 }
 
 
-Object.defineProperty(String.prototype, 'trim', {
-	value: function( charlist ) {
-		return trim( this, charlist );
-	},
-	enumerable:false,
-});
-Object.defineProperty(String.prototype, 'ltrim', {
-	value: function( charlist ) {
-		return ltrim( this, charlist );
-	},
-	enumerable: false
-});
-Object.defineProperty(String.prototype, 'rtrim', {
-	value: function( charlist ) {
-		return rtrim( this, charlist );
-	},
-	enumerable: false
-});
+if(!String.prototype.trim){
 
-Object.defineProperty(String.prototype, 'escapeRegExp', {
-	value: function() {
-		//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
-		return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-	},
-	enumerable: false
-});
-Object.defineProperty(String.prototype, 'replaceAllRegExp', {
-	value: function(find, replace){
-		return this.replace( new RegExp( find, "g" ), replace );
-	},
-	enumerable: false
-});
-Object.defineProperty(String.prototype, 'replaceAll', {
-	value: function(find, replace){
-	find = find.escapeRegExp();
-		return this.replaceAllRegExp(find, replace);
-	},
-	enumerable: false
-});
+	Object.defineProperty(String.prototype, 'trim', {
+		value: function( charlist ) {
+			return trim( this, charlist );
+		},
+		enumerable:false,
+	});
+	
+}
 
-Object.defineProperty(String.prototype, 'lcfirst', {
-	value: function() {
-		return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
-	},
-	enumerable: false
-});
+if(!String.prototype.ltrim){
+	Object.defineProperty(String.prototype, 'ltrim', {
+		value: function( charlist ) {
+			return ltrim( this, charlist );
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.rtrim){
+	Object.defineProperty(String.prototype, 'rtrim', {
+		value: function( charlist ) {
+			return rtrim( this, charlist );
+		},
+		enumerable: false
+	});
+}
 
-Object.defineProperty(String.prototype, 'camelCase', {
-	value: function() {
-		return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
-	},
-	enumerable: false
-});
-Object.defineProperty(String.prototype, 'camelCaseDash', {
-	value: function() {
-		return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
-	},
-	enumerable: false
-});
+if(!String.prototype.escapeRegExp){
+	Object.defineProperty(String.prototype, 'escapeRegExp', {
+		value: function() {
+			//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+			return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.replaceAllRegExp){
+	Object.defineProperty(String.prototype, 'replaceAllRegExp', {
+		value: function(find, replace){
+			return this.replace( new RegExp( find, "g" ), replace );
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.replaceAll){
+	Object.defineProperty(String.prototype, 'replaceAll', {
+		value: function(find, replace){
+		find = find.escapeRegExp();
+			return this.replaceAllRegExp(find, replace);
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.camelCase){
+	Object.defineProperty(String.prototype, 'camelCase', {
+		value: function() {
+			return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.camelCaseDash){
+	Object.defineProperty(String.prototype, 'camelCaseDash', {
+		value: function() {
+			return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
+		},
+		enumerable: false
+	});
+}
 
 
-Object.defineProperty(String.prototype, 'snakeCase', {
-	value: function() {
-		return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
-	},
-	enumerable: false
-});
-Object.defineProperty(String.prototype, 'snakeCaseDash', {
-	value: function() {
-		return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
-	},
-	enumerable: false
-});
+if(!String.prototype.snakeCase){
+	Object.defineProperty(String.prototype, 'snakeCase', {
+		value: function() {
+			return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
+		},
+		enumerable: false
+	});
+}
 
-Object.defineProperty(String.prototype, 'ucfirst',{
-   value: function(){
-	   return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
-   },
-   enumerable: false
-});
+if(!String.prototype.snakeCaseDash){
+	Object.defineProperty(String.prototype, 'snakeCaseDash', {
+		value: function() {
+			return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
+		},
+		enumerable: false
+	});
+}
+if(!String.prototype.ucfirst){
+	Object.defineProperty(String.prototype, 'ucfirst',{
+	   value: function(){
+		   return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
+	   },
+	   enumerable: false
+	});
+}
 
-Object.defineProperty(String.prototype, 'lcfirst', {
-	value: function() {
-		return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
-	},
-	enumerable: false
-});
+if(!String.prototype.lcfirst){
+	Object.defineProperty(String.prototype, 'lcfirst', {
+		value: function() {
+			return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+		},
+		enumerable: false
+	});
+}
 
 
 })();
