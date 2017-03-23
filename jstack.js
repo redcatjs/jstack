@@ -657,33 +657,8 @@ jstack.isMobile = function(userAgent){
 };
 
 })();
-String.prototype.camelCase = function() {
-	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
-};
-String.prototype.camelCaseDash = function() {
-	return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
-};
-String.prototype.lcfirst = function() {
-	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
-};
-String.prototype.escapeRegExp = function() {
-	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
-	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-};
-String.prototype.replaceAllRegExp = function(find, replace){
-  return this.replace( new RegExp( find, "g" ), replace );
-};
-String.prototype.replaceAll = function(find, replace){
-	find = find.escapeRegExp();
-	return this.replaceAllRegExp(find, replace);
-};
-String.prototype.snakeCase = function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
-};
-String.prototype.snakeCaseDash = function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
-};
 (function(){
+
 
 function trim ( str, charlist ) {
   //  discuss at: http://locutusjs.io/php/trim/
@@ -793,20 +768,61 @@ function rtrim ( str, charlist ) {
 }
 
 
-String.prototype.trim = function( charlist ) {
+Object.defineProperty(String.prototype, 'trim', function( charlist ) {
 	return trim( this, charlist );
-};
-String.prototype.ltrim = function( charlist ) {
+});
+Object.defineProperty(String.prototype, 'ltrim', function( charlist ) {
 	return ltrim( this, charlist );
-};
-String.prototype.rtrim = function( charlist ) {
+});
+Object.defineProperty(String.prototype, 'rtrim', function( charlist ) {
 	return rtrim( this, charlist );
-};
+});
+
+Object.defineProperty(String.prototype, 'escapeRegExp', function() {
+	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+});
+Object.defineProperty(String.prototype, 'replaceAllRegExp', function(find, replace){
+  return this.replace( new RegExp( find, "g" ), replace );
+});
+Object.defineProperty(String.prototype, 'replaceAll', function(find, replace){
+	find = find.escapeRegExp();
+	return this.replaceAllRegExp(find, replace);
+});
+
+Object.defineProperty(String.prototype, 'lcfirst', function() {
+	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+});
+
+Object.defineProperty(String.prototype, 'camelCase', function() {
+	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
+});
+Object.defineProperty(String.prototype, 'camelCaseDash', function() {
+	return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
+});
+
+
+Object.defineProperty(String.prototype, 'snakeCase', function() {
+	return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
+});
+Object.defineProperty(String.prototype, 'snakeCaseDash', function() {
+	return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
+});
+
+Object.defineProperty(String.prototype, 'ucfirst',{
+   value: function(){
+	   return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
+   },
+   enumerable: false
+});
+
+Object.defineProperty(String.prototype, 'lcfirst', function() {
+	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+});
+
 
 })();
-String.prototype.ucfirst = function() {
-	return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
-};
+
 jstack.reflection = {};
 jstack.reflection.arguments = function( f ) {
 	var args = f.toString().match( /^\s*function\s+(?:\w*\s*)?\((.*?)\)\s*{/ );
