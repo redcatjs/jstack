@@ -21,13 +21,8 @@ grunt.initConfig({
 				"src/std/fragmentToHTML.js",
 				"src/std/isMobile.js",
 				
-				"src/string/camelCase.js",
-				"src/string/lcfirst.js",
-				"src/string/replaceAll.js",
-				"src/string/snakeCase.js",
-				"src/string/trim.js",
-				"src/string/ucfirst.js",
-				
+				"src/prototype/string.js",
+
 				"src/reflection/core.js",
 				"src/reflection/arguments.js",
 				"src/reflection/is-cyclic.js",
