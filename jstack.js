@@ -768,45 +768,78 @@ function rtrim ( str, charlist ) {
 }
 
 
-Object.defineProperty(String.prototype, 'trim', function( charlist ) {
-	return trim( this, charlist );
+Object.defineProperty(String.prototype, 'trim', {
+	value: function( charlist ) {
+		return trim( this, charlist );
+	},
+	enumerable:false,
 });
-Object.defineProperty(String.prototype, 'ltrim', function( charlist ) {
-	return ltrim( this, charlist );
+Object.defineProperty(String.prototype, 'ltrim', {
+	value: function( charlist ) {
+		return ltrim( this, charlist );
+	},
+	enumerable: false
 });
-Object.defineProperty(String.prototype, 'rtrim', function( charlist ) {
-	return rtrim( this, charlist );
+Object.defineProperty(String.prototype, 'rtrim', {
+	value: function( charlist ) {
+		return rtrim( this, charlist );
+	},
+	enumerable: false
 });
 
-Object.defineProperty(String.prototype, 'escapeRegExp', function() {
-	//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
-	return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+Object.defineProperty(String.prototype, 'escapeRegExp', {
+	value: function() {
+		//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+		return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+	},
+	enumerable: false
 });
-Object.defineProperty(String.prototype, 'replaceAllRegExp', function(find, replace){
-  return this.replace( new RegExp( find, "g" ), replace );
+Object.defineProperty(String.prototype, 'replaceAllRegExp', {
+	value: function(find, replace){
+		return this.replace( new RegExp( find, "g" ), replace );
+	},
+	enumerable: false
 });
-Object.defineProperty(String.prototype, 'replaceAll', function(find, replace){
+Object.defineProperty(String.prototype, 'replaceAll', {
+	value: function(find, replace){
 	find = find.escapeRegExp();
-	return this.replaceAllRegExp(find, replace);
+		return this.replaceAllRegExp(find, replace);
+	},
+	enumerable: false
 });
 
-Object.defineProperty(String.prototype, 'lcfirst', function() {
-	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+Object.defineProperty(String.prototype, 'lcfirst', {
+	value: function() {
+		return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+	},
+	enumerable: false
 });
 
-Object.defineProperty(String.prototype, 'camelCase', function() {
-	return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
+Object.defineProperty(String.prototype, 'camelCase', {
+	value: function() {
+		return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
+	},
+	enumerable: false
 });
-Object.defineProperty(String.prototype, 'camelCaseDash', function() {
-	return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
+Object.defineProperty(String.prototype, 'camelCaseDash', {
+	value: function() {
+		return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
+	},
+	enumerable: false
 });
 
 
-Object.defineProperty(String.prototype, 'snakeCase', function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
+Object.defineProperty(String.prototype, 'snakeCase', {
+	value: function() {
+		return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
+	},
+	enumerable: false
 });
-Object.defineProperty(String.prototype, 'snakeCaseDash', function() {
-	return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
+Object.defineProperty(String.prototype, 'snakeCaseDash', {
+	value: function() {
+		return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
+	},
+	enumerable: false
 });
 
 Object.defineProperty(String.prototype, 'ucfirst',{
@@ -816,8 +849,11 @@ Object.defineProperty(String.prototype, 'ucfirst',{
    enumerable: false
 });
 
-Object.defineProperty(String.prototype, 'lcfirst', function() {
-	return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+Object.defineProperty(String.prototype, 'lcfirst', {
+	value: function() {
+		return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
+	},
+	enumerable: false
 });
 
 
