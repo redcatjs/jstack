@@ -25,7 +25,7 @@ var observable = function(obj,options,rootObject){
 	if(recursive){
 		$.each(obj,function(k,v){
 			if(typeof(v)=='object'&&v!==null){
-				obj[k] = observable( $.extend({},options,{object:v}) ,obj);
+				obj[k] = observable( v, options, rootObject );
 			}
 		});
 	}
@@ -62,7 +62,7 @@ var observable = function(obj,options,rootObject){
 		set: function(target, key, value){
 			if(recursive){
 				if(typeof(value)=='object'&&value!==null){
-					value = observable($.extend({},options,{object:value}), rootObject);
+					value = observable(value, options, rootObject);
 				}
 			}
 			let oldValue = target[key];
