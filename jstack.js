@@ -1862,55 +1862,7 @@ $.fn.parentsComment = function(tag){
 	return $(a);
 };
 
-$.fn.dataCommentJSON = function(){
-	if(arguments.length>1||$.type(arguments[0])=='object'){
-		var setData;
-		if(arguments.length>1){
-			setData = {};
-			setData[arguments[0]] =	arguments[1];
-		}
-		else{
-			var setData = arguments[0];
-		}
-		return this.each(function(){
-			var x = this.nodeValue.split(' ');
-			var nodeName = x.shift();
-			var data = x.length ? JSON.parse( x.join(' ') ) : {};
-			$.extend(data,setData);
-			this.nodeValue = nodeName+' '+JSON.stringify(data);
-		});
-	}
-	var x = this[0].nodeValue.split(' ');
-	x.shift();
-	var data = x.length ? JSON.parse( x.join(' ') ) : {};
-	if(arguments.length){
-		data = data[arguments[0]];
-	}
-	return data;
-};
 
-(function(){
-
-var commentPrimary = 0;
-var commentRegister = {};
-
-$.fn.removeDataComment = function(key){
-	var el = this[0];
-	var x = el.nodeValue.split(' ');
-	if(x[1]){
-		var primary = x[1];
-		if(commentRegister[primary]){
-			if(key){
-				if(commentRegister[primary][key]){
-					delete commentRegister[primary][key];
-				}
-			}
-			else{
-				delete commentRegister[primary];
-			}
-		}
-	}
-};
 $.fn.dataComment = function(){
   
 	if(arguments.length>1||$.type(arguments[0])=='object'){
@@ -1928,29 +1880,18 @@ $.fn.dataComment = function(){
 		});
 	}
 	
-  var el = this[0];
-  var x = el.nodeValue.split(' ');
-  var nodeName = x.shift();
-  var primary;
-  if(x.length){
-    primary =  x[0]; 
-  }
-  else{
-    primary =  ++commentPrimary;
-    el.nodeValue = nodeName+' '+primary;
-  }
-  if(!commentRegister[primary]){
-    commentRegister[primary] = {};
-  }
-  var data = commentRegister[primary];
-	
-  if(arguments.length){
+	var el = this[0];
+
+	if(!el.__jstackData){
+		el.__jstackData = {};
+	}
+	let data = el.__jstackData;
+
+	if(arguments.length){
 		data = data[arguments[0]];
 	}
 	return data;
 };
-
-})();
 
 $.fn.jData = function(key){
 	if(this.length>1){
@@ -2650,10 +2591,14 @@ jstack.dataBinder = (function(){
 
 				if(!parentForList.length) continue;
 
-				let jforCommentData = parentForList.dataCommentJSON();
+				let jforCommentData = parentForList.dataComment();
 				let value = jforCommentData.value;
 				
 				let forRow = parentFor.dataComment('j:for:row');
+				
+				if(!forRow){
+					console.log(varKey, el, parentFor, parentFor.dataComment());
+				}
 				
 				let index = jforCommentData.index;
 				let key = jforCommentData.key;
@@ -2861,10 +2806,12 @@ jstack.dataBinder = (function(){
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		checkRemoved: function(ancestor){
-			while(ancestor.parentNode){
-				ancestor = ancestor.parentNode;
+			return false;
+			let parentComment = $(ancestor).parentComment('j:if');
+			if(!parentComment){
+				return true;
 			}
-			return $(ancestor).data('j:if:state')!==false;
+			return parentComment.data('j:if:state')!==false;
 		},
 		runWatchers: function(){
 			var self = this;
@@ -3009,20 +2956,9 @@ jstack.dataBinder = (function(){
 
 				$.each(mutation.removedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
-						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
-							$(n).removeDataComment();
+						if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
 							return false;
 						}
-
-						if(n.nodeType==Node.TEXT_NODE){
-							return false;
-						}
-
-						if(!$(n).data('j:load:state')){
-							return false;
-						}
-
-						//$(n).trigger('j:unload');
 						jstack.trigger(n,'unload');
 					});
 				});
@@ -3218,119 +3154,82 @@ jstack.dataBinder = (function(){
 					};
 
 					//parentForList
-					jfor.dataCommentJSON({
+					jfor.dataComment({
 						value:value,
 						key:key,
 						index:index,
 					});
 
-					var render;
 					
 					let isTemplate = el.tagName.toLowerCase()=='template';
-					//if(el.tagName.toLowerCase()=='template'){
-						var content = this.content;
+					
+					var content = this.content;
 
-						render = function(){
-							if(!document.body.contains(jfor[0])) return jfor[0];
+					var render = function(){
+						if(!document.body.contains(jfor[0])) return jfor[0];
 
-							var data = getData();
-							if(currentData===data) return;
-							currentData = data;
-							
-							if(!data){
-								data = [];
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						if(!data){
+							data = [];
+						}
+						
+						let domRows = {};
+						
+						$.each(jfor.commentChildren(),function(k,v){
+							if(v.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
+								let row = $(v);
+								let data = row.dataComment('j:for:row');
+								if(data&&data.key){									
+									let key = data.key;
+									domRows[key] = row;
+								}
 							}
-							
-							var forIdList = [];
-							var collection = $( jfor.commentChildren().map(function(){
-								if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
-									return this;
-								}
-							}) );
-
-							//add
-							let index = 1;
-							$.each(data,function(k,v){
-								var row = $( collection.map(function(){
-									if(this.nodeValue == 'j:for:id'){
-										return this;
-									}
-								}) );
-								var create = !row.length;
-								if(create){
-									row = $('<!--j:for:id-->');
-								}
-								row.dataComment('j:for:row',{
-									'value':v,
-									'index':index,
-									'key':key,
-								});
-								if(create){
-									row.insertBefore(jforClose);
-									let addRow;
-									if(isTemplate){
-										addRow = $(document.importNode(content, true));
-									}
-									else{
-										addRow = $this.clone();
-										addRow.attr('j-for-id',k);
-									}
-									addRow.insertBefore(jforClose);
-									
-									$('<!--/j:for:id-->').insertBefore(jforClose);
-								}
-								forIdList.push(k.toString());
-								index++;
+						});
+						
+						//add
+						let index = 1;
+						$.each(data,function(k,v){
+							let row = domRows[k];
+							delete domRows[k];
+							let create;
+							if(!row){
+								row = $('<!--j:for:id-->');
+								create = true;
+							}
+							row.dataComment('j:for:row',{
+								'value':v,
+								'index':index,
+								'key':k,
 							});
-
-							//remove
-							collection.each(function(){
-								var forId = this.nodeValue.split(' ')[1];
-								if(forIdList.indexOf(forId)===-1){
-									$(this).commentChildren().remove();
-									$(this).remove();
+							//console.log(row.dataComment());
+							if(create){
+								row.insertBefore(jforClose);
+								
+								let addRow;
+								if(isTemplate){
+									addRow = $(document.importNode(content, true));
 								}
-							});
-
-						};
-					/*}
-					else{
-						render = function(){
-							if(!document.body.contains(jfor[0])) return jfor[0];
-
-							var data = getData();
-							if(currentData===data) return;
-							currentData = data;
-
-							var forIdList = [];
-							var collection = jfor.commentChildren();
-
-							//add
-							$.each(data,function(k,v){
-								var row = collection.filter('[j-for-id="'+k+'"]');
-								var create = !row.length;
-								if(create){
-									row = $this.clone();
-									row[0].setAttribute('j-for-id',k);
+								else{
+									addRow = $this.clone();
+									addRow.attr('j-for-id',k);
 								}
-								row.data('j:for:data',v);
-								if(create){
-									row.insertBefore(jforClose);
-								}
-								forIdList.push(k.toString());
-							});
+								addRow.insertBefore(jforClose);
+								
+								$('<!--/j:for:id-->').insertBefore(jforClose);
+							}
+							index++;
+						});
 
-							//remove
-							collection.each(function(){
-								if(!this.getAttribute) return;
-								var forId = this.getAttribute('j-for-id');
-								if(forIdList.indexOf(forId)===-1){
-									$(this).remove();
-								}
-							});
-
-						};
-					}*/
+						//remove
+						$.each(domRows,function(k,row){
+							row.commentChildren().remove();
+							row.remove();
+						});
+						
+					};
 
 					return render;
 
