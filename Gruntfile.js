@@ -22,6 +22,7 @@ grunt.initConfig({
 				"src/std/isMobile.js",
 				
 				"src/prototype/string.js",
+				"src/prototype/object.js",
 
 				"src/reflection/core.js",
 				"src/reflection/arguments.js",
