@@ -22,7 +22,6 @@ var observe = function(options,rootObject){
 	let recursive = options.recursive;
 	let key = options.key;
 	let namespace = options.namespace;
-	let enableAddObserver = options.enableAddObserver;
 	if(!rootObject){
 		rootObject = obj;
 	}
@@ -92,11 +91,17 @@ var observe = function(options,rootObject){
 		}
 	};
 	
+	if(options.enableAddObserver){
+		Object.defineProperty(obj.prototype,'addObserver',{
+			value: addObserver,
+			enumerable:false,
+			configurable:true,
+			writable:true,
+		});
+	}
+	
 	let proxy = new Proxy(obj,{
 		get: function (target, key) {
-			if(enableAddObserver&&key=='addObserver'){
-				return addObserver;
-			}
 			if(key===prefix){
 				return callbackStack;
 			}
@@ -2648,28 +2653,17 @@ jstack.dataBinder = (function(){
 				let jforCommentData = parentForList.dataCommentJSON();
 				let value = jforCommentData.value;
 				
-				let forData = parentFor.dataComment('j:for:data');
+				let forRow = parentFor.dataComment('j:for:row');
 				
-				scopeValue[value] = forData;
-				
-				if(forCollection.length&&varKey=='user.prenom'){
-					console.log(value,forData,parentFor);
-				}
-				
-				let key = jforCommentData.key;
 				let index = jforCommentData.index;
-				let split;
-				if(key || index){
-					split = forid.nodeValue.split(' ');
-					split.shift();
-					let id = split.shift();
-					if(index){
-						scopeValue[index] = id;
-					}
-					if(key){
-						scopeValue[key] = split.join(' ');
-					}
+				let key = jforCommentData.key;
+				if(index){
+					scopeValue[index] = forRow.index;
 				}
+				if(key){
+					scopeValue[key] = forRow.key;
+				}
+				scopeValue[value] = forRow.value;
 			}
 
 			var params = [ '$controller', '$this', '$scope' ];
@@ -3266,10 +3260,10 @@ jstack.dataBinder = (function(){
 								if(create){
 									row = $('<!--j:for:id-->');
 								}
-								row.dataComment({
-									'j:for:data':v,
-									'j:for:index':index,
-									'j:for:key':key,
+								row.dataComment('j:for:row',{
+									'value':v,
+									'index':index,
+									'key':key,
 								});
 								if(create){
 									row.insertBefore(jforClose);
@@ -3684,11 +3678,11 @@ jstack.dataBinder = (function(){
 					var currentData;
 
 					//default to model
-					afterMutationLoad.push(function(){
-						var key = jstack.dataBinder.getScopedInput(el);
-						var val = jstack.dataBinder.getInputVal(el);
-						jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
-					});
+					//afterMutationLoad.push(function(){
+						//var key = jstack.dataBinder.getScopedInput(el);
+						//var val = jstack.dataBinder.getInputVal(el);
+						//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					//});
 					
 					//var key = jstack.dataBinder.getScopedInput(el);
 					//var val = jstack.dataBinder.getInputVal(el);
