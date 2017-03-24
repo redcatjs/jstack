@@ -32,10 +32,14 @@ var constructor = function(controllerSet,element,hash){
 	this.startDataObserver = function(){
 		var object = self.data;
 				
-		self.data = jstack.observe(self.data,function(change){
+		self.data = self.data.observable({
+			recursive: true,
+			namespace: 'jstack.model',
+		});
+		self.data.observe(function(change){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
-		},true,'jstack.model');
+		});
 		
 	};
 	
