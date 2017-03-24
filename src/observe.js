@@ -9,7 +9,6 @@ var observe = function(options,rootObject){
 	let recursive = options.recursive;
 	let key = options.key;
 	let namespace = options.namespace;
-	let enableAddObserver = options.enableAddObserver;
 	if(!rootObject){
 		rootObject = obj;
 	}
@@ -79,11 +78,17 @@ var observe = function(options,rootObject){
 		}
 	};
 	
+	if(options.enableAddObserver){
+		Object.defineProperty(obj.prototype,'addObserver',{
+			value: addObserver,
+			enumerable:false,
+			configurable:true,
+			writable:true,
+		});
+	}
+	
 	let proxy = new Proxy(obj,{
 		get: function (target, key) {
-			if(enableAddObserver&&key=='addObserver'){
-				return addObserver;
-			}
 			if(key===prefix){
 				return callbackStack;
 			}
