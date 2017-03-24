@@ -753,29 +753,30 @@ jstack.dataBinder = (function(){
 							data = [];
 						}
 						
-						var forIdList = [];
-						var collection = $( jfor.commentChildren().map(function(){
-							if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
-								return this;
+						let domRows = {};
+						
+						$.each(jfor.commentChildren(),function(k,v){
+							if(v.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
+								let row = $(v);
+								let key = row.dataComment('j:for:row').key;
+								domRows[key] = row;
 							}
-						}) );
-
+						});
+						
 						//add
 						let index = 1;
 						$.each(data,function(k,v){
-							var row = $( collection.map(function(){
-								if(this.nodeValue == 'j:for:id'){
-									return this;
-								}
-							}) );
-							var create = !row.length;
-							if(create){
+							let row = domRows[k];
+							delete domRows[k];
+							let create;
+							if(!row){
 								row = $('<!--j:for:id-->');
+								create = true;
 							}
 							row.dataComment('j:for:row',{
 								'value':v,
 								'index':index,
-								'key':key,
+								'key':k,
 							});
 							if(create){
 								row.insertBefore(jforClose);
@@ -791,19 +792,15 @@ jstack.dataBinder = (function(){
 								
 								$('<!--/j:for:id-->').insertBefore(jforClose);
 							}
-							forIdList.push(k.toString());
 							index++;
 						});
 
 						//remove
-						collection.each(function(){
-							var forId = $(this).dataComment('j:for:row').key;
-							if(forIdList.indexOf(forId)===-1){
-								$(this).commentChildren().remove();
-								$(this).remove();
-							}
+						$.each(domRows,function(k,row){
+							row.commentChildren().remove();
+							row.remove();
 						});
-
+						
 					};
 
 					return render;
