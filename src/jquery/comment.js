@@ -100,9 +100,6 @@ $.fn.dataCommentJSON = function(){
 
 (function(){
 
-var commentPrimary = 0;
-var commentRegister = {};
-
 $.fn.removeDataComment = function(key){
 	var el = this[0];
 	var x = el.nodeValue.split(' ');
@@ -137,23 +134,14 @@ $.fn.dataComment = function(){
 		});
 	}
 	
-  var el = this[0];
-  var x = el.nodeValue.split(' ');
-  var nodeName = x.shift();
-  var primary;
-  if(x.length){
-    primary =  x[0]; 
-  }
-  else{
-    primary =  ++commentPrimary;
-    el.nodeValue = nodeName+' '+primary;
-  }
-  if(!commentRegister[primary]){
-    commentRegister[primary] = {};
-  }
-  var data = commentRegister[primary];
-	
-  if(arguments.length){
+	var el = this[0];
+
+	if(!el.__jstackData){
+		el.__jstackData = {};
+	}
+	let data = el.__jstackData;
+
+	if(arguments.length){
 		data = data[arguments[0]];
 	}
 	return data;
