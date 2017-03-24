@@ -71,52 +71,7 @@ $.fn.parentsComment = function(tag){
 	return $(a);
 };
 
-$.fn.dataCommentJSON = function(){
-	if(arguments.length>1||$.type(arguments[0])=='object'){
-		var setData;
-		if(arguments.length>1){
-			setData = {};
-			setData[arguments[0]] =	arguments[1];
-		}
-		else{
-			var setData = arguments[0];
-		}
-		return this.each(function(){
-			var x = this.nodeValue.split(' ');
-			var nodeName = x.shift();
-			var data = x.length ? JSON.parse( x.join(' ') ) : {};
-			$.extend(data,setData);
-			this.nodeValue = nodeName+' '+JSON.stringify(data);
-		});
-	}
-	var x = this[0].nodeValue.split(' ');
-	x.shift();
-	var data = x.length ? JSON.parse( x.join(' ') ) : {};
-	if(arguments.length){
-		data = data[arguments[0]];
-	}
-	return data;
-};
 
-(function(){
-
-$.fn.removeDataComment = function(key){
-	var el = this[0];
-	var x = el.nodeValue.split(' ');
-	if(x[1]){
-		var primary = x[1];
-		if(commentRegister[primary]){
-			if(key){
-				if(commentRegister[primary][key]){
-					delete commentRegister[primary][key];
-				}
-			}
-			else{
-				delete commentRegister[primary];
-			}
-		}
-	}
-};
 $.fn.dataComment = function(){
   
 	if(arguments.length>1||$.type(arguments[0])=='object'){
@@ -146,5 +101,3 @@ $.fn.dataComment = function(){
 	}
 	return data;
 };
-
-})();

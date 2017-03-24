@@ -163,10 +163,14 @@ jstack.dataBinder = (function(){
 
 				if(!parentForList.length) continue;
 
-				let jforCommentData = parentForList.dataCommentJSON();
+				let jforCommentData = parentForList.dataComment();
 				let value = jforCommentData.value;
 				
 				let forRow = parentFor.dataComment('j:for:row');
+				
+				if(!forRow){
+					console.log(varKey, el, parentFor, parentFor.dataComment());
+				}
 				
 				let index = jforCommentData.index;
 				let key = jforCommentData.key;
@@ -374,10 +378,12 @@ jstack.dataBinder = (function(){
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		checkRemoved: function(ancestor){
-			while(ancestor.parentNode){
-				ancestor = ancestor.parentNode;
+			return false;
+			let parentComment = $(ancestor).parentComment('j:if');
+			if(!parentComment){
+				return true;
 			}
-			return $(ancestor).data('j:if:state')!==false;
+			return parentComment.data('j:if:state')!==false;
 		},
 		runWatchers: function(){
 			var self = this;
@@ -522,20 +528,9 @@ jstack.dataBinder = (function(){
 
 				$.each(mutation.removedNodes,function(ii,node){
 					jstack.walkTheDOM(node,function(n){
-						if(n.nodeType===Node.COMMENT_NODE&&self.checkRemoved(n)){
-							$(n).removeDataComment();
+						if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
 							return false;
 						}
-
-						if(n.nodeType==Node.TEXT_NODE){
-							return false;
-						}
-
-						if(!$(n).data('j:load:state')){
-							return false;
-						}
-
-						//$(n).trigger('j:unload');
 						jstack.trigger(n,'unload');
 					});
 				});
@@ -731,7 +726,7 @@ jstack.dataBinder = (function(){
 					};
 
 					//parentForList
-					jfor.dataCommentJSON({
+					jfor.dataComment({
 						value:value,
 						key:key,
 						index:index,
@@ -758,8 +753,11 @@ jstack.dataBinder = (function(){
 						$.each(jfor.commentChildren(),function(k,v){
 							if(v.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
 								let row = $(v);
-								let key = row.dataComment('j:for:row').key;
-								domRows[key] = row;
+								let data = row.dataComment('j:for:row');
+								if(data&&data.key){									
+									let key = data.key;
+									domRows[key] = row;
+								}
 							}
 						});
 						
@@ -778,8 +776,10 @@ jstack.dataBinder = (function(){
 								'index':index,
 								'key':k,
 							});
+							//console.log(row.dataComment());
 							if(create){
 								row.insertBefore(jforClose);
+								
 								let addRow;
 								if(isTemplate){
 									addRow = $(document.importNode(content, true));
