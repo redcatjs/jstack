@@ -2886,7 +2886,6 @@ jstack.dataBinder = (function(){
 
 		},
 
-		//updateDeferState: 0,
 		updateDeferQueued: false,
 		updateDeferInProgress: false,
 		updateDeferStateObserver: null,
@@ -2919,46 +2918,9 @@ jstack.dataBinder = (function(){
 				},10);
 				
 			}
-			//this.updateDeferStateObserver.then(function(){
-				//self.updateDeferStateObserver = $.Deferred();
-				//self.runWatchers();
-				//self.updateDeferState--;
-				//if(self.updateDeferState==0){
-					//self.updateDeferStateObserver.resolve();
-				//}
-			//})
-			//var updater = function(){
-				//self.updateDeferState++;
-				//var callback = function(){
-					//self.runWatchers();
-					//self.updateDeferState--;
-					//if(self.updateDeferState==0){
-						//self.updateDeferStateObserver.resolve();
-						//self.updateDeferStateObserver = null;
-					//}
-				//};
-				//if(!self.updateDeferStateObserver){
-					//self.updateDeferStateObserver = $.Deferred();
-					//callback();
-				//}
-				//else{
-					//self.updateDeferStateObserver.then(function(){
-						//callback();
-					//});
-				//}
-			//};
-			//if(this.updateTimeout){
-				//clearTimeout(this.updateTimeout);
-			//}
-			//if(self.updateDeferStateObserver){
-				//this.updateTimeout = setTimeout(updater,100);
-			//}
-			//else{
-				//updater();
-			//}
 		},
 
-		compileNode: function(node,compilerJloads){
+		compileNode: function(node,compilerJloads,afterMutationLoad){
 			var self = this;
 
 			jstack.walkTheDOM(node,function(n){
@@ -3002,7 +2964,7 @@ jstack.dataBinder = (function(){
 				$.each(self.compilers,function(k,compiler){
 					var matchResult = compiler.match.call(n);
 					if(matchResult){
-						var render = compiler.callback.call(n,matchResult);
+						var render = compiler.callback.call(n,matchResult,afterMutationLoad);
 						if(render){
 							if(!once){
 								self.addWatcher(render, compiler.level);
@@ -3036,16 +2998,19 @@ jstack.dataBinder = (function(){
 
 		},
 		loadingMutation: 0,
-		deferMutation: [],
+		deferMutation: [],		
 		loadMutations: function(mutations){
 			//console.log('mutations',mutations);
 
 			var self = this;
 
-			var compilerJloads = [];
+			let compilerJloads = [];
+			
+			let afterMutationLoad = [];
+			
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					self.compileNode(node,compilerJloads);
+					self.compileNode(node,compilerJloads,afterMutationLoad);
 				});
 
 				$.each(mutation.removedNodes,function(ii,node){
@@ -3071,21 +3036,36 @@ jstack.dataBinder = (function(){
 
 			setTimeout(function(){
 				self.loadingMutation--;
+				
+				//for(let i = 0, l=afterMutationLoad.length;i<l;i++){
+					//afterMutationLoad[i]();
+				//}
 
 				if(self.loadingMutation==0){
+					
+					//while(self.afterMutationLoad.length){
+						//self.afterMutationLoad.pop()();
+					//}
+					//while(self.compilerJloads.length){
+						//self.compilerJloads.pop()();
+					//}
+					
 					while(self.deferMutation.length){
 						self.deferMutation.pop()();
 					}
+					
 				}
-
-				for(var i = 0, l=compilerJloads.length;i<l;i++){
+				
+				
+				for(let i = 0, l=compilerJloads.length;i<l;i++){
 					compilerJloads[i]();
-				}
+				}				
+				
 			});
 
 		},
 		noChildListNodeNames: {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1},
-		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},
+		inputPseudoNodeNames: {input:1 ,select:1, textarea:1},		
 		observe: function(n){
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
 			if(n.hasAttribute('j-escape')){
@@ -3697,16 +3677,22 @@ jstack.dataBinder = (function(){
 				match: function(){
 					return document.body.contains(this) && this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
-				callback:function(){
+				callback:function(matched,afterMutationLoad){
 					var el = this;
 					var $el = $(this);
 
 					var currentData;
 
 					//default to model
-					var key = jstack.dataBinder.getScopedInput(this);
-					var val = jstack.dataBinder.getInputVal(this);
-					jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					afterMutationLoad.push(function(){
+						var key = jstack.dataBinder.getScopedInput(el);
+						var val = jstack.dataBinder.getInputVal(el);
+						jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					});
+					
+					//var key = jstack.dataBinder.getScopedInput(el);
+					//var val = jstack.dataBinder.getInputVal(el);
+					//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
 
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
