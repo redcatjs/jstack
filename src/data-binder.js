@@ -737,113 +737,74 @@ jstack.dataBinder = (function(){
 						index:index,
 					});
 
-					var render;
 					
 					let isTemplate = el.tagName.toLowerCase()=='template';
-					//if(el.tagName.toLowerCase()=='template'){
-						var content = this.content;
+					
+					var content = this.content;
 
-						render = function(){
-							if(!document.body.contains(jfor[0])) return jfor[0];
+					var render = function(){
+						if(!document.body.contains(jfor[0])) return jfor[0];
 
-							var data = getData();
-							if(currentData===data) return;
-							currentData = data;
-							
-							if(!data){
-								data = [];
+						var data = getData();
+						if(currentData===data) return;
+						currentData = data;
+						
+						if(!data){
+							data = [];
+						}
+						
+						var forIdList = [];
+						var collection = $( jfor.commentChildren().map(function(){
+							if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
+								return this;
 							}
-							
-							var forIdList = [];
-							var collection = $( jfor.commentChildren().map(function(){
-								if(this.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
+						}) );
+
+						//add
+						let index = 1;
+						$.each(data,function(k,v){
+							var row = $( collection.map(function(){
+								if(this.nodeValue == 'j:for:id'){
 									return this;
 								}
 							}) );
-
-							//add
-							let index = 1;
-							$.each(data,function(k,v){
-								var row = $( collection.map(function(){
-									if(this.nodeValue == 'j:for:id'){
-										return this;
-									}
-								}) );
-								var create = !row.length;
-								if(create){
-									row = $('<!--j:for:id-->');
-								}
-								row.dataComment('j:for:row',{
-									'value':v,
-									'index':index,
-									'key':key,
-								});
-								if(create){
-									row.insertBefore(jforClose);
-									let addRow;
-									if(isTemplate){
-										addRow = $(document.importNode(content, true));
-									}
-									else{
-										addRow = $this.clone();
-										addRow.attr('j-for-id',k);
-									}
-									addRow.insertBefore(jforClose);
-									
-									$('<!--/j:for:id-->').insertBefore(jforClose);
-								}
-								forIdList.push(k.toString());
-								index++;
+							var create = !row.length;
+							if(create){
+								row = $('<!--j:for:id-->');
+							}
+							row.dataComment('j:for:row',{
+								'value':v,
+								'index':index,
+								'key':key,
 							});
-
-							//remove
-							collection.each(function(){
-								var forId = this.nodeValue.split(' ')[1];
-								if(forIdList.indexOf(forId)===-1){
-									$(this).commentChildren().remove();
-									$(this).remove();
+							if(create){
+								row.insertBefore(jforClose);
+								let addRow;
+								if(isTemplate){
+									addRow = $(document.importNode(content, true));
 								}
-							});
-
-						};
-					/*}
-					else{
-						render = function(){
-							if(!document.body.contains(jfor[0])) return jfor[0];
-
-							var data = getData();
-							if(currentData===data) return;
-							currentData = data;
-
-							var forIdList = [];
-							var collection = jfor.commentChildren();
-
-							//add
-							$.each(data,function(k,v){
-								var row = collection.filter('[j-for-id="'+k+'"]');
-								var create = !row.length;
-								if(create){
-									row = $this.clone();
-									row[0].setAttribute('j-for-id',k);
+								else{
+									addRow = $this.clone();
+									addRow.attr('j-for-id',k);
 								}
-								row.data('j:for:data',v);
-								if(create){
-									row.insertBefore(jforClose);
-								}
-								forIdList.push(k.toString());
-							});
+								addRow.insertBefore(jforClose);
+								
+								$('<!--/j:for:id-->').insertBefore(jforClose);
+							}
+							forIdList.push(k.toString());
+							index++;
+						});
 
-							//remove
-							collection.each(function(){
-								if(!this.getAttribute) return;
-								var forId = this.getAttribute('j-for-id');
-								if(forIdList.indexOf(forId)===-1){
-									$(this).remove();
-								}
-							});
+						//remove
+						collection.each(function(){
+							var forId = $(this).dataComment('j:for:row').key;
+							if(forIdList.indexOf(forId)===-1){
+								$(this).commentChildren().remove();
+								$(this).remove();
+							}
+						});
 
-						};
-					}*/
+					};
 
 					return render;
 
