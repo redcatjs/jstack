@@ -55,6 +55,7 @@ var observable = function(obj,parentProxy,parentKey){
 		parentProxy:parentProxy,
 		parentKey:parentKey,
 		notify: notify,
+		proxyTarget: obj,
 	};
 	
 	let proxy;
@@ -204,8 +205,14 @@ let unobserve = function(obj,key,callback,namespace){
 	}
 	
 };
+
+let getObserverTarget = function(obj){
+	return obj[prefix].proxyTarget;
+};
+
 jstack.observable = observable;
 jstack.observe = observe;
 jstack.unobserve = unobserve;
+jstack.getObserverTarget = getObserverTarget;
 
 })();
