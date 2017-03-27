@@ -45,11 +45,15 @@ jstack.dataBinder = (function(){
 			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
-					if(isDefault&&obj[k]){
-						value = obj[k];
+					if(isDefault){
+						if(obj[k]){
+							value = obj[k];
+						}
 					}
-					if(!isDefault||!obj[k]){
-						obj[k] = value;
+					else{						
+						if(!obj[k]){
+							obj[k] = value;
+						}
 					}
 				}
 				else{
@@ -378,7 +382,6 @@ jstack.dataBinder = (function(){
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		checkRemoved: function(ancestor){
-			return false;
 			let parentComment = $(ancestor).parentComment('j:if');
 			if(!parentComment){
 				return true;
@@ -433,7 +436,7 @@ jstack.dataBinder = (function(){
 			}
 		},
 
-		compileNode: function(node,compilerJloads,afterMutationLoad){
+		compileNode: function(node,compilerJloads){
 			var self = this;
 
 			jstack.walkTheDOM(node,function(n){
@@ -477,7 +480,7 @@ jstack.dataBinder = (function(){
 				$.each(self.compilers,function(k,compiler){
 					var matchResult = compiler.match.call(n);
 					if(matchResult){
-						var render = compiler.callback.call(n,matchResult,afterMutationLoad);
+						var render = compiler.callback.call(n,matchResult);
 						if(render){
 							if(!once){
 								self.addWatcher(render, compiler.level);
@@ -519,11 +522,9 @@ jstack.dataBinder = (function(){
 
 			let compilerJloads = [];
 			
-			let afterMutationLoad = [];
-			
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					self.compileNode(node,compilerJloads,afterMutationLoad);
+					self.compileNode(node,compilerJloads);
 				});
 
 				$.each(mutation.removedNodes,function(ii,node){
@@ -539,29 +540,15 @@ jstack.dataBinder = (function(){
 			setTimeout(function(){
 				self.loadingMutation--;
 				
-				//for(let i = 0, l=afterMutationLoad.length;i<l;i++){
-					//afterMutationLoad[i]();
-				//}
-
 				if(self.loadingMutation==0){
-					
-					//while(self.afterMutationLoad.length){
-						//self.afterMutationLoad.pop()();
-					//}
-					//while(self.compilerJloads.length){
-						//self.compilerJloads.pop()();
-					//}
-					
 					while(self.deferMutation.length){
 						self.deferMutation.pop()();
 					}
-					
 				}
-				
 				
 				for(let i = 0, l=compilerJloads.length;i<l;i++){
 					compilerJloads[i]();
-				}				
+				}
 				
 			});
 
@@ -606,7 +593,10 @@ jstack.dataBinder = (function(){
 				if(this.type=='file') return;
 				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
-				self.inputToModel(this,e.type,value);
+				let el = this;
+				setTimeout(function(){
+					self.inputToModel(el,e.type,value);
+				});
 			});
 		},
 		filter:function(el,value){
@@ -1142,22 +1132,18 @@ jstack.dataBinder = (function(){
 				match: function(){
 					return document.body.contains(this) && this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
-				callback:function(matched,afterMutationLoad){
+				callback:function(matched){
 					var el = this;
 					var $el = $(this);
 
 					var currentData;
 
-					//default to model
-					//afterMutationLoad.push(function(){
-						//var key = jstack.dataBinder.getScopedInput(el);
-						//var val = jstack.dataBinder.getInputVal(el);
-						//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
-					//});
-					
-					//var key = jstack.dataBinder.getScopedInput(el);
-					//var val = jstack.dataBinder.getInputVal(el);
-					//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					//default to model					
+					var key = jstack.dataBinder.getScopedInput(el);
+					var val = jstack.dataBinder.getInputVal(el);
+					let controllerData = jstack.dataBinder.getControllerData(el);
+					controllerData = jstack.getObserverTarget( controllerData );
+					jstack.dataBinder.dotSet(key,controllerData,val,true);
 
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
