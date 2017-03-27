@@ -2673,7 +2673,7 @@ jstack.dataBinder = (function(){
 					console.warn.apply(console,warn);
 				}
 			}
-
+			
 			return typeof(value)=='undefined'?'':value;
 		},
 		getScopedInput: function(input){
@@ -3635,7 +3635,7 @@ jstack.dataBinder = (function(){
 				if(token.substr(0,2)=='{{'){
 					token = jstack.dataBinder.getValueEval(el,token.substr(2,token.length-4));
 				}
-				r += token?token:'';
+				r += typeof(token)!=='undefined'&&token!==null?token:'';
 			}
 			return r;
 		},
