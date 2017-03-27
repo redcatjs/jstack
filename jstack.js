@@ -2510,11 +2510,12 @@ jstack.dataBinder = (function(){
 						if(obj[k]){
 							value = obj[k];
 						}
-					}
-					else{						
-						if(!obj[k]){
+						else{
 							obj[k] = value;
 						}
+					}
+					else{
+						obj[k] = value;
 					}
 				}
 				else{
