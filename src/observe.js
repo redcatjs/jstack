@@ -92,6 +92,7 @@ var observable = function(obj,parentProxy,parentKey){
 			
 			let oldValue = target[key];
 			
+			
 			if (Array.isArray(target))
 				target.splice(key,1);
 			else
