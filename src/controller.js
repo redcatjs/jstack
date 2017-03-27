@@ -34,7 +34,7 @@ var constructor = function(controllerSet,element,hash){
 
 		self.data = self.data.observable();
 		self.data.observe(function(change){
-			console.log('j:model:update',change);
+			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
 		},'jstack.model',true);
 		
