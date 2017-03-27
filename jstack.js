@@ -105,6 +105,7 @@ var observable = function(obj,parentProxy,parentKey){
 			
 			let oldValue = target[key];
 			
+			
 			if (Array.isArray(target))
 				target.splice(key,1);
 			else
@@ -3206,7 +3207,7 @@ jstack.dataBinder = (function(){
 							if(v.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
 								let row = $(v);
 								let data = row.dataComment('j:for:row');
-								if(data&&data.key){									
+								if(data&&typeof(data.key)!=='undefined'){
 									let key = data.key;
 									domRows[key] = row;
 								}
