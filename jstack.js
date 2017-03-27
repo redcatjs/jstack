@@ -13,117 +13,119 @@ jstackClass.prototype.extend = function(c,parent){
 jstack = new jstackClass();
 (function(){
 
-let globalPrefix = '__JSTACK__OBSERVABLE__';
+let prefix = '__JSTACK__OBSERVABLE__';
 
-var observe = function(options,rootObject){
+var observable = function(obj,parentProxy,parentKey){
 	
-	let obj = options.object;
-	let callbackUser = options.callback;
-	let recursive = options.recursive;
-	let key = options.key;
-	let namespace = options.namespace;
-	if(!rootObject){
-		rootObject = obj;
-	}
-	
-	let prefix = globalPrefix;
-	if(namespace){
-		prefix += namespace;
-	}
-	
-	let callbackDef;
-	if(callbackUser){
-		 callbackDef = {
-			key:key,
-			callback:callbackUser
-		};
-	}
-	
-	let callbackStack = obj[prefix];
-	if(callbackStack){
-		if(callbackDef){
-			callbackStack.push(callbackDef);
-		}
+	let observer = obj[prefix];
+	if(observer){
+		observer.parentKey = parentKey;
+		observer.parentProxy = parentProxy;
 		return obj;
 	}
-	callbackStack = [];
-	if(callbackDef){
-		callbackStack.push(callbackDef);
-	}
-	if(recursive){
-		$.each(obj,function(k,v){
-			if(typeof(v)=='object'&&v!==null){
-				obj[k] = observe( $.extend({},options,{object:v}) ,obj);
+	
+	let notify = function(change,preventPropagation){
+		$.each(observer.namespaces,function(namespace,callbackStack){
+			
+			if(preventPropagation[namespace]){
+				return;
+			}
+			
+			change.preventImmediatePropagation = false;
+			change.stopPropagation = function(){
+				preventPropagation[namespace] = true;
+			};
+			change.stopImmediatePropagation = function(){
+				change.preventImmediatePropagation = true;
+				preventPropagation[namespace] = true;
+			};
+			
+			for(let i=0, l = callbackStack.length; i<l; i++){
+				let callbackDef = callbackStack[i];
+				if( !callbackDef.recursive && change.keyStack.length ){
+					continue;
+				}
+				if( callbackDef.key !== false && callbackDef.key !== change.key ){
+					continue;
+				}
+				let r = callbackDef.callback(change);
+				if(r===false||change.preventImmediatePropagation){
+					return;
+				}
 			}
 		});
-	}
-	
-	let callback = function(type,data,target,rootObject){
-		let change = {
-			type:type,
-			target:target,
-			rootObject:rootObject,
-		};
-		if(type=='set'){
-			change.key = data.key;
-			change.value = data.value;
-		}
-		else if(type=='unset'){
-			change.key = data;
-		}
-		for(let i=0, l = callbackStack.length; i<l; i++){
-			let callbackDef = callbackStack[i];
-			if( !callbackDef.key || callbackDef.key === data.key ){
-				callbackDef.callback(change);
-			}
+		
+		if(observer.parentProxy){
+			let parentObserver = observer.parentProxy[prefix];
+			let bubbleChange = $.extend({},change);
+			bubbleChange.keyStack.push(observer.parentKey);
+			parentObserver.notify(bubbleChange,preventPropagation);
 		}
 	};
 	
-	let addObserver = function(key,callback){
-		if(typeof(key)=='string'){
-			key = [key];
-		}
-		for(let i=0, l=key.length; i<l; i++){
-			callbackStack.push({
-				key: key[i],
-				callback: callback,
-			});
-		}
+	observer = {
+		namespaces:{},
+		parentProxy:parentProxy,
+		parentKey:parentKey,
+		notify: notify,
+		proxyTarget: obj,
 	};
 	
-	if(options.enableAddObserver){
-		Object.defineProperty(obj.prototype,'addObserver',{
-			value: addObserver,
-			enumerable:false,
-			configurable:true,
-			writable:true,
-		});
-	}
+	let proxy;
 	
-	let proxy = new Proxy(obj,{
+	proxy = new Proxy(obj,{
 		get: function (target, key) {
 			if(key===prefix){
-				return callbackStack;
+				return observer;
 			}
 			return target[key];
 		},
 		set: function(target, key, value){
-			if(recursive){
-				if(typeof(value)=='object'&&value!==null){
-					value = observe($.extend({},options,{object:value}), rootObject);
-				}
-			}
+			
 			let oldValue = target[key];
+			
+			if(typeof(value)=='object'&&value!==null){
+				value = observable(value, proxy, key);
+			}
+			
 			target[key] = value;
-			callback('set', {key:key, value:value, oldValue:oldValue}, target, rootObject);
+			
+			notify({
+				type:'set',
+				target:target,
+				keyStack: [],
+				key:key,
+				oldValue:oldValue,
+				value:value,
+			},{});
+			
 			return true;
 		},
 		deleteProperty: function (target, key) {
+			
+			let oldValue = target[key];
+			
 			if (Array.isArray(target))
 				target.splice(key,1);
 			else
 				delete(target[key]);
-			callback('unset', key, target, rootObject);
+			
+			if(typeof(oldValue)=='object'&&oldValue!==null){
+				let removedObserver = oldValue[prefix];
+				if(removedObserver.parentProxy===proxy && removedObserver.parentKey===key){
+					delete removedObserver.parentProxy;
+					delete removedObserver.parentKey;
+				}
+			}
+			
+			notify({
+				type:'unset',
+				target:target,
+				keyStack: [],
+				key:key,
+				oldValue:oldValue,
+			},{});
+			
 			return true;
 		},
 		ownKeys: function(target){
@@ -132,60 +134,81 @@ var observe = function(options,rootObject){
 		
 	});
 	
+	$.each(obj,function(k,v){
+		if(typeof(v)=='object'&&v!==null){
+			obj[k] = observable( v, proxy, k );
+		}
+	});
+	
 	return proxy;
 };
 
-jstack.observe = function(){
-	let options;
-	if(arguments.length==1){
-		options = arguments[0]
+var observe = function(obj,key,callback,namespace,recursive){
+	
+	if(typeof(key)=='function'){
+		recursive = namespace;
+		namespace = callback;
+		callback = key;
+		key = false;
 	}
-	else{
-		options = {};
-		options.object = arguments[0];
-		let arg1 = arguments[1];
-		if(typeof(arg1)=='object'&&arg1 instanceof Array){
-			options.callback = arguments[2];
-			options.recursive = arguments[3];
-			options.namespace = arguments[4];
-			for(var i=0, l = arg1.length; i<l; i++){
-				observe( $.extend({}, options, { key : arg1[i] }) );
-			}
-			return;
-		}
-		else if(typeof(arg1)=='function'){
-			options.callback = arg1;
-			options.recursive = arguments[2];
-			options.namespace = arguments[3];
-		}
-		
+	if(key===false||typeof(key)=='string'||typeof(key)=='number'){
+		key = [key];
 	}
-	return observe(options);
+	if(!namespace){
+		namespace = 0;
+	}
+	
+	let observer = obj[prefix];
+	if(!observer){
+		throw new Error('object is not observable');
+	}
+	if(!observer.namespaces[namespace]){
+		observer.namespaces[namespace] = [];
+	}
+	let callbackStack = observer.namespaces[namespace];
+	
+	for(let i=0, l=key.length; i<l; i++){
+		callbackStack.push({
+			key: key[i],
+			callback: callback,
+			recursive: recursive,
+		});
+	}
 };
 
-jstack.observable = function(obj){
-	return observe({
-		object:obj,
-		enableAddObserver:true,
-	});
-};
-
-
-let unObserve = function(options){
-	let prefix = globalPrefix;
-	if(options.namespace){
-		prefix += options.namespace;
+let unobserve = function(obj,key,callback,namespace){
+			
+	if(key instanceof Array){
+		for(let i=0, l = key.length; i<l; i++){
+			unobserve(obj,key[i],callback,namespace);
+		}
+		return;
 	}
-	let callbackStack = options.object[prefix];
+	
+	if(typeof(key)=='function'){
+		namespace = callback;
+		callback = key;
+		key = false;
+	}
+	if(!namespace){
+		namespace = 0;
+	}
+	
+	let observer = obj[prefix];
+	if(!observer){
+		throw new Error('object is not observable');
+	}
+	
+	let callbackStack = observer.namespaces[namespace];
+	
 	if(!callbackStack){
 		return;
 	}
-	let callback = options.callback;
-	let key = options.key;
-	if(key || callback){		
+	
+	if(key || callback){
 		for(let i=0, l = callbackStack.length; i<l; i++){
 			let callbackDef = callbackStack[i];
-			if( ( !key || key === callbackDef.key ) && ( !callback || callback===callbackDef.callback ) ){
+			if( ( key === callbackDef.key ) && ( !callback || callback===callbackDef.callback ) ){
 				callbackStack.splice(i,1);
 			}
 		}
@@ -193,33 +216,17 @@ let unObserve = function(options){
 	else{
 		callbackStack.length = 0;
 	}
+	
 };
 
-jstack.unObserve = function(){
-	let options;
-	if(arguments.length==1){
-		options = arguments[0]
-	}
-	else{
-		options = {};
-		options.object = arguments[0];
-		let arg1 = arguments[1];
-		if(typeof(arg1)=='string'){
-			arg1 = [arg1];
-		}
-		if(typeof(arg1)=='object'&&arg1 instanceof Array){
-			options.key = arg1;
-			options.callback = arguments[2];
-			options.namespace = arguments[3];
-		}
-		else if(typeof(arg1)=='function'){
-			options.callback = arg1;
-			options.namespace = arguments[2];
-		}
-		
-	}
-	return unObserve(options);
+let getObserverTarget = function(obj){
+	return obj[prefix].proxyTarget;
 };
+
+jstack.observable = observable;
+jstack.observe = observe;
+jstack.unobserve = unobserve;
+jstack.getObserverTarget = getObserverTarget;
 
 })();
 
@@ -256,11 +263,12 @@ var constructor = function(controllerSet,element,hash){
 	
 	this.startDataObserver = function(){
 		var object = self.data;
-				
-		self.data = jstack.observe(self.data,function(change){
+
+		self.data = self.data.observable();
+		self.data.observe(function(change){
 			//console.log('j:model:update',change);
 			jstack.dataBinder.update();
-		},true,'jstack.model');
+		},'jstack.model',true);
 		
 	};
 	
@@ -883,6 +891,31 @@ if(!String.prototype.lcfirst){
 
 
 })();
+
+if(!Object.prototype.observable){
+	Object.defineProperty(Object.prototype, 'observable', {
+		value: function(options){
+			return jstack.observable(this,options);
+		},
+		enumerable: false
+	});
+}
+if(!Object.prototype.observe){
+	Object.defineProperty(Object.prototype, 'observe', {
+		value: function(key,callback,namespace,recursive){
+			return jstack.observe(this,key,callback,namespace,recursive);
+		},
+		enumerable: false
+	});
+}
+if(!Object.prototype.unobserve){
+	Object.defineProperty(Object.prototype, 'unobserve', {
+		value: function(key,callback,namespace,recursive){
+			return jstack.unobserve(this,key,callback,namespace,recursive);
+		},
+		enumerable: false
+	});
+}
 
 jstack.reflection = {};
 jstack.reflection.arguments = function( f ) {
@@ -2473,11 +2506,15 @@ jstack.dataBinder = (function(){
 			}
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
-					if(isDefault&&obj[k]){
-						value = obj[k];
+					if(isDefault){
+						if(obj[k]){
+							value = obj[k];
+						}
 					}
-					if(!isDefault||!obj[k]){
-						obj[k] = value;
+					else{						
+						if(!obj[k]){
+							obj[k] = value;
+						}
 					}
 				}
 				else{
@@ -2806,7 +2843,6 @@ jstack.dataBinder = (function(){
 			this.watchers[level][++this.watchersPrimary] = render;
 		},
 		checkRemoved: function(ancestor){
-			return false;
 			let parentComment = $(ancestor).parentComment('j:if');
 			if(!parentComment){
 				return true;
@@ -2861,7 +2897,7 @@ jstack.dataBinder = (function(){
 			}
 		},
 
-		compileNode: function(node,compilerJloads,afterMutationLoad){
+		compileNode: function(node,compilerJloads){
 			var self = this;
 
 			jstack.walkTheDOM(node,function(n){
@@ -2905,7 +2941,7 @@ jstack.dataBinder = (function(){
 				$.each(self.compilers,function(k,compiler){
 					var matchResult = compiler.match.call(n);
 					if(matchResult){
-						var render = compiler.callback.call(n,matchResult,afterMutationLoad);
+						var render = compiler.callback.call(n,matchResult);
 						if(render){
 							if(!once){
 								self.addWatcher(render, compiler.level);
@@ -2947,11 +2983,9 @@ jstack.dataBinder = (function(){
 
 			let compilerJloads = [];
 			
-			let afterMutationLoad = [];
-			
 			$.each(mutations,function(i,mutation){
 				$.each(mutation.addedNodes,function(ii,node){
-					self.compileNode(node,compilerJloads,afterMutationLoad);
+					self.compileNode(node,compilerJloads);
 				});
 
 				$.each(mutation.removedNodes,function(ii,node){
@@ -2967,29 +3001,15 @@ jstack.dataBinder = (function(){
 			setTimeout(function(){
 				self.loadingMutation--;
 				
-				//for(let i = 0, l=afterMutationLoad.length;i<l;i++){
-					//afterMutationLoad[i]();
-				//}
-
 				if(self.loadingMutation==0){
-					
-					//while(self.afterMutationLoad.length){
-						//self.afterMutationLoad.pop()();
-					//}
-					//while(self.compilerJloads.length){
-						//self.compilerJloads.pop()();
-					//}
-					
 					while(self.deferMutation.length){
 						self.deferMutation.pop()();
 					}
-					
 				}
-				
 				
 				for(let i = 0, l=compilerJloads.length;i<l;i++){
 					compilerJloads[i]();
-				}				
+				}
 				
 			});
 
@@ -3034,7 +3054,10 @@ jstack.dataBinder = (function(){
 				if(this.type=='file') return;
 				if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 					return;
-				self.inputToModel(this,e.type,value);
+				let el = this;
+				setTimeout(function(){
+					self.inputToModel(el,e.type,value);
+				});
 			});
 		},
 		filter:function(el,value){
@@ -3570,22 +3593,18 @@ jstack.dataBinder = (function(){
 				match: function(){
 					return document.body.contains(this) && this.hasAttribute('name')&&jstack.dataBinder.inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 				},
-				callback:function(matched,afterMutationLoad){
+				callback:function(matched){
 					var el = this;
 					var $el = $(this);
 
 					var currentData;
 
-					//default to model
-					//afterMutationLoad.push(function(){
-						//var key = jstack.dataBinder.getScopedInput(el);
-						//var val = jstack.dataBinder.getInputVal(el);
-						//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
-					//});
-					
-					//var key = jstack.dataBinder.getScopedInput(el);
-					//var val = jstack.dataBinder.getInputVal(el);
-					//jstack.dataBinder.dotSet(key,jstack.dataBinder.getControllerData(el),val,true);
+					//default to model					
+					var key = jstack.dataBinder.getScopedInput(el);
+					var val = jstack.dataBinder.getInputVal(el);
+					let controllerData = jstack.dataBinder.getControllerData(el);
+					controllerData = jstack.getObserverTarget( controllerData );
+					jstack.dataBinder.dotSet(key,controllerData,val,true);
 
 					var getData = function(){
 						var defaultValue = jstack.dataBinder.getInputVal(el);
