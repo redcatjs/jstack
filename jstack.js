@@ -2507,11 +2507,11 @@ jstack.dataBinder = (function(){
 			key.split('.').reduce(function(obj,k,index,array){
 				if(array.length==index+1){
 					if(isDefault){
-						if(obj[k]){
-							value = obj[k];
+						if(typeof(obj[k])==='undefined'){
+							obj[k] = value;
 						}
 						else{
-							obj[k] = value;
+							value = obj[k];
 						}
 					}
 					else{
