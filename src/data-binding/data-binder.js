@@ -228,6 +228,7 @@ class dataBinder {
 		var self = this;
 		let w = this.watchers;
 		//console.log('update');
+		console.log('runWatchers START');
 		let c = 0;
 		jstack.walkTheDOM( this.view, function(n){
 			let watchers = w.get(n);
@@ -238,7 +239,7 @@ class dataBinder {
 				}
 			}
 		});
-		console.log('watchers:',c);
+		console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
 
 	update(){
@@ -257,9 +258,7 @@ class dataBinder {
 			}
 			setTimeout(function(){
 				let now = new Date().getTime();
-				console.log('runWatchers START');
 				self.runWatchers();
-				console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
 				if(self.updateDeferQueued){
 					self.updateDeferInProgress = false;
 					self.updateDeferQueued = false;
@@ -445,8 +444,6 @@ class dataBinder {
 		let self = this;
 		
 		let dom = $( $('<html>'+html+'</html>').get() );
-		
-		console.log(jstack.dataBindingCompilers);
 		
 		$.each(jstack.dataBindingCompilers,function(k,compiler){
 			
