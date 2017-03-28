@@ -221,13 +221,6 @@ class dataBinder {
 		if(!this.watchers[level]) this.watchers[level] = {};
 		this.watchers[level][++this.watchersPrimary] = render;
 	}
-	checkRemoved(ancestor){
-		let parentComment = $(ancestor).parentComment('j:if');
-		if(!parentComment){
-			return true;
-		}
-		return parentComment.data('j:if:state')!==false;
-	}
 	runWatchers(){
 		var self = this;
 		//console.log('update');
@@ -235,10 +228,7 @@ class dataBinder {
 		console.log(this.watchers);
 		$.each(this.watchers,function(level,couch){
 			$.each(couch,function(primary,render){
-				var el = render();
-				if(el&&self.checkRemoved(el)){
-					delete couch[primary];
-				}
+				render();
 				i++;
 			});
 		});
