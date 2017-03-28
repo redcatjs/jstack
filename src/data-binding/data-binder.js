@@ -5,9 +5,6 @@ class dataBinder {
 		this.view = view;
 		this.controller = controller;
 		
-		this.watchersPrimary = 0;
-		this.watchers = {};
-		
 		this.updateDeferQueued = false;
 		this.updateDeferInProgress = false;
 		this.updateDeferStateObserver = null;
@@ -16,6 +13,8 @@ class dataBinder {
 		this.deferMutation = [];
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
+		
+		this.watchers = new WeakMap();
 	}
 	ready(callback){
 		let self = this;
@@ -216,24 +215,30 @@ class dataBinder {
 		}
 
 	}
-	addWatcher(render, level){
-		if(!level) level = 0;
-		if(!this.watchers[level]) this.watchers[level] = {};
-		this.watchers[level][++this.watchersPrimary] = render;
+	addWatcher(render, n, level){
+		let w = this.watchers;
+		let watchers = w.get(n);
+		if(!watchers){
+			watchers = [];
+			w.set(n,watchers);
+		}
+		watchers.push(render);
 	}
 	runWatchers(){
 		var self = this;
+		let w = this.watchers;
 		//console.log('update');
-		let i = 0;
-		console.log(this.watchers);
-		$.each(this.watchers,function(level,couch){
-			$.each(couch,function(primary,render){
-				render();
-				i++;
-			});
+		let c = 0;
+		jstack.walkTheDOM( this.view, function(n){
+			let watchers = w.get(n);
+			if(watchers){
+				for(let i = 0, l = watchers.length; i < l; i++){
+					watchers[i]();
+					c++;
+				}
+			}
 		});
-		console.log('watchers:',i);
-
+		console.log('watchers:',c);
 	}
 
 	update(){
@@ -452,7 +457,7 @@ class dataBinder {
 					if(matchResult){
 						let render = compiler.callback.call(n,self,matchResult);
 						if(render){
-							self.addWatcher(render, compiler.level);
+							self.addWatcher(render, n, compiler.level);
 							render();	
 						}
 					}
@@ -470,7 +475,7 @@ class dataBinder {
 					let renders = self.compilerText(n);
 					if(renders){
 						for(let i = 0, l=renders.length;i<l;i++){
-							self.addWatcher(renders[i],99);
+							self.addWatcher(renders[i], n, 99);
 							renders[i]();
 						}
 					}
