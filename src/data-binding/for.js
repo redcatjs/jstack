@@ -1,23 +1,28 @@
+(function(){
+
+const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+	
 jstack.dataBindingCompilers.for = {
 	level: 1,
 	match(){
 		return this.hasAttribute('j-for');
 	},
 	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
-		var jfor = $('<!--j:for-->');
-		var jforClose = $('<!--/j:for-->');
+		let el = this;
+		let $this = $(this);
+		let jfor = $('<!--j:for-->');
+		let jforClose = $('<!--/j:for-->');
 		$this.replaceWith(jfor);
 		jforClose.insertAfter(jfor);
 
-		var attrFor = el.getAttribute('j-for');
+		let attrFor = el.getAttribute('j-for');
 		el.removeAttribute('j-for');
 		attrFor = attrFor.trim();
-		var index, key, value, myvar;
+		let index, key, value, myvar;
 
-		var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-		var m = p.exec(attrFor);
+		let m = reg1.exec(attrFor);
 		if (m != null){
 			index = m[2].trim();
 			key = m[4].trim();
@@ -25,16 +30,14 @@ jstack.dataBindingCompilers.for = {
 			myvar = m[11].trim();
 		}
 		else{
-			var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-			var m = p.exec(attrFor);
+			let m = reg2.exec(attrFor);
 			if (m != null){
 				key = m[2].trim();
 				value = m[4];
 				myvar = m[9].trim();
 			}
 			else{
-				var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
-				var m = p.exec(attrFor);
+				let m = reg3.exec(attrFor);
 				if (m != null){
 					value = m[1];
 					myvar = m[5].trim();
@@ -45,8 +48,8 @@ jstack.dataBindingCompilers.for = {
 			}
 		}
 
-		var currentData;
-		var getData = function(){
+		let currentData;
+		let getData = function(){
 			return dataBinder.getValueEval(jfor[0],myvar);
 		};
 
@@ -60,12 +63,12 @@ jstack.dataBindingCompilers.for = {
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
-		var content = this.content;
+		let content = this.content;
 
-		var render = function(){
+		let render = function(){
 			if(!document.body.contains(jfor[0])) return jfor[0];
 
-			var data = getData();
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 			
@@ -133,3 +136,5 @@ jstack.dataBindingCompilers.for = {
 
 	},
 };
+
+})();
