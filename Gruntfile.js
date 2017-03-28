@@ -65,7 +65,19 @@ grunt.initConfig({
 				
 				"src/route.js",
 				"src/routeMVC.js",
-				"src/data-binder.js",
+				
+				"src/data-binding/data-binding.js",
+				"src/data-binding/fixed-controller.js",
+				"src/data-binding/for.js",
+				"src/data-binding/id.js",
+				"src/data-binding/switch.js",
+				"src/data-binding/show.js",
+				"src/data-binding/href.js",
+				"src/data-binding/two-points.js",
+				"src/data-binding/input-file.js",
+				"src/data-binding/input.js",
+				"src/data-binding/data-binder.js",
+				
 				"src/load.js",
 				"src/component.js",
 				"src/ajax.js",

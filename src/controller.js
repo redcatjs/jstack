@@ -29,13 +29,18 @@ var constructor = function(controllerSet,element,hash){
 	this.data = data;
 	element.data('jController',this);
 	
+	
 	this.startDataObserver = function(){
 		var object = self.data;
-
+		
 		self.data = self.data.observable();
+		
+		self.dataBinder = new jstack.dataBinder(self.data,self.element[0],self);
+		self.dataBinder.eventListener();
+		
 		self.data.observe(function(change){
 			//console.log('j:model:update',change);
-			jstack.dataBinder.update();
+			self.dataBinder.update();
 		},'jstack.model',true);
 		
 	};
