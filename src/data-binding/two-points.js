@@ -1,6 +1,8 @@
 jstack.dataBindingCompilers.twoPoints = {
-	level: 6,
 	match(){
+		if(this.nodeType !== Node.ELEMENT_NODE){
+			return;
+		}
 		var r;
 		for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
 			var att = atts[i];

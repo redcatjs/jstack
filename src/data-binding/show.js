@@ -1,7 +1,6 @@
 jstack.dataBindingCompilers.show = {
-	level: 4,
 	match(){
-		return this.hasAttribute('j-show');
+		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-show');
 	},
 	callback(dataBinder){
 		var el = this;

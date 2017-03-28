@@ -5,9 +5,8 @@ const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
 jstack.dataBindingCompilers.for = {
-	level: 1,
 	match(){
-		return this.hasAttribute('j-for');
+		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-for');
 	},
 	callback(dataBinder){
 		let el = this;

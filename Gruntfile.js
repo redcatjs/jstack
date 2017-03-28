@@ -76,6 +76,7 @@ grunt.initConfig({
 				"src/data-binding/input-file.js",
 				"src/data-binding/input.js",
 				"src/data-binding/data-binder.js",
+				"src/data-binding/text.js",
 				
 				"src/load.js",
 				"src/component.js",

@@ -1,7 +1,6 @@
 jstack.dataBindingCompilers.if = {
-	level: 2,
 	match(){
-		return this.hasAttribute('j-if');
+		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-if');
 	},
 	callback(dataBinder){
 		var el = this;

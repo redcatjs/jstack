@@ -1,7 +1,6 @@
 jstack.dataBindingCompilers.switch = {
-	level: 3,
 	match(){
-		return this.hasAttribute('j-switch');
+		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-switch');
 	},
 	callback(dataBinder){
 		var el = this;

@@ -442,8 +442,6 @@ class dataBinder {
 			dom.each(function(){
 				
 				jstack.walkTheDOM(this,function(n){
-					
-					if(n.nodeType != Node.ELEMENT_NODE) return;	
 					var matchResult = compiler.match.call(n);
 					if(matchResult){
 						compiler.callback.call(n,self,matchResult);
@@ -454,15 +452,7 @@ class dataBinder {
 			});
 			
 		});
-		
-		dom.each(function(){
-			jstack.walkTheDOM(this,function(n){
-				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-					self.compilerText(n);
-				}			
-			});
-		});
-		
+				
 		return dom;
 	}
 	
@@ -513,40 +503,6 @@ class dataBinder {
 			text.commentChildren().remove();
 			text.after(data);
 		};
-	}
-	compilerText(el){
-		if(!el.textContent) return;
-		var textString = el.textContent.toString();
-		var tokens = dataBinder.textTokenizer(textString);
-		if(tokens===false) return;
-
-		var $el = $(el);
-		var renders = [];
-
-		var last = $el;
-
-		for(var i = 0, l = tokens.length; i < l; i++){
-			var token = tokens[i];
-
-			if(token.substr(0,2)!='{{'){
-				token = document.createTextNode(token);
-				last.after(token);
-				last = token;
-				continue;
-			}
-
-			var text = $('<!--j:text-->');
-			var textClose = $('<!--/j:text-->');
-			text.insertAfter(last);
-			textClose.insertAfter(text);
-			last = textClose;
-
-			token = token.substr(2,token.length-4);
-			renders.push(this.createCompilerTextRender(text,token));
-		};
-		$el.remove();
-
-		return renders;
 	}
 	static textTokenizer(text){
 		var tagRE = /\{\{((?:.|\n)+?)\}\}/g;

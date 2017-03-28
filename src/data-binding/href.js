@@ -1,7 +1,6 @@
 jstack.dataBindingCompilers.href = {
-	level: 5,
 	match(){
-		return this.hasAttribute('j-href');
+		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-href');
 	},
 	callback(dataBinder){
 
