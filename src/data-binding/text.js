@@ -31,7 +31,7 @@ jstack.dataBindingCompilers.text = {
 			token = token.substr(2,token.length-4);
 			let render = dataBinder.createCompilerTextRender(text,token);
 			
-			dataBinder.watchers.set(text,render);
+			dataBinder.addWatcher(text,render);
 			render();
 		};
 		$el.remove();

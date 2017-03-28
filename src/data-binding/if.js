@@ -133,7 +133,7 @@ jstack.dataBindingCompilers.if = {
 			}
 		};
 		
-		dataBinder.watchers.set(jif,render);
+		dataBinder.addWatcher(jif,render);
 		render();
 	},
 };

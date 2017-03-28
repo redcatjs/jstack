@@ -26,7 +26,7 @@ jstack.dataBindingCompilers.show = {
 			}
 		};
 		
-		dataBinder.watchers.set(el,render);
+		dataBinder.addWatcher(el,render);
 		render();
 	},
 };

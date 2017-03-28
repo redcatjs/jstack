@@ -215,6 +215,15 @@ class dataBinder {
 		}
 
 	}
+	addWatcher(el,render){
+		let w = this.watchers;
+		let watchers = w.get(el);
+		if(!watchers){
+			watchers = [];
+			w.set(el,watchers);
+		}
+		watchers.push(render);
+	}
 	runWatchers(){
 		var self = this;
 		let w = this.watchers;
@@ -436,6 +445,8 @@ class dataBinder {
 		let self = this;
 		
 		let dom = $( $('<html>'+html+'</html>').get() );
+		
+		console.log(jstack.dataBindingCompilers);
 		
 		$.each(jstack.dataBindingCompilers,function(k,compiler){
 			
