@@ -1,3 +1,5 @@
+jstack.dataBindingCompilers = {};
+
 jstack.ready = function(callback){
 	var when = $.Deferred();
 	
@@ -28,11 +30,6 @@ jstack.ready = function(callback){
 };
 
 
-jstack.dataBindingCompilers = {};	
-
-
-/*
-$.on('reset','form',function(){
+$(document.body).on('reset','form',function(){
 	$(this).populateReset();
 });
-*/
