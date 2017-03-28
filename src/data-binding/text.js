@@ -46,10 +46,10 @@ jstack.dataBindingCompilers.text = {
 				text.after(data);
 			};
 			
-			if(!freeze){
-				dataBinder.addWatcher(text,render);
-			}
 			render();
+			if(!freeze){
+				dataBinder.addWatcher(text[0],render);
+			}
 		};
 		$el.remove();
 	},

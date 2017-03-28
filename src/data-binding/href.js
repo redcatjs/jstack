@@ -25,7 +25,7 @@ jstack.dataBindingCompilers.href = {
 			el.setAttribute('href',jstack.route.baseLocation + "#" + data);
 		};
 		
-		dataBinder.addWatcher(jfor,render);
+		dataBinder.addWatcher(el,render);
 		
 		render();
 	},
