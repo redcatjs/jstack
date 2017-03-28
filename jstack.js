@@ -221,7 +221,12 @@ let unobserve = function(obj,key,callback,namespace){
 };
 
 let getObserverTarget = function(obj){
-	return obj[prefix].proxyTarget;
+	let original = obj;
+	let observer = obj[prefix];
+	if(observer){
+		original = observer.proxyTarget;
+	}
+	return original;
 };
 
 jstack.observable = observable;
@@ -297,6 +302,8 @@ var constructor = function(controllerSet,element,hash){
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
+		html = self.dataBinder.compileHTML(html);
+		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}
@@ -306,7 +313,7 @@ var constructor = function(controllerSet,element,hash){
 		
 		var domReady = $.Deferred();
 		
-		jstack.ready(function(){
+		this.dataBinder.ready(function(){
 			self.domReady();
 			domReady.resolve();
 		});
@@ -1944,14 +1951,17 @@ $.fn.jData = function(key){
 			
 		var a = {};
 		var el = this[0];
-		let dataBinder = jstack.dataBinder.getControllerObject(el).dataBinder;
+		
+		let controller = $(jstack.dataBinder.getController(el)).data('jController');
+		let dataBinder;
+		if(controller){
+			dataBinder = controller.dataBinder;
+		}
+		
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
 			var tokens = jstack.dataBinder.textTokenizer(v);
-			var value;
-			if(tokens===false){
-				value = v;
-			}
-			else{
+			var value = v;
+			if(tokens!==false && dataBinder){
 				value = dataBinder.compilerAttrRender(el,tokens);
 			}
 			a[k] = value;
@@ -2467,6 +2477,8 @@ jstack.routeMVC = function(path,obj){
 	});
 };
 
+jstack.dataBindingCompilers = {};
+
 jstack.ready = function(callback){
 	var when = $.Deferred();
 	
@@ -2497,51 +2509,35 @@ jstack.ready = function(callback){
 };
 
 
-jstack.dataBindingCompilers = {};	
-
-
-/*
-$.on('reset','form',function(){
+$(document.body).on('reset','form',function(){
 	$(this).populateReset();
 });
-*/
 
-jstack.dataBindingCompilers.fixedController = {
-	level: 0,
-	match(){
-		return this.hasAttribute('j-fixed-controller');
-	},
-	callback(dataBinder){
-		this.removeAttribute('j-fixed-controller');
-		let controllerData = $(jstack.dataBinder.getController(this)).data();
-		$(this).data({
-			jController:controllerData.jController,
-			jModel:controllerData.jModel,
-		});
-		this.setAttribute('j-controller','__fixed');
-	}
-};
+(function(){
 
+const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+	
 jstack.dataBindingCompilers.for = {
 	level: 1,
 	match(){
 		return this.hasAttribute('j-for');
 	},
 	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
-		var jfor = $('<!--j:for-->');
-		var jforClose = $('<!--/j:for-->');
+		let el = this;
+		let $this = $(this);
+		let jfor = $('<!--j:for-->');
+		let jforClose = $('<!--/j:for-->');
 		$this.replaceWith(jfor);
 		jforClose.insertAfter(jfor);
 
-		var attrFor = el.getAttribute('j-for');
+		let attrFor = el.getAttribute('j-for');
 		el.removeAttribute('j-for');
 		attrFor = attrFor.trim();
-		var index, key, value, myvar;
+		let index, key, value, myvar;
 
-		var p = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-		var m = p.exec(attrFor);
+		let m = reg1.exec(attrFor);
 		if (m != null){
 			index = m[2].trim();
 			key = m[4].trim();
@@ -2549,16 +2545,14 @@ jstack.dataBindingCompilers.for = {
 			myvar = m[11].trim();
 		}
 		else{
-			var p = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-			var m = p.exec(attrFor);
+			let m = reg2.exec(attrFor);
 			if (m != null){
 				key = m[2].trim();
 				value = m[4];
 				myvar = m[9].trim();
 			}
 			else{
-				var p = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
-				var m = p.exec(attrFor);
+				let m = reg3.exec(attrFor);
 				if (m != null){
 					value = m[1];
 					myvar = m[5].trim();
@@ -2569,8 +2563,8 @@ jstack.dataBindingCompilers.for = {
 			}
 		}
 
-		var currentData;
-		var getData = function(){
+		let currentData;
+		let getData = function(){
 			return dataBinder.getValueEval(jfor[0],myvar);
 		};
 
@@ -2584,12 +2578,10 @@ jstack.dataBindingCompilers.for = {
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
-		var content = this.content;
+		let content = this.content;
 
-		var render = function(){
-			if(!document.body.contains(jfor[0])) return jfor[0];
-
-			var data = getData();
+		let render = function(){
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 			
@@ -2658,6 +2650,8 @@ jstack.dataBindingCompilers.for = {
 	},
 };
 
+})();
+
 jstack.dataBindingCompilers.switch = {
 	level: 3,
 	match(){
@@ -2676,8 +2670,7 @@ jstack.dataBindingCompilers.switch = {
 			return Boolean(dataBinder.getValueEval(el,myvar));
 		};
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
+			
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;
@@ -2727,8 +2720,6 @@ jstack.dataBindingCompilers.show = {
 		};
 
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;
@@ -2765,10 +2756,8 @@ jstack.dataBindingCompilers.href = {
 		}
 
 		var currentData;
-		var getData = jstack.dataBinder.createCompilerAttrRender(el,tokens);
+		var getData = dataBinder.createCompilerAttrRender(el,tokens);
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;
@@ -2813,7 +2802,6 @@ jstack.dataBindingCompilers.twoPoints = {
 			el.removeAttribute(k);
 		});
 		var render = function(){
-			if(!document.body.contains(el)||attrsVars.length==0) return el;
 			$.each(attrsVars,function(k,v){
 				var value = dataBinder.compilerAttrRender(el,v);
 				if(attrsVarsCurrent[k]===value) return;
@@ -2860,7 +2848,7 @@ const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 jstack.dataBindingCompilers.input = {
 	level: 8,
 	match(){
-		return document.body.contains(this) && this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+		return this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 	},
 	callback(dataBinder,matched){
 		var el = this;
@@ -2873,7 +2861,8 @@ jstack.dataBindingCompilers.input = {
 		var val = jstack.dataBinder.getInputVal(el);
 		let controllerData = jstack.dataBinder.getControllerData(el);
 		jstack.dataBinder.dotSet(key,controllerData,val,true);
-
+		
+		
 		var getData = function(){
 			var defaultValue = jstack.dataBinder.getInputVal(el);
 			var key = jstack.dataBinder.getKey( el.getAttribute('name') );
@@ -2881,15 +2870,16 @@ jstack.dataBindingCompilers.input = {
 		};
 
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;
 
 			if($el.data('j:populate:prevent')) return;
-			$el.populateInput(data,{preventValEvent:true});
-			$el.trigger('j:val',[data]);
+			
+			setTimeout(function(){
+				$el.populateInput(data,{preventValEvent:true});
+				$el.trigger('j:val',[data]);
+			});
 		};
 		return render;
 	},
@@ -2905,9 +2895,6 @@ class dataBinder {
 		this.view = view;
 		this.controller = controller;
 		
-		this.watchersPrimary = 0;
-		this.watchers = {};
-		
 		this.updateDeferQueued = false;
 		this.updateDeferInProgress = false;
 		this.updateDeferStateObserver = null;
@@ -2916,8 +2903,587 @@ class dataBinder {
 		this.deferMutation = [];
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
+		
+		this.watchers = new WeakMap();
+	}
+	ready(callback){
+		let self = this;
+		let when = $.Deferred();
+		let defers = [];
+		
+		setTimeout(function(){
+			
+			
+			if(self.updateDeferStateObserver){
+				defers.push(self.updateDeferStateObserver);
+			}
+		
+			if(self.loadingMutation>0){
+				var deferMutation = $.Deferred();
+				self.deferMutation.push(function(){
+					deferMutation.resolve();
+				});
+				defers.push(deferMutation);
+			}
+			
+			$.when.apply($,defers).then(function(){
+				when.resolve();
+			});
+
+			
+			if(callback){
+				when.then(function(){
+					callback();
+				});
+			}
+			
+		});
+		
+		return when.promise();
+	}
+	getValue(el,varKey,defaultValue){
+		var key = '';
+
+		var ns = dataBinder.getClosestFormNamespace(el.parentNode);
+		if(ns){
+			key += ns+'.';
+		}
+
+		key += varKey;
+
+		return dataBinder.dotGet(key,this.model,defaultValue);
+	}
+	getParentsForId(el){
+		var a = [];
+		var n = el;
+		while(n){
+			if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
+				a.push(n);
+				n = n.parentNode;
+			}
+			if(n){
+				if(n.previousSibling){
+					n = n.previousSibling;
+				}
+				else{
+					n = n.parentNode;
+				}
+			}
+			if(n===document.body) break;
+		}
+		return a;
+	}
+	getValueEval(el,varKey){
+
+		let controller = this.controller;
+		let scopeValue = this.model;
+
+		scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
+		if(typeof(varKey)=='undefined'){
+			varKey = 'undefined';
+		}
+		else if(varKey===null){
+			varKey = 'null';
+		}
+		else if(varKey.trim()==''){
+			varKey = 'undefined';
+		}
+		else{
+			varKey = varKey.replace(/[\r\t\n]/g,'');
+			varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
+		}
+
+
+		var forCollection = this.getParentsForId(el).reverse();
+
+		for(let i = 0, l = forCollection.length; i<l; i++){
+			let forid = forCollection[i];
+
+			let parentFor = $(forid);
+			let parentForList = parentFor.parentComment('j:for');
+
+			if(!parentForList.length) continue;
+
+			let jforCommentData = parentForList.dataComment();
+			let value = jforCommentData.value;
+			
+			let forRow = parentFor.dataComment('j:for:row');
+			
+			if(!forRow){
+				console.log(varKey, el, parentFor, parentFor.dataComment());
+			}
+			
+			let index = jforCommentData.index;
+			let key = jforCommentData.key;
+			if(index){
+				scopeValue[index] = forRow.index;
+			}
+			if(key){
+				scopeValue[key] = forRow.key;
+			}
+			scopeValue[value] = forRow.value;
+		}
+
+		var params = [ '$controller', '$this', '$scope' ];
+		var args = [ controller, el, scopeValue ];
+		$.each(scopeValue,function(param,arg){
+			params.push(param);
+			args.push(arg);
+		});
+
+		params.push("return "+varKey+";");
+
+		var value;
+		try{
+			var func = Function.apply(null,params);
+			value = func.apply(null,args);
+		}
+
+		catch(jstackException){
+			if(jstack.config.debug){
+				var warn = [jstackException.message, ", expression: "+varKey, "element", el];
+				if(el.nodeType==Node.COMMENT_NODE){
+					warn.push($(el).parent().get());
+				}
+				console.warn.apply(console,warn);
+			}
+		}
+		
+		return typeof(value)=='undefined'?'':value;
+	}
+	inputToModel(el,eventType,triggeredValue){
+		var input = $(el);
+
+		var self = this;
+
+		var data = this.model;
+		var name = el.getAttribute('name');
+
+		var performInputToModel = function(){
+			var key = dataBinder.getScopedInput(el);
+			if(filteredValue!=value){
+				value = filteredValue;
+				input.populateInput(value,{preventValEvent:true});
+			}
+
+			var oldValue = dataBinder.dotGet(key,data);
+
+			value = dataBinder.dotSet(key,data,value);
+			input.trigger('j:input',[value]);
+
+			if(eventType=='j:update'){
+				input.trigger('j:input:update',[value]);
+			}
+			else{
+				input.trigger('j:input:user',[value]);
+			}
+
+			if(oldValue!==value){
+				input.trigger('j:change',[value,oldValue]);
+			}
+		};
+
+		var value;
+		if(typeof(triggeredValue)!=='undefined'){
+			value = triggeredValue;
+		}
+		else{
+			value = dataBinder.getInputVal(el);
+		}
+		
+		var filteredValue = this.filter(el,value);
+
+
+		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
+			filteredValue.then(function(val){
+				filteredValue = val;
+				performInputToModel();
+			});
+		}
+		else{
+			performInputToModel();
+		}
+
+	}
+	addWatcher(render, n, level){
+		let w = this.watchers;
+		let watchers = w.get(n);
+		if(!watchers){
+			watchers = [];
+			w.set(n,watchers);
+		}
+		watchers.push(render);
+	}
+	runWatchers(){
+		var self = this;
+		let w = this.watchers;
+		//console.log('update');
+		let c = 0;
+		jstack.walkTheDOM( this.view, function(n){
+			let watchers = w.get(n);
+			if(watchers){
+				for(let i = 0, l = watchers.length; i < l; i++){
+					watchers[i]();
+					c++;
+				}
+			}
+		});
+		console.log('watchers:',c);
+	}
+
+	update(){
+		//console.log('update');
+		var self = this;
+		if(this.updateDeferQueued){
+			return;
+		}
+		if(this.updateDeferInProgress){
+			this.updateDeferQueued = true;
+		}
+		else{
+			this.updateDeferInProgress = true;
+			if(!this.updateDeferStateObserver){
+				this.updateDeferStateObserver = $.Deferred();
+			}
+			setTimeout(function(){
+				let now = new Date().getTime();
+				console.log('runWatchers START');
+				self.runWatchers();
+				console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
+				if(self.updateDeferQueued){
+					self.updateDeferInProgress = false;
+					self.updateDeferQueued = false;
+					self.update();
+				}
+				else{
+					self.updateDeferStateObserver.resolve();
+					self.updateDeferStateObserver = null;
+					self.updateDeferInProgress = false;
+				}
+			},10);
+			
+		}
+	}
+
+	eventListener(){
+		let self = this;
+		
+		self.observe(this.view, true);
+		
+		$(this.view).on('input change j:update', ':input[name]', function(e,value){
+			if(this.type=='file') return;
+			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
+				return;
+			let el = this;
+			setTimeout(function(){
+				self.inputToModel(el,e.type,value);
+			});
+		});
+		
+	}
+	observe(n, root){
+		if(n.nodeType!=Node.ELEMENT_NODE || this.noChildListNodeNames[n.tagName.toLowerCase()]) return;
+		
+		if(!root&&n.hasAttribute('j-view')){
+			return;
+		}
+		
+		if(n.hasAttribute('j-escape')){
+			return false;
+		}
+
+		let self = this;
+		let mutationObserver = new MutationObserver(function(m){
+			//console.log(m);
+			self.loadingMutation++;
+			setTimeout(function(){
+				self.loadMutations(m);
+			});
+		});
+		mutationObserver.observe(n, {
+			subtree: false,
+			childList: true,
+			characterData: true,
+			attributes: false,
+			attributeOldValue: false,
+			characterDataOldValue: false,
+		});
+		//$(n).data('j:observer',mutationObserver);
+	}
+	loadMutations(mutations){
+		//console.log('mutations',mutations);
+
+		let self = this;
+
+		let compilerJloads = [];
+		
+		$.each(mutations,function(i,mutation){
+			$.each(mutation.addedNodes,function(ii,node){
+				self.compileNode(node,compilerJloads);
+			});
+
+			$.each(mutation.removedNodes,function(ii,node){
+				jstack.walkTheDOM(node,function(n){
+					if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
+						return false;
+					}
+					jstack.trigger(n,'unload');
+				});
+			});
+		});
+
+		setTimeout(function(){
+			self.loadingMutation--;
+			
+			if(self.loadingMutation==0){
+				while(self.deferMutation.length){
+					self.deferMutation.pop()();
+				}
+			}
+			
+			for(let i = 0, l=compilerJloads.length;i<l;i++){
+				compilerJloads[i]();
+			}
+			
+		});
+
 	}
 	
+	compileNode(node,compilerJloads){
+		var self = this;
+
+		jstack.walkTheDOM(node,function(n){
+			if(!document.body.contains(n)) return false;
+
+			if(self.observe(n)===false){
+				return false;
+			}
+
+			var $n = $(n);
+			
+			/*
+			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+				var renders = self.compilerText(n);
+				if(renders){
+					for(var i = 0, l=renders.length;i<l;i++){
+						self.addWatcher(renders[i],99);
+						renders[i]();
+					}
+				}
+				return;
+			}
+			*/
+
+			if(n.nodeType!=Node.ELEMENT_NODE) return;
+
+			/*
+			var once = n.hasAttribute('j-once');
+			if(once){
+				jstack.walkTheDOM(n,function(el){
+					if(el.nodeType==Node.ELEMENT_NODE){
+						el.setAttribute('j-once-element','true');
+					}
+				});
+				n.removeAttribute('j-once');
+			}
+			else{
+				once = n.hasAttribute('j-once-element');
+				if(once){
+					n.removeAttribute('j-once-element');
+				}
+			}
+			
+			$.each(jstack.dataBindingCompilers,function(k,compiler){
+				var matchResult = compiler.match.call(n);
+				if(matchResult){
+					var render = compiler.callback.call(n,self,matchResult);
+					if(render){
+						if(!once){
+							self.addWatcher(render, compiler.level);
+						}
+						render();
+						
+						//if(!document.contains(n)){
+							//return false;
+						//}
+						
+					}
+				}
+			});
+			*/
+			if(!document.body.contains(n)) return false;
+
+
+			compilerJloads.push(function(){
+				if(!document.body.contains(n)) return;
+				if(n.hasAttribute('j-cloak')){
+					n.removeAttribute('j-cloak');
+				}
+				if($n.data('j:load:state')){
+					return;
+				}
+				$n.data('j:load:state',true);
+				jstack.trigger(n,'load');
+			});
+
+		});
+
+	}
+	
+	
+	compileHTML(html){
+		let self = this;
+		
+		let dom = $( $('<html>'+html+'</html>').get() );
+		
+		$.each(jstack.dataBindingCompilers,function(k,compiler){
+			
+			dom.each(function(){
+				
+				jstack.walkTheDOM(this,function(n){
+					
+					if(n.nodeType != Node.ELEMENT_NODE) return;	
+					var matchResult = compiler.match.call(n);
+					if(matchResult){
+						let render = compiler.callback.call(n,self,matchResult);
+						if(render){
+							self.addWatcher(render, n, compiler.level);
+							render();	
+						}
+					}
+					
+				});
+				
+			});
+			
+		});
+		
+		dom.each(function(){
+			jstack.walkTheDOM(this,function(n){
+				
+				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+					let renders = self.compilerText(n);
+					if(renders){
+						for(let i = 0, l=renders.length;i<l;i++){
+							self.addWatcher(renders[i], n, 99);
+							renders[i]();
+						}
+					}
+					return;
+				}
+				
+			});
+		});
+		
+		return dom;
+	}
+	
+	
+	filter(el,value){
+		var filter = this.getFilter(el);
+		if(typeof(filter)=='function'){
+			value = filter(value);
+		}
+		return value;
+	}
+	getFilter(el){
+		let $el = $(el);
+		var filter = $el.data('j-filter');
+		if(!filter){
+			var attrFilter = el.getAttribute('j-filter');
+			if(attrFilter){
+				var method = this.getValue(el,attrFilter);
+				$el.data('j-filter',method);
+			}
+		}
+		return filter;
+	}
+	compilerAttrRender(el,tokens){
+		var r = '';
+		for(var i = 0, l = tokens.length; i<l; i++){
+			var token = tokens[i];
+			if(token.substr(0,2)=='{{'){
+				token = this.getValueEval(el,token.substr(2,token.length-4));
+			}
+			r += typeof(token)!=='undefined'&&token!==null?token:'';
+		}
+		return r;
+	}
+	createCompilerAttrRender(el,tokens){
+		let self = this;
+		return function(){
+			return self.compilerAttrRender(el,tokens);
+		};
+	}
+	createCompilerTextRender(text,token){
+		let self = this;
+		let currentData;
+		return function(){
+			let data = self.getValueEval(text[0],token);
+			if(currentData===data) return;
+			currentData = data;
+			text.commentChildren().remove();
+			text.after(data);
+		};
+	}
+	compilerText(el){
+		if(!el.textContent) return;
+		var textString = el.textContent.toString();
+		var tokens = dataBinder.textTokenizer(textString);
+		if(tokens===false) return;
+
+		var $el = $(el);
+		var renders = [];
+
+		var last = $el;
+
+		for(var i = 0, l = tokens.length; i < l; i++){
+			var token = tokens[i];
+
+			if(token.substr(0,2)!='{{'){
+				token = document.createTextNode(token);
+				last.after(token);
+				last = token;
+				continue;
+			}
+
+			var text = $('<!--j:text-->');
+			var textClose = $('<!--/j:text-->');
+			text.insertAfter(last);
+			textClose.insertAfter(text);
+			last = textClose;
+
+			token = token.substr(2,token.length-4);
+			renders.push(this.createCompilerTextRender(text,token));
+		};
+		$el.remove();
+
+		return renders;
+	}
+	static textTokenizer(text){
+		var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
+		if (!tagRE.test(text)) {
+			return false;
+		}
+		var tokens = [];
+		var lastIndex = tagRE.lastIndex = 0;
+		var match, index;
+		while ((match = tagRE.exec(text))) {
+			index = match.index;
+			// push text token
+			if (index > lastIndex) {
+				tokens.push(text.slice(lastIndex, index));
+			}
+			// tag token
+			var exp = match[1].trim();
+			tokens.push("{{" + exp + "}}");
+			lastIndex = index + match[0].length;
+		}
+		if (lastIndex < text.length) {
+			tokens.push(text.slice(lastIndex));
+		}
+		return tokens;
+	}
 	static dotGet(key,data,defaultValue){
 		if(typeof(data)!='object'||data===null){
 			return;
@@ -2994,121 +3560,7 @@ class dataBinder {
 			p = p.parentNode;
 		}
 	}
-	getValue(el,varKey,defaultValue){
-		var key = '';
-
-		var ns = dataBinder.getClosestFormNamespace(el.parentNode);
-		if(ns){
-			key += ns+'.';
-		}
-
-		key += varKey;
-
-		return dataBinder.dotGet(key,this.model,defaultValue);
-	}
-	getParentsForId(el){
-		var a = [];
-		var n = el;
-		while(n){
-			if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
-				a.push(n);
-				n = n.parentNode;
-			}
-			if(n){
-				if(n.previousSibling){
-					n = n.previousSibling;
-				}
-				else{
-					n = n.parentNode;
-				}
-			}
-			if(n===document.body) break;
-		}
-		return a;
-	}
-	getValueEval(el,varKey){
-
-		let controller = this.controller;
-		let scopeValue = this.model;
-
-		//if(!document.contains(el)){
-			//return;
-		//}
-
-		scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
-		if(typeof(varKey)=='undefined'){
-			varKey = 'undefined';
-		}
-		else if(varKey===null){
-			varKey = 'null';
-		}
-		else if(varKey.trim()==''){
-			varKey = 'undefined';
-		}
-		else{
-			varKey = varKey.replace(/[\r\t\n]/g,'');
-			varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
-		}
-
-
-		var forCollection = this.getParentsForId(el).reverse();
-
-		for(let i = 0, l = forCollection.length; i<l; i++){
-			let forid = forCollection[i];
-
-			let parentFor = $(forid);
-			let parentForList = parentFor.parentComment('j:for');
-
-			if(!parentForList.length) continue;
-
-			let jforCommentData = parentForList.dataComment();
-			let value = jforCommentData.value;
-			
-			let forRow = parentFor.dataComment('j:for:row');
-			
-			if(!forRow){
-				console.log(varKey, el, parentFor, parentFor.dataComment());
-			}
-			
-			let index = jforCommentData.index;
-			let key = jforCommentData.key;
-			if(index){
-				scopeValue[index] = forRow.index;
-			}
-			if(key){
-				scopeValue[key] = forRow.key;
-			}
-			scopeValue[value] = forRow.value;
-		}
-
-		var params = [ '$controller', '$this', '$scope' ];
-		var args = [ controller, el, scopeValue ];
-		$.each(scopeValue,function(param,arg){
-			params.push(param);
-			args.push(arg);
-		});
-
-		params.push("return "+varKey+";");
-
-		var value;
-		try{
-			var func = Function.apply(null,params);
-			value = func.apply(null,args);
-		}
-
-		catch(jstackException){
-			if(jstack.config.debug){
-				var warn = [jstackException.message, ", expression: "+varKey, "element", el];
-				if(el.nodeType==Node.COMMENT_NODE){
-					warn.push($(el).parent().get());
-				}
-				console.warn.apply(console,warn);
-			}
-		}
-		
-		return typeof(value)=='undefined'?'':value;
-	}
-	static getScopedInput(input){
+		static getScopedInput(input){
 		var name = input.getAttribute('name');
 		var key = dataBinder.getKey(name);
 		if(key.substr(-1)=='.'&&input.type=='checkbox'){
@@ -3196,302 +3648,6 @@ class dataBinder {
 			break;
 		}
 	}
-	inputToModel(el,eventType,triggeredValue){
-		var input = $(el);
-
-		var self = this;
-
-		var data = this.model;
-		var name = el.getAttribute('name');
-
-		var performInputToModel = function(){
-			var key = dataBinder.getScopedInput(el);
-			if(filteredValue!=value){
-				value = filteredValue;
-				input.populateInput(value,{preventValEvent:true});
-			}
-
-			var oldValue = dataBinder.dotGet(key,data);
-
-			value = dataBinder.dotSet(key,data,value);
-			input.trigger('j:input',[value]);
-
-			if(eventType=='j:update'){
-				input.trigger('j:input:update',[value]);
-			}
-			else{
-				input.trigger('j:input:user',[value]);
-			}
-
-			if(oldValue!==value){
-				input.trigger('j:change',[value,oldValue]);
-			}
-		};
-
-		var value;
-		if(typeof(triggeredValue)!=='undefined'){
-			value = triggeredValue;
-		}
-		else{
-			value = dataBinder.getInputVal(el);
-		}
-		
-		var filteredValue = this.filter(el,value);
-
-
-		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
-			filteredValue.then(function(val){
-				filteredValue = val;
-				performInputToModel();
-			});
-		}
-		else{
-			performInputToModel();
-		}
-
-	}
-	addWatcher(render, level){
-		if(!level) level = 0;
-		if(!this.watchers[level]) this.watchers[level] = {};
-		this.watchers[level][++this.watchersPrimary] = render;
-	}
-	checkRemoved(ancestor){
-		let parentComment = $(ancestor).parentComment('j:if');
-		if(!parentComment){
-			return true;
-		}
-		return parentComment.data('j:if:state')!==false;
-	}
-	runWatchers(){
-		var self = this;
-		//console.log('update');
-		let i = 0;
-		console.log(this.watchers);
-		$.each(this.watchers,function(level,couch){
-			$.each(couch,function(primary,render){
-				var el = render();
-				if(el&&self.checkRemoved(el)){
-					delete couch[primary];
-				}
-				i++;
-			});
-		});
-		console.log('watchers:',i);
-
-	}
-
-	update(){
-		//console.log('update');
-		var self = this;
-		if(this.updateDeferQueued){
-			return;
-		}
-		if(this.updateDeferInProgress){
-			this.updateDeferQueued = true;
-		}
-		else{
-			this.updateDeferInProgress = true;
-			if(!this.updateDeferStateObserver){
-				this.updateDeferStateObserver = $.Deferred();
-			}
-			setTimeout(function(){
-				let now = new Date().getTime();
-				console.log('runWatchers START');
-				self.runWatchers();
-				console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
-				if(self.updateDeferQueued){
-					self.updateDeferInProgress = false;
-					self.updateDeferQueued = false;
-					self.update();
-				}
-				else{
-					self.updateDeferStateObserver.resolve();
-					self.updateDeferStateObserver = null;
-					self.updateDeferInProgress = false;
-				}
-			},10);
-			
-		}
-	}
-
-	compileNode(node,compilerJloads){
-		var self = this;
-
-		jstack.walkTheDOM(node,function(n){
-			if(!document.body.contains(n)) return false;
-
-			if(self.observe(n)===false){
-				return false;
-			}
-
-			var $n = $(n);
-
-			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-				var renders = self.compilerText(n);
-				if(renders){
-					for(var i = 0, l=renders.length;i<l;i++){
-						self.addWatcher(renders[i],99);
-						renders[i]();
-					}
-				}
-				return;
-			}
-
-			if(n.nodeType!=Node.ELEMENT_NODE) return;
-
-			var once = n.hasAttribute('j-once');
-			if(once){
-				jstack.walkTheDOM(n,function(el){
-					if(el.nodeType==Node.ELEMENT_NODE){
-						el.setAttribute('j-once-element','true');
-					}
-				});
-				n.removeAttribute('j-once');
-			}
-			else{
-				once = n.hasAttribute('j-once-element');
-				if(once){
-					n.removeAttribute('j-once-element');
-				}
-			}
-
-			$.each(jstack.dataBindingCompilers,function(k,compiler){
-				var matchResult = compiler.match.call(n);
-				if(matchResult){
-					var render = compiler.callback.call(n,self,matchResult);
-					if(render){
-						if(!once){
-							self.addWatcher(render, compiler.level);
-						}
-						render();
-						
-						//if(!document.contains(n)){
-							//return false;
-						//}
-						
-					}
-				}
-			});
-
-			if(!document.body.contains(n)) return false;
-
-
-			compilerJloads.push(function(){
-				if(!document.body.contains(n)) return;
-				if(n.hasAttribute('j-cloak')){
-					n.removeAttribute('j-cloak');
-				}
-				if($n.data('j:load:state')){
-					return;
-				}
-				$n.data('j:load:state',true);
-				jstack.trigger(n,'load');
-			});
-
-		});
-
-	}
-	loadMutations(mutations){
-		//console.log('mutations',mutations);
-
-		var self = this;
-
-		let compilerJloads = [];
-		
-		$.each(mutations,function(i,mutation){
-			$.each(mutation.addedNodes,function(ii,node){
-				self.compileNode(node,compilerJloads);
-			});
-
-			$.each(mutation.removedNodes,function(ii,node){
-				jstack.walkTheDOM(node,function(n){
-					if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-						return false;
-					}
-					jstack.trigger(n,'unload');
-				});
-			});
-		});
-
-		setTimeout(function(){
-			self.loadingMutation--;
-			
-			if(self.loadingMutation==0){
-				while(self.deferMutation.length){
-					self.deferMutation.pop()();
-				}
-			}
-			
-			for(let i = 0, l=compilerJloads.length;i<l;i++){
-				compilerJloads[i]();
-			}
-			
-		});
-
-	}
-	observe(n){
-		if(n.nodeType!=Node.ELEMENT_NODE) return;
-		if(n.hasAttribute('j-escape')){
-			return false;
-		}
-		if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
-			return;
-		}
-
-		var self = this;
-		var mutationObserver = new MutationObserver(function(m){
-			//console.log(m);
-			self.loadingMutation++;
-			setTimeout(function(){
-				self.loadMutations(m);
-			});
-		});
-		mutationObserver.observe(n, {
-			subtree: false,
-			childList: true,
-			characterData: true,
-			attributes: false,
-			attributeOldValue: false,
-			characterDataOldValue: false,
-		});
-		$(n).data('j:observer',mutationObserver);
-	}
-	eventListener(){
-		let self = this;
-		
-		jstack.walkTheDOM(this.view,function(el){
-			return self.observe(el);
-		});
-
-		$(this.view).on('input change j:update', ':input[name]', function(e,value){
-			if(this.type=='file') return;
-			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
-				return;
-			let el = this;
-			setTimeout(function(){
-				self.inputToModel(el,e.type,value);
-			});
-		});
-	}
-	filter(el,value){
-		var filter = this.getFilter(el);
-		if(typeof(filter)=='function'){
-			value = filter(value);
-		}
-		return value;
-	}
-	getFilter(el){
-		$el = $(el);
-		var filter = $el.data('j-filter');
-		if(!filter){
-			var attrFilter = el.getAttribute('j-filter');
-			if(attrFilter){
-				var method = this.getValue(el,attrFilter);
-				$el.data('j-filter',method);
-			}
-		}
-		return filter;
-	}
 	static getControllerData(el){
 		return $(dataBinder.getController(el)).data('jModel');
 	}
@@ -3519,94 +3675,6 @@ class dataBinder {
 	static getControllerObject(el){
 		return $(dataBinder.getController(el)).data('jController');
 	}
-	compilerAttrRender(el,tokens){
-		var r = '';
-		for(var i = 0, l = tokens.length; i<l; i++){
-			var token = tokens[i];
-			if(token.substr(0,2)=='{{'){
-				token = this.getValueEval(el,token.substr(2,token.length-4));
-			}
-			r += typeof(token)!=='undefined'&&token!==null?token:'';
-		}
-		return r;
-	}
-	createCompilerAttrRender(el,tokens){
-		let self = this;
-		return function(){
-			return self.compilerAttrRender(el,tokens);
-		};
-	}
-	createCompilerTextRender(text,token){
-		let self = this;
-		let currentData;
-		return function(){
-			if(!document.body.contains(text[0])) return text[0];
-			let data = self.getValueEval(text[0],token);
-			if(currentData===data) return;
-			currentData = data;
-			text.commentChildren().remove();
-			text.after(data);
-		};
-	}
-	compilerText(el){
-		if(!el.textContent) return;
-		var textString = el.textContent.toString();
-		var tokens = dataBinder.textTokenizer(textString);
-		if(tokens===false) return;
-
-		var $el = $(el);
-		var renders = [];
-
-		var last = $el;
-
-		for(var i = 0, l = tokens.length; i < l; i++){
-			var token = tokens[i];
-
-			if(token.substr(0,2)!='{{'){
-				token = document.createTextNode(token);
-				last.after(token);
-				last = token;
-				continue;
-			}
-
-			var text = $('<!--j:text-->');
-			var textClose = $('<!--/j:text-->');
-			text.insertAfter(last);
-			textClose.insertAfter(text);
-			last = textClose;
-
-			token = token.substr(2,token.length-4);
-			renders.push(this.createCompilerTextRender(text,token));
-		};
-		$el.remove();
-
-		return renders;
-	}
-	static textTokenizer(text){
-		var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
-		if (!tagRE.test(text)) {
-			return false;
-		}
-		var tokens = [];
-		var lastIndex = tagRE.lastIndex = 0;
-		var match, index;
-		while ((match = tagRE.exec(text))) {
-			index = match.index;
-			// push text token
-			if (index > lastIndex) {
-				tokens.push(text.slice(lastIndex, index));
-			}
-			// tag token
-			var exp = match[1].trim();
-			tokens.push("{{" + exp + "}}");
-			lastIndex = index + match[0].length;
-		}
-		if (lastIndex < text.length) {
-			tokens.push(text.slice(lastIndex));
-		}
-		return tokens;
-	}
-	
 }
 jstack.dataBinder = dataBinder;
 
@@ -3945,7 +4013,9 @@ jstack.viewReady = function(el){
 	return getViewReady(el).promise();
 };
 jstack.loader('[j-view]:not([j-view-loaded])',function(){
-
+	
+	//console.log('j-view',this);
+	
 	this.setAttribute('j-view-loaded','true');
 
 	var view = this.getAttribute('j-view');
