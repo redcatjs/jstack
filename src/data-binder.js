@@ -53,7 +53,11 @@ jstack.dataBinder = (function(){
 				if(array.length==index+1){
 					if(isDefault){
 						if(typeof(obj[k])==='undefined'){
+							
+							obj = jstack.getObserverTarget( obj );
+							
 							obj[k] = value;
+							
 						}
 						else{
 							value = obj[k];
@@ -398,6 +402,7 @@ jstack.dataBinder = (function(){
 		runWatchers: function(){
 			var self = this;
 			//console.log('update');
+			//console.log(this.watchers);
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
 					var el = render();
@@ -427,7 +432,10 @@ jstack.dataBinder = (function(){
 					this.updateDeferStateObserver = $.Deferred();
 				}
 				setTimeout(function(){
+					let now = new Date().getTime();
+					//console.log('runWatchers START');
 					self.runWatchers();
+					//console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
 					if(self.updateDeferQueued){
 						self.updateDeferInProgress = false;
 						self.updateDeferQueued = false;
@@ -1149,7 +1157,6 @@ jstack.dataBinder = (function(){
 					var key = jstack.dataBinder.getScopedInput(el);
 					var val = jstack.dataBinder.getInputVal(el);
 					let controllerData = jstack.dataBinder.getControllerData(el);
-					controllerData = jstack.getObserverTarget( controllerData );
 					jstack.dataBinder.dotSet(key,controllerData,val,true);
 
 					var getData = function(){
