@@ -217,10 +217,12 @@ class dataBinder {
 	}
 	addWatcher(el,render){
 		let w = this.watchers;
-		let watchers = w.get(el);
+		//let watchers = w.get(el);
+		let watchers = el.__jstackWatchers;
 		if(!watchers){
 			watchers = [];
-			w.set(el,watchers);
+			//w.set(el,watchers);
+			el.__jstackWatchers = watchers;
 		}
 		watchers.push(render);
 	}
@@ -228,17 +230,24 @@ class dataBinder {
 		var self = this;
 		let w = this.watchers;
 		//console.log('update');
+		
+		let now = new Date().getTime();
 		console.log('runWatchers START');
 		let c = 0;
+		
 		jstack.walkTheDOM( this.view, function(n){
-			let watchers = w.get(n);
+			//let watchers = w.get(n);
+			let watchers = n.__jstackWatchers;
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
+					
 					c++;
+					
 				}
 			}
 		});
+		
 		console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
 
@@ -257,7 +266,6 @@ class dataBinder {
 				this.updateDeferStateObserver = $.Deferred();
 			}
 			setTimeout(function(){
-				let now = new Date().getTime();
 				self.runWatchers();
 				if(self.updateDeferQueued){
 					self.updateDeferInProgress = false;
@@ -489,7 +497,15 @@ class dataBinder {
 		for(var i = 0, l = tokens.length; i<l; i++){
 			var token = tokens[i];
 			if(token.substr(0,2)=='{{'){
-				token = this.getValueEval(el,token.substr(2,token.length-4));
+				token = token.substr(2,token.length-4);
+				
+				let freeze = false;
+				if(token.substr(0,2)=='::'){
+					token = token.substr(2);
+					freeze = true;
+				}
+				
+				token = this.getValueEval(el,token);
 			}
 			r += typeof(token)!=='undefined'&&token!==null?token:'';
 		}
@@ -499,17 +515,6 @@ class dataBinder {
 		let self = this;
 		return function(){
 			return self.compilerAttrRender(el,tokens);
-		};
-	}
-	createCompilerTextRender(text,token){
-		let self = this;
-		let currentData;
-		return function(){
-			let data = self.getValueEval(text[0],token);
-			if(currentData===data) return;
-			currentData = data;
-			text.commentChildren().remove();
-			text.after(data);
 		};
 	}
 	static textTokenizer(text){

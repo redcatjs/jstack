@@ -3,35 +3,52 @@ jstack.dataBindingCompilers.text = {
 		return this.nodeType == Node.TEXT_NODE && this instanceof Text && this.textContent;
 	},
 	callback(dataBinder){
-		var textString = this.textContent.toString();
-		var tokens = jstack.dataBinder.textTokenizer(textString);
+		let textString = this.textContent.toString();
+		let tokens = jstack.dataBinder.textTokenizer(textString);
 		if(tokens===false) return;
 
-		var $el = $(this);
-		var renders = [];
+		let $el = $(this);
 
-		var last = $el;
+		let last = $el;
 
-		for(var i = 0, l = tokens.length; i < l; i++){
-			var token = tokens[i];
-
+		for(let i = 0, l = tokens.length; i < l; i++){
+			let token = tokens[i];
+			
+			
 			if(token.substr(0,2)!='{{'){
 				token = document.createTextNode(token);
 				last.after(token);
 				last = token;
 				continue;
 			}
-
-			var text = $('<!--j:text-->');
-			var textClose = $('<!--/j:text-->');
+			
+			let text = $('<!--j:text-->');
+			let textClose = $('<!--/j:text-->');
 			text.insertAfter(last);
 			textClose.insertAfter(text);
 			last = textClose;
 
 			token = token.substr(2,token.length-4);
-			let render = dataBinder.createCompilerTextRender(text,token);
 			
-			dataBinder.addWatcher(text,render);
+			let freeze = false;
+			if(token.substr(0,2)==='::'){
+				token = token.substr(2);
+				freeze = true;
+			}
+			
+			
+			let currentData;
+			let render = function(){
+				let data = dataBinder.getValueEval(text[0],token);
+				if(currentData===data) return;
+				currentData = data;
+				text.commentChildren().remove();
+				text.after(data);
+			};
+			
+			if(!freeze){
+				dataBinder.addWatcher(text,render);
+			}
 			render();
 		};
 		$el.remove();
