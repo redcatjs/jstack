@@ -19,7 +19,8 @@ jstack.dataBindingCompilers.input = {
 		var val = jstack.dataBinder.getInputVal(el);
 		let controllerData = jstack.dataBinder.getControllerData(el);
 		jstack.dataBinder.dotSet(key,controllerData,val,true);
-
+		
+		
 		var getData = function(){
 			var defaultValue = jstack.dataBinder.getInputVal(el);
 			var key = jstack.dataBinder.getKey( el.getAttribute('name') );
@@ -34,8 +35,11 @@ jstack.dataBindingCompilers.input = {
 			currentData = data;
 
 			if($el.data('j:populate:prevent')) return;
-			$el.populateInput(data,{preventValEvent:true});
-			$el.trigger('j:val',[data]);
+			
+			setTimeout(function(){
+				$el.populateInput(data,{preventValEvent:true});
+				$el.trigger('j:val',[data]);
+			});
 		};
 		return render;
 	},
