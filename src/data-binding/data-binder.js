@@ -17,83 +17,6 @@ class dataBinder {
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 	}
-	
-	static dotGet(key,data,defaultValue){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		return key.split('.').reduce(function(obj,i){
-			if(typeof(obj)=='object'&&obj!==null){
-				return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
-			}
-			else{
-				return defaultValue;
-			}
-		}, data);
-	}
-	static dotSet(key,data,value,isDefault){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(array.length==index+1){
-				if(isDefault){
-					if(typeof(obj[k])==='undefined'){
-						
-						obj = jstack.getObserverTarget( obj );
-						
-						obj[k] = value;
-						
-					}
-					else{
-						value = obj[k];
-					}
-				}
-				else{
-					obj[k] = value;
-				}
-			}
-			else{
-				if(typeof(obj[k])!='object'||obj[k]===null){
-					obj[k] = {};
-				}
-				return obj[k];
-			}
-		}, data);
-		return value;
-	}
-	static dotDel(key,data,value){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(typeof(obj)!='object'){
-				return;
-			}
-			if(array.length==index+1){
-				if(typeof(obj[k])!='undefined'){
-					delete obj[k];
-				}
-			}
-			else{
-				return obj[k];
-			}
-		}, data);
-	}
-	static getKey(key){
-		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
-	}
-	static getClosestFormNamespace(p){
-		while(p){
-			if(p.tagName&&p.tagName.toLowerCase()=='form'){
-				if(p.hasAttribute('j-name')){
-					return p.getAttribute('j-name');
-				}
-				break;
-			}
-			p = p.parentNode;
-		}
-	}
 	getValue(el,varKey,defaultValue){
 		var key = '';
 
@@ -207,94 +130,6 @@ class dataBinder {
 		}
 		
 		return typeof(value)=='undefined'?'':value;
-	}
-	static getScopedInput(input){
-		var name = input.getAttribute('name');
-		var key = dataBinder.getKey(name);
-		if(key.substr(-1)=='.'&&input.type=='checkbox'){
-			var index;
-			$(dataBinder.getController(input.parentNode)).find(':checkbox[name="'+name+'"]').each(function(i){
-				if(this===input){
-					index = i;
-					return false;
-				}
-			});
-			key += index;
-		}
-		var scopeKey = '';
-		var ns = dataBinder.getClosestFormNamespace(input.parentNode);
-		if(ns){
-			scopeKey += ns+'.';
-		}
-		scopeKey += key;
-		return scopeKey;
-	}
-	static getInputVal(el){
-		let nodeName = el.tagName.toLowerCase();
-		switch(nodeName){
-			case 'input':
-				switch(el.type){
-					case 'checkbox':
-						var $el = $(el);
-						return $el.prop('checked')?$el.val():'';
-					break;
-					case 'radio':
-						var form;
-						var p = el.parentNode;
-						while(p){
-							if(p.tagName&&p.tagName.toLowerCase()=='form'){
-								form = p;
-								break;
-							}
-							p = p.parentNode;
-						}
-						if(form){
-							var checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
-							return checked.length?checked.val():'';
-						}
-						return '';
-					break;
-					case 'file':
-						return el.files;
-					break;
-					case 'submit':
-					break;
-					default:
-						return $(el).val();
-					break;
-				}
-			break;
-			case 'textarea':
-			case 'select':
-				return $(el).val();
-			break;
-			case 'j-select':
-				el = $(el);
-				var multiple = el[0].hasAttribute('multiple');
-				var data = el.data('preselect');
-				if(!data){
-					if(multiple){
-						data = [];
-					}
-					el.children().each(function(){
-						if(this.hasAttribute('selected')){
-							var val = this.value;
-							if(multiple){
-								data.push(val);
-							}
-							else{
-								data = val;
-								return false;
-							}
-						}
-					});
-				}
-				return data;
-			break;
-			default:
-				return $(el).html();
-			break;
-		}
 	}
 	inputToModel(el,eventType,triggeredValue){
 		var input = $(el);
@@ -592,33 +427,6 @@ class dataBinder {
 		}
 		return filter;
 	}
-	static getControllerData(el){
-		return $(dataBinder.getController(el)).data('jModel');
-	}
-	static getController(p){
-
-		let controller;
-		
-		while(p){
-			if(p.hasAttribute&&p.hasAttribute('j-controller')){
-				controller = p;
-				break;
-			}
-			p = p.parentNode;
-		}
-		
-
-		if(!controller){
-			controller = document.body;
-			controller.setAttribute('j-controller','')
-			$(controller).data('jModel',{});
-		}
-
-		return controller;
-	}
-	static getControllerObject(el){
-		return $(dataBinder.getController(el)).data('jController');
-	}
 	compilerAttrRender(el,tokens){
 		var r = '';
 		for(var i = 0, l = tokens.length; i<l; i++){
@@ -706,6 +514,196 @@ class dataBinder {
 		}
 		return tokens;
 	}
-	
+	static dotGet(key,data,defaultValue){
+		if(typeof(data)!='object'||data===null){
+			return;
+		}
+		return key.split('.').reduce(function(obj,i){
+			if(typeof(obj)=='object'&&obj!==null){
+				return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
+			}
+			else{
+				return defaultValue;
+			}
+		}, data);
+	}
+	static dotSet(key,data,value,isDefault){
+		if(typeof(data)!='object'||data===null){
+			return;
+		}
+		key.split('.').reduce(function(obj,k,index,array){
+			if(array.length==index+1){
+				if(isDefault){
+					if(typeof(obj[k])==='undefined'){
+						
+						obj = jstack.getObserverTarget( obj );
+						
+						obj[k] = value;
+						
+					}
+					else{
+						value = obj[k];
+					}
+				}
+				else{
+					obj[k] = value;
+				}
+			}
+			else{
+				if(typeof(obj[k])!='object'||obj[k]===null){
+					obj[k] = {};
+				}
+				return obj[k];
+			}
+		}, data);
+		return value;
+	}
+	static dotDel(key,data,value){
+		if(typeof(data)!='object'||data===null){
+			return;
+		}
+		key.split('.').reduce(function(obj,k,index,array){
+			if(typeof(obj)!='object'){
+				return;
+			}
+			if(array.length==index+1){
+				if(typeof(obj[k])!='undefined'){
+					delete obj[k];
+				}
+			}
+			else{
+				return obj[k];
+			}
+		}, data);
+	}
+	static getKey(key){
+		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
+	}
+	static getClosestFormNamespace(p){
+		while(p){
+			if(p.tagName&&p.tagName.toLowerCase()=='form'){
+				if(p.hasAttribute('j-name')){
+					return p.getAttribute('j-name');
+				}
+				break;
+			}
+			p = p.parentNode;
+		}
+	}
+		static getScopedInput(input){
+		var name = input.getAttribute('name');
+		var key = dataBinder.getKey(name);
+		if(key.substr(-1)=='.'&&input.type=='checkbox'){
+			var index;
+			$(dataBinder.getController(input.parentNode)).find(':checkbox[name="'+name+'"]').each(function(i){
+				if(this===input){
+					index = i;
+					return false;
+				}
+			});
+			key += index;
+		}
+		var scopeKey = '';
+		var ns = dataBinder.getClosestFormNamespace(input.parentNode);
+		if(ns){
+			scopeKey += ns+'.';
+		}
+		scopeKey += key;
+		return scopeKey;
+	}
+	static getInputVal(el){
+		let nodeName = el.tagName.toLowerCase();
+		switch(nodeName){
+			case 'input':
+				switch(el.type){
+					case 'checkbox':
+						var $el = $(el);
+						return $el.prop('checked')?$el.val():'';
+					break;
+					case 'radio':
+						var form;
+						var p = el.parentNode;
+						while(p){
+							if(p.tagName&&p.tagName.toLowerCase()=='form'){
+								form = p;
+								break;
+							}
+							p = p.parentNode;
+						}
+						if(form){
+							var checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
+							return checked.length?checked.val():'';
+						}
+						return '';
+					break;
+					case 'file':
+						return el.files;
+					break;
+					case 'submit':
+					break;
+					default:
+						return $(el).val();
+					break;
+				}
+			break;
+			case 'textarea':
+			case 'select':
+				return $(el).val();
+			break;
+			case 'j-select':
+				el = $(el);
+				var multiple = el[0].hasAttribute('multiple');
+				var data = el.data('preselect');
+				if(!data){
+					if(multiple){
+						data = [];
+					}
+					el.children().each(function(){
+						if(this.hasAttribute('selected')){
+							var val = this.value;
+							if(multiple){
+								data.push(val);
+							}
+							else{
+								data = val;
+								return false;
+							}
+						}
+					});
+				}
+				return data;
+			break;
+			default:
+				return $(el).html();
+			break;
+		}
+	}
+	static getControllerData(el){
+		return $(dataBinder.getController(el)).data('jModel');
+	}
+	static getController(p){
+
+		let controller;
+		
+		while(p){
+			if(p.hasAttribute&&p.hasAttribute('j-controller')){
+				controller = p;
+				break;
+			}
+			p = p.parentNode;
+		}
+		
+
+		if(!controller){
+			controller = document.body;
+			controller.setAttribute('j-controller','')
+			$(controller).data('jModel',{});
+		}
+
+		return controller;
+	}
+	static getControllerObject(el){
+		return $(dataBinder.getController(el)).data('jController');
+	}
 }
 jstack.dataBinder = dataBinder;
