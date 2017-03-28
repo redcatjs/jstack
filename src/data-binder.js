@@ -402,15 +402,18 @@ jstack.dataBinder = (function(){
 		runWatchers: function(){
 			var self = this;
 			//console.log('update');
-			//console.log(this.watchers);
+			let i = 0;
+			console.log(this.watchers);
 			$.each(this.watchers,function(level,couch){
 				$.each(couch,function(primary,render){
 					var el = render();
 					if(el&&self.checkRemoved(el)){
 						delete couch[primary];
 					}
+					i++;
 				});
 			});
+			console.log('watchers:',i);
 
 		},
 
@@ -433,9 +436,9 @@ jstack.dataBinder = (function(){
 				}
 				setTimeout(function(){
 					let now = new Date().getTime();
-					//console.log('runWatchers START');
+					console.log('runWatchers START');
 					self.runWatchers();
-					//console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
+					console.log('runWatchers END',(((new Date().getTime())-now)/1000)+'s');
 					if(self.updateDeferQueued){
 						self.updateDeferInProgress = false;
 						self.updateDeferQueued = false;
