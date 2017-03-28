@@ -17,6 +17,35 @@ class dataBinder {
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 	}
+	ready(callback){
+		let self = this;
+		let when = $.Deferred();
+		
+		setTimeout(function(){
+			
+			var defers = [ self.updateDeferStateObserver ];
+		
+			if(self.loadingMutation>0){
+				var deferMutation = $.Deferred();
+				self.deferMutation.push(function(){
+					deferMutation.resolve();
+				});
+				defers.push(deferMutation);
+			}
+			$.when.apply($,defers).then(function(){
+				when.resolve();
+			});
+
+			if(callback){
+				when.then(function(){
+					callback();
+				});
+			}
+			
+		});
+		
+		return when.promise();
+	}
 	getValue(el,varKey,defaultValue){
 		var key = '';
 
@@ -249,6 +278,90 @@ class dataBinder {
 		}
 	}
 
+	eventListener(){
+		let self = this;
+		
+		self.observe(this.view, true);
+		
+		$(this.view).on('input change j:update', ':input[name]', function(e,value){
+			if(this.type=='file') return;
+			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
+				return;
+			let el = this;
+			setTimeout(function(){
+				self.inputToModel(el,e.type,value);
+			});
+		});
+		
+	}
+	observe(n, root){
+		if(n.nodeType!=Node.ELEMENT_NODE || this.noChildListNodeNames[n.tagName.toLowerCase()]) return;
+		
+		if(!root&&n.hasAttribute('j-view')){
+			return;
+		}
+		
+		if(n.hasAttribute('j-escape')){
+			return false;
+		}
+
+		let self = this;
+		let mutationObserver = new MutationObserver(function(m){
+			//console.log(m);
+			self.loadingMutation++;
+			setTimeout(function(){
+				self.loadMutations(m);
+			});
+		});
+		mutationObserver.observe(n, {
+			subtree: false,
+			childList: true,
+			characterData: true,
+			attributes: false,
+			attributeOldValue: false,
+			characterDataOldValue: false,
+		});
+		//$(n).data('j:observer',mutationObserver);
+	}
+	loadMutations(mutations){
+		//console.log('mutations',mutations);
+
+		let self = this;
+
+		let compilerJloads = [];
+		
+		$.each(mutations,function(i,mutation){
+			$.each(mutation.addedNodes,function(ii,node){
+				self.compileNode(node,compilerJloads);
+			});
+
+			$.each(mutation.removedNodes,function(ii,node){
+				jstack.walkTheDOM(node,function(n){
+					if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
+						return false;
+					}
+					jstack.trigger(n,'unload');
+				});
+			});
+		});
+
+		setTimeout(function(){
+			self.loadingMutation--;
+			
+			if(self.loadingMutation==0){
+				while(self.deferMutation.length){
+					self.deferMutation.pop()();
+				}
+			}
+			
+			for(let i = 0, l=compilerJloads.length;i<l;i++){
+				compilerJloads[i]();
+			}
+			
+		});
+
+	}
+	
 	compileNode(node,compilerJloads){
 		var self = this;
 
@@ -326,88 +439,8 @@ class dataBinder {
 		});
 
 	}
-	loadMutations(mutations){
-		//console.log('mutations',mutations);
-
-		var self = this;
-
-		let compilerJloads = [];
-		
-		$.each(mutations,function(i,mutation){
-			$.each(mutation.addedNodes,function(ii,node){
-				self.compileNode(node,compilerJloads);
-			});
-
-			$.each(mutation.removedNodes,function(ii,node){
-				jstack.walkTheDOM(node,function(n){
-					if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-						return false;
-					}
-					jstack.trigger(n,'unload');
-				});
-			});
-		});
-
-		setTimeout(function(){
-			self.loadingMutation--;
-			
-			if(self.loadingMutation==0){
-				while(self.deferMutation.length){
-					self.deferMutation.pop()();
-				}
-			}
-			
-			for(let i = 0, l=compilerJloads.length;i<l;i++){
-				compilerJloads[i]();
-			}
-			
-		});
-
-	}
-	observe(n){
-		if(n.nodeType!=Node.ELEMENT_NODE) return;
-		if(n.hasAttribute('j-escape')){
-			return false;
-		}
-		if(this.noChildListNodeNames[n.tagName.toLowerCase()]){
-			return;
-		}
-
-		var self = this;
-		var mutationObserver = new MutationObserver(function(m){
-			//console.log(m);
-			self.loadingMutation++;
-			setTimeout(function(){
-				self.loadMutations(m);
-			});
-		});
-		mutationObserver.observe(n, {
-			subtree: false,
-			childList: true,
-			characterData: true,
-			attributes: false,
-			attributeOldValue: false,
-			characterDataOldValue: false,
-		});
-		$(n).data('j:observer',mutationObserver);
-	}
-	eventListener(){
-		let self = this;
-		
-		jstack.walkTheDOM(this.view,function(el){
-			return self.observe(el);
-		});
-
-		$(this.view).on('input change j:update', ':input[name]', function(e,value){
-			if(this.type=='file') return;
-			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
-				return;
-			let el = this;
-			setTimeout(function(){
-				self.inputToModel(el,e.type,value);
-			});
-		});
-	}
+	
+	
 	filter(el,value){
 		var filter = this.getFilter(el);
 		if(typeof(filter)=='function'){
@@ -416,7 +449,7 @@ class dataBinder {
 		return value;
 	}
 	getFilter(el){
-		$el = $(el);
+		let $el = $(el);
 		var filter = $el.data('j-filter');
 		if(!filter){
 			var attrFilter = el.getAttribute('j-filter');

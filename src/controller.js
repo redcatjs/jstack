@@ -73,7 +73,7 @@ var constructor = function(controllerSet,element,hash){
 		
 		var domReady = $.Deferred();
 		
-		jstack.ready(function(){
+		this.dataBinder.ready(function(){
 			self.domReady();
 			domReady.resolve();
 		});
