@@ -67,7 +67,6 @@ grunt.initConfig({
 				"src/routeMVC.js",
 				
 				"src/data-binding/data-binding.js",
-				"src/data-binding/fixed-controller.js",
 				"src/data-binding/for.js",
 				"src/data-binding/id.js",
 				"src/data-binding/switch.js",
