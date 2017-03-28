@@ -5,7 +5,7 @@ jstack.dataBindingCompilers.inputFile = {
 	},
 	callback(dataBinder){
 		$(this).on('input change', function(e){
-			jstack.dataBinder.inputToModel(this,e.type);
+			dataBinder.inputToModel(this,e.type);
 		});
 	}
 };

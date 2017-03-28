@@ -128,9 +128,10 @@ jstack.dataBindingCompilers.for = {
 			});
 			
 		};
-
-		return render;
-
+		
+		dataBinder.watchers.set(jfor,render);
+		
+		render();
 
 	},
 };

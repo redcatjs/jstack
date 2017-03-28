@@ -20,7 +20,6 @@ jstack.dataBindingCompilers.input = {
 		let controllerData = jstack.dataBinder.getControllerData(el);
 		jstack.dataBinder.dotSet(key,controllerData,val,true);
 		
-		
 		var getData = function(){
 			var defaultValue = jstack.dataBinder.getInputVal(el);
 			var key = jstack.dataBinder.getKey( el.getAttribute('name') );
@@ -39,7 +38,9 @@ jstack.dataBindingCompilers.input = {
 				$el.trigger('j:val',[data]);
 			});
 		};
-		return render;
+		
+		dataBinder.watchers.set(el,render);
+		render();
 	},
 };
 

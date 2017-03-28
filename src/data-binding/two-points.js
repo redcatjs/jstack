@@ -54,6 +54,8 @@ jstack.dataBindingCompilers.twoPoints = {
 
 			});
 		};
-		return render;
+		
+		dataBinder.watchers.set(el,render);
+		render();
 	},
 };

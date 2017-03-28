@@ -44,7 +44,8 @@ jstack.dataBindingCompilers.switch = {
 			});
 
 		};
-
-		return render;
+		
+		dataBinder.watchers.set(el,render);
+		render();
 	},
 };

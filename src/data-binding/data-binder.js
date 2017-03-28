@@ -215,15 +215,6 @@ class dataBinder {
 		}
 
 	}
-	addWatcher(render, n, level){
-		let w = this.watchers;
-		let watchers = w.get(n);
-		if(!watchers){
-			watchers = [];
-			w.set(n,watchers);
-		}
-		watchers.push(render);
-	}
 	runWatchers(){
 		var self = this;
 		let w = this.watchers;
@@ -455,11 +446,7 @@ class dataBinder {
 					if(n.nodeType != Node.ELEMENT_NODE) return;	
 					var matchResult = compiler.match.call(n);
 					if(matchResult){
-						let render = compiler.callback.call(n,self,matchResult);
-						if(render){
-							self.addWatcher(render, n, compiler.level);
-							render();	
-						}
+						compiler.callback.call(n,self,matchResult);
 					}
 					
 				});
@@ -470,18 +457,9 @@ class dataBinder {
 		
 		dom.each(function(){
 			jstack.walkTheDOM(this,function(n){
-				
 				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-					let renders = self.compilerText(n);
-					if(renders){
-						for(let i = 0, l=renders.length;i<l;i++){
-							self.addWatcher(renders[i], n, 99);
-							renders[i]();
-						}
-					}
-					return;
-				}
-				
+					self.compilerText(n);
+				}			
 			});
 		});
 		
