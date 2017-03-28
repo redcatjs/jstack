@@ -20,10 +20,14 @@ class dataBinder {
 	ready(callback){
 		let self = this;
 		let when = $.Deferred();
+		let defers = [];
 		
 		setTimeout(function(){
 			
-			var defers = [ self.updateDeferStateObserver ];
+			
+			if(self.updateDeferStateObserver){
+				defers.push(self.updateDeferStateObserver);
+			}
 		
 			if(self.loadingMutation>0){
 				var deferMutation = $.Deferred();
@@ -32,10 +36,12 @@ class dataBinder {
 				});
 				defers.push(deferMutation);
 			}
+			
 			$.when.apply($,defers).then(function(){
 				when.resolve();
 			});
 
+			
 			if(callback){
 				when.then(function(){
 					callback();
@@ -82,10 +88,6 @@ class dataBinder {
 
 		let controller = this.controller;
 		let scopeValue = this.model;
-
-		//if(!document.contains(el)){
-			//return;
-		//}
 
 		scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
 		if(typeof(varKey)=='undefined'){
@@ -373,7 +375,8 @@ class dataBinder {
 			}
 
 			var $n = $(n);
-
+			
+			/*
 			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
 				var renders = self.compilerText(n);
 				if(renders){
@@ -384,9 +387,11 @@ class dataBinder {
 				}
 				return;
 			}
+			*/
 
 			if(n.nodeType!=Node.ELEMENT_NODE) return;
 
+			/*
 			var once = n.hasAttribute('j-once');
 			if(once){
 				jstack.walkTheDOM(n,function(el){
@@ -402,7 +407,7 @@ class dataBinder {
 					n.removeAttribute('j-once-element');
 				}
 			}
-
+			
 			$.each(jstack.dataBindingCompilers,function(k,compiler){
 				var matchResult = compiler.match.call(n);
 				if(matchResult){
@@ -420,7 +425,7 @@ class dataBinder {
 					}
 				}
 			});
-
+			*/
 			if(!document.body.contains(n)) return false;
 
 
@@ -438,6 +443,54 @@ class dataBinder {
 
 		});
 
+	}
+	
+	
+	compileHTML(html){
+		let self = this;
+		
+		let dom = $( $('<html>'+html+'</html>').get() );
+		
+		$.each(jstack.dataBindingCompilers,function(k,compiler){
+			
+			dom.each(function(){
+				
+				jstack.walkTheDOM(this,function(n){
+					
+					if(n.nodeType != Node.ELEMENT_NODE) return;	
+					var matchResult = compiler.match.call(n);
+					if(matchResult){
+						let render = compiler.callback.call(n,self,matchResult);
+						if(render){
+							self.addWatcher(render, compiler.level);
+							render();	
+						}
+					}
+					
+				});
+				
+			});
+			
+		});
+		
+		dom.each(function(){
+			jstack.walkTheDOM(this,function(n){
+				
+				if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
+					let renders = self.compilerText(n);
+					if(renders){
+						for(let i = 0, l=renders.length;i<l;i++){
+							self.addWatcher(renders[i],99);
+							renders[i]();
+						}
+					}
+					return;
+				}
+				
+			});
+		});
+		
+		return dom;
 	}
 	
 	
@@ -481,7 +534,6 @@ class dataBinder {
 		let self = this;
 		let currentData;
 		return function(){
-			if(!document.body.contains(text[0])) return text[0];
 			let data = self.getValueEval(text[0],token);
 			if(currentData===data) return;
 			currentData = data;

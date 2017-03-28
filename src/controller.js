@@ -64,6 +64,8 @@ var constructor = function(controllerSet,element,hash){
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
+		html = self.dataBinder.compileHTML(html);
+		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
 		}

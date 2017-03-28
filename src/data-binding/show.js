@@ -15,8 +15,6 @@ jstack.dataBindingCompilers.show = {
 		};
 
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;

@@ -6,7 +6,7 @@ const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 jstack.dataBindingCompilers.input = {
 	level: 8,
 	match(){
-		return document.body.contains(this) && this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+		return this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 	},
 	callback(dataBinder,matched){
 		var el = this;
@@ -28,8 +28,6 @@ jstack.dataBindingCompilers.input = {
 		};
 
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;

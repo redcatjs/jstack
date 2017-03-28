@@ -1,7 +1,7 @@
 jstack.dataBindingCompilers.if = {
 	level: 2,
 	match(){
-		return this.hasAttribute('j-if')&&document.contains(this);
+		return this.hasAttribute('j-if');
 	},
 	callback(dataBinder){
 		var el = this;
@@ -84,7 +84,6 @@ jstack.dataBindingCompilers.if = {
 		}
 
 		var render = function(){
-			if(!document.body.contains(jif[0])) return jif[0];
 
 			var data = getData();
 			var data2 = null;

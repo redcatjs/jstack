@@ -32,7 +32,6 @@ jstack.dataBindingCompilers.twoPoints = {
 			el.removeAttribute(k);
 		});
 		var render = function(){
-			if(!document.body.contains(el)||attrsVars.length==0) return el;
 			$.each(attrsVars,function(k,v){
 				var value = dataBinder.compilerAttrRender(el,v);
 				if(attrsVarsCurrent[k]===value) return;

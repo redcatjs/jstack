@@ -16,8 +16,7 @@ jstack.dataBindingCompilers.switch = {
 			return Boolean(dataBinder.getValueEval(el,myvar));
 		};
 		var render = function(){
-			if(!document.body.contains(el)) return el;
-
+			
 			var data = getData();
 			if(currentData===data) return;
 			currentData = data;

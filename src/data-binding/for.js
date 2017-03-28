@@ -66,8 +66,6 @@ jstack.dataBindingCompilers.for = {
 		let content = this.content;
 
 		let render = function(){
-			if(!document.body.contains(jfor[0])) return jfor[0];
-
 			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
