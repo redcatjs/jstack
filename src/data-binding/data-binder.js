@@ -238,7 +238,6 @@ class dataBinder {
 		jstack.walkTheDOM( this.view, function(n){
 			let watchers = w.get(n);
 			//let watchers = n.__jstackWatchers;
-			console.log(n,watchers);
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
