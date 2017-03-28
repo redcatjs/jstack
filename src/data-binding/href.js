@@ -18,7 +18,7 @@ jstack.dataBindingCompilers.href = {
 		}
 
 		var currentData;
-		var getData = jstack.dataBinder.createCompilerAttrRender(el,tokens);
+		var getData = dataBinder.createCompilerAttrRender(el,tokens);
 		var render = function(){
 			var data = getData();
 			if(currentData===data) return;

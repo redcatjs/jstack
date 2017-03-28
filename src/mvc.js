@@ -68,7 +68,7 @@ jstack.viewReady = function(el){
 };
 jstack.loader('[j-view]:not([j-view-loaded])',function(){
 	
-	console.log('j-view',this);
+	//console.log('j-view',this);
 	
 	this.setAttribute('j-view-loaded','true');
 

@@ -10,14 +10,17 @@ $.fn.jData = function(key){
 			
 		var a = {};
 		var el = this[0];
-		let dataBinder = jstack.dataBinder.getControllerObject(el).dataBinder;
+		
+		let controller = $(jstack.dataBinder.getController(el)).data('jController');
+		let dataBinder;
+		if(controller){
+			dataBinder = controller.dataBinder;
+		}
+		
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
 			var tokens = jstack.dataBinder.textTokenizer(v);
-			var value;
-			if(tokens===false){
-				value = v;
-			}
-			else{
+			var value = v;
+			if(tokens!==false && dataBinder){
 				value = dataBinder.compilerAttrRender(el,tokens);
 			}
 			a[k] = value;
