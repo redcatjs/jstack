@@ -1,8 +1,8 @@
 jstack.dataBindingCompilers.text = {
-	match(){
+	match: function(){
 		return this.nodeType == Node.TEXT_NODE && this instanceof Text && this.textContent;
 	},
-	callback(dataBinder){
+	callback: function(dataBinder){
 		let textString = this.textContent.toString();
 		let tokens = jstack.dataBinder.textTokenizer(textString);
 		if(tokens===false) return;
