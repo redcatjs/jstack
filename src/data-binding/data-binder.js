@@ -450,25 +450,22 @@ class dataBinder {
 	compileHTML(html){
 		let self = this;
 		
-		let dom = $( $('<html>'+html+'</html>').get() );
+		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
 		
 		$.each(jstack.dataBindingCompilers,function(k,compiler){
 			
-			dom.each(function(){
+			jstack.walkTheDOM(dom,function(n){
 				
-				jstack.walkTheDOM(this,function(n){
-					var matchResult = compiler.match.call(n);
-					if(matchResult){
-						compiler.callback.call(n,self,matchResult);
-					}
-					
-				});
+				var matchResult = compiler.match.call(n);
+				if(matchResult){
+					compiler.callback.call(n,self,matchResult);
+				}
 				
 			});
 			
 		});
 				
-		return dom;
+		return dom.childNodes;
 	}
 	
 	
