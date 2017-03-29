@@ -32,10 +32,8 @@ jstack.dataBindingCompilers.input = {
 
 			if($el.data('j:populate:prevent')) return;
 			
-			setTimeout(function(){
-				$el.populateInput(data,{preventValEvent:true});
-				$el.trigger('j:val',[data]);
-			});
+			$el.populateInput(data,{preventValEvent:true});
+			$el.trigger('j:val',[data]);
 		};
 		
 		dataBinder.addWatcher(el,render);
