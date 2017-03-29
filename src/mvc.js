@@ -84,12 +84,12 @@ jstack.loader('[j-view]:not([j-view-loaded])',function(){
 
 	var ready = getViewReady(this);
 
-
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
 		target:this,
 	});
+	
 	mvc.then(function(){
 		//setTimeout(function(){
 			ready.resolve();
