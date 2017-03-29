@@ -2080,6 +2080,26 @@ $.fn.onLast = function(event, cbFunc){
 		}
 	});
 };
+$.fn.selectRange = function(start, end) {
+    if(end === undefined) {
+        end = start;
+    }
+    return this.each(function() {
+        if('selectionStart' in this) {
+            this.selectionStart = start;
+            this.selectionEnd = end;
+        } else if(this.setSelectionRange) {
+            this.setSelectionRange(start, end);
+        } else if(this.createTextRange) {
+            var range = this.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', end);
+            range.moveStart('character', start);
+            range.select();
+        }
+    });
+};
+
 (function(){
 	var templates = {};
 	var requests = {};
@@ -2990,10 +3010,8 @@ jstack.dataBindingCompilers.input = {
 
 			if($el.data('j:populate:prevent')) return;
 			
-			setTimeout(function(){
-				$el.populateInput(data,{preventValEvent:true});
-				$el.trigger('j:val',[data]);
-			});
+			$el.populateInput(data,{preventValEvent:true});
+			$el.trigger('j:val',[data]);
 		};
 		
 		dataBinder.addWatcher(el,render);
