@@ -237,16 +237,16 @@ jstack.getObserverTarget = getObserverTarget;
 })();
 
 (function(){
-var constructor = function(controllerSet,element,hash){			
-	var self = this;
+let constructor = function(controllerSet,element,hash){			
+	let self = this;
 	
 	
-	var data = element.data('jModel') || {};
+	let data = element.data('jModel') || {};
 	if(element[0].hasAttribute('j-view-inherit')){
-		var parent = element.parent().closest('[j-controller]');
-		if(parent.length&&element[0].hasAttribute('j-view-inherit')){
-			var inheritProp = element[0].getAttribute('j-view-inherit');
-			var parentData = parent.data('jModel') || {};
+		let parent = element.parent().closest('[j-controller]');
+		if(parent.length){
+			let inheritProp = element[0].getAttribute('j-view-inherit');
+			let parentData = parent.data('jModel') || {};
 			if(inheritProp){
 				data[inheritProp] = parentData;
 			}
@@ -256,7 +256,7 @@ var constructor = function(controllerSet,element,hash){
 		}
 	}
 	
-	var defaults = {
+	let defaults = {
 		domReady: function(){},
 		setData: function(){},
 	};
@@ -269,7 +269,7 @@ var constructor = function(controllerSet,element,hash){
 	
 	
 	this.startDataObserver = function(){
-		var object = self.data;
+		let object = self.data;
 		
 		self.data = self.data.observable();
 		
@@ -285,7 +285,7 @@ var constructor = function(controllerSet,element,hash){
 	
 	this.setDataArguments = [];
 	this.setDataCall = function(){
-		var r = this.setData.apply( this, this.setDataArguments );
+		let r = this.setData.apply( this, this.setDataArguments );
 		if(r==false){
 			this.noRender = true;
 		}
@@ -298,7 +298,7 @@ var constructor = function(controllerSet,element,hash){
 	this.render = function(html){
 		if(this.noRender) return;
 		
-		var el = this.element;
+		let el = this.element;
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
@@ -311,7 +311,7 @@ var constructor = function(controllerSet,element,hash){
 			el.html( html );
 		}
 		
-		var domReady = $.Deferred();
+		let domReady = $.Deferred();
 		
 		this.dataBinder.ready(function(){
 			self.domReady();
@@ -331,9 +331,9 @@ jstack.controller = function(controller, element, hash){
 			if(!controller.dependencies){
 				controller.dependencies = [];
 			}
-			var extend = $.Deferred();
+			let extend = $.Deferred();
 			controller.dependencies.push(extend);
-			var controllerPath = jstack.config.controllersPath+controller.extend;
+			let controllerPath = jstack.config.controllersPath+controller.extend;
 			$js.require(controllerPath);
 			$js(controllerPath,function(){
 				$.each(jstack.controllers[controller.extend],function(k,v){
@@ -357,7 +357,7 @@ jstack.controller = function(controller, element, hash){
 			});
 		}		
 		if(controller.mixins){
-			for(var i = 0, l = mixins.length;i<l;i++){
+			for(let i = 0, l = mixins.length;i<l;i++){
 				$.each(mixins[i],function(k,v){
 					if(typeof(controller[k])=='undefined'){
 						controller[k] = v;
@@ -370,26 +370,29 @@ jstack.controller = function(controller, element, hash){
 		return jstack.controllers[controller.name];
 	}
 	
-	if(!hash){
-		var parent = element.parent().closest('[j-controller]');
+	if(typeof(hash)=='undefined'){
+		let parent = element.parent().closest('[j-controller]');
 		if(parent.length){
-			hash = parent.data('jController').hash;
+			let controllerData = parent.data('jController');
+			if(controllerData){
+				hash = controllerData.hash;
+			}
 		}
-		if(!hash){
-			hash = window.location.hash;
+		if(typeof(hash)=='undefined'){
+			hash = window.location.hash.ltrim('#');
 		}
 	}
 	
 	
-	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
+	let controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
 	
-	var name = controllerSet.name;
-	var ready = $.Deferred();
+	let name = controllerSet.name;
+	let ready = $.Deferred();
 	
-	var dependencies = [];
+	let dependencies = [];
 	
 	if(controllerSet.dependencies&&controllerSet.dependencies.length){		
-		var dependenciesJsReady = $.Deferred();
+		let dependenciesJsReady = $.Deferred();
 		$js(controllerSet.dependencies,function(){
 			dependenciesJsReady.resolve();
 		});
@@ -398,18 +401,18 @@ jstack.controller = function(controller, element, hash){
 	
 	$.when.apply($, dependencies).then(function(){
 		
-		var controller = new constructor(controllerSet,element,hash);
+		let controller = new constructor(controllerSet,element,hash);
 		
-		var dependenciesDataReady = [];
-		var dependenciesData = controller.dependenciesData;
+		let dependenciesDataReady = [];
+		let dependenciesData = controller.dependenciesData;
 		if(dependenciesData){
 			if(typeof(dependenciesData)=='function'){
 				controller.dependenciesData = dependenciesData = controller.dependenciesData();
 			}
 			if(dependenciesData&&dependenciesData.length){
-				var dependenciesDataRun = [];
-				for(var i = 0, l = dependenciesData.length; i < l; i++){
-					var dependencyData = dependenciesData[i];
+				let dependenciesDataRun = [];
+				for(let i = 0, l = dependenciesData.length; i < l; i++){
+					let dependencyData = dependenciesData[i];
 					if(typeof(dependencyData)=='function'){
 						dependencyData = dependencyData.call(controller);
 					}
@@ -417,7 +420,7 @@ jstack.controller = function(controller, element, hash){
 						
 					if($.type(dependencyData)=='object'){
 						if('abort' in dependencyData){
-							var ddata = dependencyData;
+							let ddata = dependencyData;
 							dependencyData = $.Deferred();
 							(function(dependencyData){
 								ddata.then(function(ajaxReturn){
@@ -427,7 +430,7 @@ jstack.controller = function(controller, element, hash){
 						}
 					}
 					if(!($.type(dependencyData)=='object'&&('then' in dependencyData))){
-						var ddata = dependencyData;
+						let ddata = dependencyData;
 						dependencyData = $.Deferred();
 						dependencyData.resolve(ddata);
 					}
@@ -435,8 +438,8 @@ jstack.controller = function(controller, element, hash){
 
 					dependenciesDataRun.push(dependencyData);
 				}
-				var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
-					for(var i = 0, l = arguments.length; i < l; i++){
+				let resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
+					for(let i = 0, l = arguments.length; i < l; i++){
 						controller.setDataArguments.push(arguments[i]);
 					}
 				});
@@ -3012,47 +3015,19 @@ class dataBinder {
 		this.updateDeferInProgress = false;
 		this.updateDeferStateObserver = null;
 		
-		this.loadingMutation = 0;
-		this.deferMutation = [];
-		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
 		this.watchers = new WeakMap();
 	}
 	ready(callback){
-		let self = this;
-		let when = $.Deferred();
-		let defers = [];
-		
-		setTimeout(function(){
-			
-			
-			if(self.updateDeferStateObserver){
-				defers.push(self.updateDeferStateObserver);
-			}
-		
-			if(self.loadingMutation>0){
-				var deferMutation = $.Deferred();
-				self.deferMutation.push(function(){
-					deferMutation.resolve();
-				});
-				defers.push(deferMutation);
-			}
-			
-			$.when.apply($,defers).then(function(){
-				when.resolve();
+		if(this.updateDeferStateObserver){
+			this.updateDeferStateObserver.then(function(){
+				callback();
 			});
-
-			
-			if(callback){
-				when.then(function(){
-					callback();
-				});
-			}
-			
-		});
-		
-		return when.promise();
+		}
+		else{
+			callback();
+		}
 	}
 	getValue(el,varKey,defaultValue){
 		var key = '';
@@ -3285,170 +3260,26 @@ class dataBinder {
 	}
 
 	eventListener(){
-		let self = this;
-		
-		self.observe(this.view, true);
-		
+		let self = this;		
 		$(this.view).on('input change j:update', ':input[name]', function(e,value){
+			
+			if(e.__jstackStopPropagation){
+				return;
+			}
+			e.__jstackStopPropagation = true;
+			
 			if(this.type=='file') return;
 			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
 				return;
 			let el = this;
+			
 			setTimeout(function(){
 				self.inputToModel(el,e.type,value);
 			});
+			
 		});
 		
 	}
-	observe(n, root){
-		if(n.nodeType!=Node.ELEMENT_NODE || this.noChildListNodeNames[n.tagName.toLowerCase()]) return;
-		
-		if(!root&&n.hasAttribute('j-view')){
-			return;
-		}
-		
-		if(n.hasAttribute('j-escape')){
-			return false;
-		}
-
-		let self = this;
-		let mutationObserver = new MutationObserver(function(m){
-			//console.log(m);
-			self.loadingMutation++;
-			setTimeout(function(){
-				self.loadMutations(m);
-			});
-		});
-		mutationObserver.observe(n, {
-			subtree: false,
-			childList: true,
-			characterData: true,
-			attributes: false,
-			attributeOldValue: false,
-			characterDataOldValue: false,
-		});
-		//$(n).data('j:observer',mutationObserver);
-	}
-	loadMutations(mutations){
-		//console.log('mutations',mutations);
-
-		let self = this;
-
-		let compilerJloads = [];
-		
-		$.each(mutations,function(i,mutation){
-			$.each(mutation.addedNodes,function(ii,node){
-				self.compileNode(node,compilerJloads);
-			});
-
-			$.each(mutation.removedNodes,function(ii,node){
-				jstack.walkTheDOM(node,function(n){
-					if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-						return false;
-					}
-					jstack.trigger(n,'unload');
-				});
-			});
-		});
-
-		setTimeout(function(){
-			self.loadingMutation--;
-			
-			if(self.loadingMutation==0){
-				while(self.deferMutation.length){
-					self.deferMutation.pop()();
-				}
-			}
-			
-			for(let i = 0, l=compilerJloads.length;i<l;i++){
-				compilerJloads[i]();
-			}
-			
-		});
-
-	}
-	
-	compileNode(node,compilerJloads){
-		var self = this;
-
-		jstack.walkTheDOM(node,function(n){
-			if(!document.body.contains(n)) return false;
-
-			if(self.observe(n)===false){
-				return false;
-			}
-
-			var $n = $(n);
-			
-			/*
-			if((n.nodeType == Node.TEXT_NODE) && (n instanceof Text)){
-				var renders = self.compilerText(n);
-				if(renders){
-					for(var i = 0, l=renders.length;i<l;i++){
-						self.addWatcher(renders[i],99);
-						renders[i]();
-					}
-				}
-				return;
-			}
-			*/
-
-			if(n.nodeType!=Node.ELEMENT_NODE) return;
-
-			/*
-			var once = n.hasAttribute('j-once');
-			if(once){
-				jstack.walkTheDOM(n,function(el){
-					if(el.nodeType==Node.ELEMENT_NODE){
-						el.setAttribute('j-once-element','true');
-					}
-				});
-				n.removeAttribute('j-once');
-			}
-			else{
-				once = n.hasAttribute('j-once-element');
-				if(once){
-					n.removeAttribute('j-once-element');
-				}
-			}
-			
-			$.each(jstack.dataBindingCompilers,function(k,compiler){
-				var matchResult = compiler.match.call(n);
-				if(matchResult){
-					var render = compiler.callback.call(n,self,matchResult);
-					if(render){
-						if(!once){
-							self.addWatcher(render, compiler.level);
-						}
-						render();
-						
-						//if(!document.contains(n)){
-							//return false;
-						//}
-						
-					}
-				}
-			});
-			*/
-			if(!document.body.contains(n)) return false;
-
-
-			compilerJloads.push(function(){
-				if(!document.body.contains(n)) return;
-				if(n.hasAttribute('j-cloak')){
-					n.removeAttribute('j-cloak');
-				}
-				if($n.data('j:load:state')){
-					return;
-				}
-				$n.data('j:load:state',true);
-				jstack.trigger(n,'load');
-			});
-
-		});
-
-	}
-	
 	
 	compileHTML(html){
 		let self = this;
@@ -3616,7 +3447,7 @@ class dataBinder {
 			p = p.parentNode;
 		}
 	}
-		static getScopedInput(input){
+	static getScopedInput(input){
 		var name = input.getAttribute('name');
 		var key = dataBinder.getKey(name);
 		if(key.substr(-1)=='.'&&input.type=='checkbox'){
@@ -3791,6 +3622,49 @@ jstack.dataBindingCompilers.text = {
 	},
 };
 
+(function(){
+	
+let mutationObserver = new MutationObserver(function(mutations){
+$.each(mutations,function(i,mutation){
+	$.each(mutation.addedNodes,function(ii,node){
+		
+		jstack.walkTheDOM(node,function(n){
+			if(!document.body.contains(n)) return false;
+
+			if(n.nodeType!=Node.ELEMENT_NODE) return;
+
+			if(!document.body.contains(n)) return false;
+			
+			let $n = $(n);
+			if($n.data('j:load:state')){
+				return;
+			}
+			$n.data('j:load:state',true);
+			jstack.trigger(n,'load');
+			
+
+		});
+		
+	});
+
+	$.each(mutation.removedNodes,function(ii,node){
+		jstack.walkTheDOM(node,function(n){
+			if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
+				return false;
+			}
+			jstack.trigger(n,'unload');
+		});
+	});
+});
+});
+mutationObserver.observe(document.body, {
+subtree: true,
+childList: true,
+characterData: true,
+attributes: false,
+attributeOldValue: false,
+characterDataOldValue: false,
+});
 
 jstack._eventStack = {};
 
@@ -3859,6 +3733,9 @@ $.fn.onUnload = function(callback){
 		jstack.on('unload',this,callback);
 	});
 };
+
+
+})();
 
 jstack.component = {};
 
@@ -4143,12 +4020,12 @@ jstack.loader('[j-view]:not([j-view-loaded])',function(){
 
 	var ready = getViewReady(this);
 
-
 	var mvc = jstack.mvc({
 		view:view,
 		controller:controller,
 		target:this,
 	});
+	
 	mvc.then(function(){
 		//setTimeout(function(){
 			ready.resolve();
