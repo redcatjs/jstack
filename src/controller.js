@@ -6,7 +6,7 @@ let constructor = function(controllerSet,element,hash){
 	let data = element.data('jModel') || {};
 	if(element[0].hasAttribute('j-view-inherit')){
 		let parent = element.parent().closest('[j-controller]');
-		if(parent.length&&element[0].hasAttribute('j-view-inherit')){
+		if(parent.length){
 			let inheritProp = element[0].getAttribute('j-view-inherit');
 			let parentData = parent.data('jModel') || {};
 			if(inheritProp){
