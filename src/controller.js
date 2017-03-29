@@ -132,7 +132,7 @@ jstack.controller = function(controller, element, hash){
 		return jstack.controllers[controller.name];
 	}
 	
-	if(!hash){
+	if(typeof(hash)=='undefined'){
 		var parent = element.parent().closest('[j-controller]');
 		if(parent.length){
 			hash = parent.data('jController').hash;
