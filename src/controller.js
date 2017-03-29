@@ -1,14 +1,14 @@
 (function(){
-var constructor = function(controllerSet,element,hash){			
-	var self = this;
+let constructor = function(controllerSet,element,hash){			
+	let self = this;
 	
 	
-	var data = element.data('jModel') || {};
+	let data = element.data('jModel') || {};
 	if(element[0].hasAttribute('j-view-inherit')){
-		var parent = element.parent().closest('[j-controller]');
+		let parent = element.parent().closest('[j-controller]');
 		if(parent.length&&element[0].hasAttribute('j-view-inherit')){
-			var inheritProp = element[0].getAttribute('j-view-inherit');
-			var parentData = parent.data('jModel') || {};
+			let inheritProp = element[0].getAttribute('j-view-inherit');
+			let parentData = parent.data('jModel') || {};
 			if(inheritProp){
 				data[inheritProp] = parentData;
 			}
@@ -18,7 +18,7 @@ var constructor = function(controllerSet,element,hash){
 		}
 	}
 	
-	var defaults = {
+	let defaults = {
 		domReady: function(){},
 		setData: function(){},
 	};
@@ -31,7 +31,7 @@ var constructor = function(controllerSet,element,hash){
 	
 	
 	this.startDataObserver = function(){
-		var object = self.data;
+		let object = self.data;
 		
 		self.data = self.data.observable();
 		
@@ -47,7 +47,7 @@ var constructor = function(controllerSet,element,hash){
 	
 	this.setDataArguments = [];
 	this.setDataCall = function(){
-		var r = this.setData.apply( this, this.setDataArguments );
+		let r = this.setData.apply( this, this.setDataArguments );
 		if(r==false){
 			this.noRender = true;
 		}
@@ -60,7 +60,7 @@ var constructor = function(controllerSet,element,hash){
 	this.render = function(html){
 		if(this.noRender) return;
 		
-		var el = this.element;
+		let el = this.element;
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller',this.name);
 		
@@ -73,7 +73,7 @@ var constructor = function(controllerSet,element,hash){
 			el.html( html );
 		}
 		
-		var domReady = $.Deferred();
+		let domReady = $.Deferred();
 		
 		this.dataBinder.ready(function(){
 			self.domReady();
@@ -93,9 +93,9 @@ jstack.controller = function(controller, element, hash){
 			if(!controller.dependencies){
 				controller.dependencies = [];
 			}
-			var extend = $.Deferred();
+			let extend = $.Deferred();
 			controller.dependencies.push(extend);
-			var controllerPath = jstack.config.controllersPath+controller.extend;
+			let controllerPath = jstack.config.controllersPath+controller.extend;
 			$js.require(controllerPath);
 			$js(controllerPath,function(){
 				$.each(jstack.controllers[controller.extend],function(k,v){
@@ -119,7 +119,7 @@ jstack.controller = function(controller, element, hash){
 			});
 		}		
 		if(controller.mixins){
-			for(var i = 0, l = mixins.length;i<l;i++){
+			for(let i = 0, l = mixins.length;i<l;i++){
 				$.each(mixins[i],function(k,v){
 					if(typeof(controller[k])=='undefined'){
 						controller[k] = v;
@@ -133,26 +133,28 @@ jstack.controller = function(controller, element, hash){
 	}
 	
 	if(typeof(hash)=='undefined'){
-		var parent = element.parent().closest('[j-controller]');
+		let parent = element.parent().closest('[j-controller]');
 		if(parent.length){
-			//console.log(parent);
-			hash = parent.data('jController').hash;
+			let controllerData = parent.data('jController');
+			if(controllerData){
+				hash = controllerData.hash;
+			}
 		}
-		if(!hash){
-			hash = window.location.hash;
+		if(typeof(hash)=='undefined'){
+			hash = window.location.hash.ltrim('#');
 		}
 	}
 	
 	
-	var controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
+	let controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
 	
-	var name = controllerSet.name;
-	var ready = $.Deferred();
+	let name = controllerSet.name;
+	let ready = $.Deferred();
 	
-	var dependencies = [];
+	let dependencies = [];
 	
 	if(controllerSet.dependencies&&controllerSet.dependencies.length){		
-		var dependenciesJsReady = $.Deferred();
+		let dependenciesJsReady = $.Deferred();
 		$js(controllerSet.dependencies,function(){
 			dependenciesJsReady.resolve();
 		});
@@ -161,18 +163,18 @@ jstack.controller = function(controller, element, hash){
 	
 	$.when.apply($, dependencies).then(function(){
 		
-		var controller = new constructor(controllerSet,element,hash);
+		let controller = new constructor(controllerSet,element,hash);
 		
-		var dependenciesDataReady = [];
-		var dependenciesData = controller.dependenciesData;
+		let dependenciesDataReady = [];
+		let dependenciesData = controller.dependenciesData;
 		if(dependenciesData){
 			if(typeof(dependenciesData)=='function'){
 				controller.dependenciesData = dependenciesData = controller.dependenciesData();
 			}
 			if(dependenciesData&&dependenciesData.length){
-				var dependenciesDataRun = [];
-				for(var i = 0, l = dependenciesData.length; i < l; i++){
-					var dependencyData = dependenciesData[i];
+				let dependenciesDataRun = [];
+				for(let i = 0, l = dependenciesData.length; i < l; i++){
+					let dependencyData = dependenciesData[i];
 					if(typeof(dependencyData)=='function'){
 						dependencyData = dependencyData.call(controller);
 					}
@@ -180,7 +182,7 @@ jstack.controller = function(controller, element, hash){
 						
 					if($.type(dependencyData)=='object'){
 						if('abort' in dependencyData){
-							var ddata = dependencyData;
+							let ddata = dependencyData;
 							dependencyData = $.Deferred();
 							(function(dependencyData){
 								ddata.then(function(ajaxReturn){
@@ -190,7 +192,7 @@ jstack.controller = function(controller, element, hash){
 						}
 					}
 					if(!($.type(dependencyData)=='object'&&('then' in dependencyData))){
-						var ddata = dependencyData;
+						let ddata = dependencyData;
 						dependencyData = $.Deferred();
 						dependencyData.resolve(ddata);
 					}
@@ -198,8 +200,8 @@ jstack.controller = function(controller, element, hash){
 
 					dependenciesDataRun.push(dependencyData);
 				}
-				var resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
-					for(var i = 0, l = arguments.length; i < l; i++){
+				let resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
+					for(let i = 0, l = arguments.length; i < l; i++){
 						controller.setDataArguments.push(arguments[i]);
 					}
 				});
