@@ -62,8 +62,39 @@ jstack.dataBindingCompilers.for = {
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
-		let content = this.content;
-
+		
+		let buildNewRow;
+		
+		if(isTemplate){
+			let content = this.content;
+			buildNewRow = function(k, jforClose){
+				let elements = document.importNode(content, true);
+				let addRow = document.createElement('div');
+				for(let i = 0, l = elements.length; i<l; i++){
+					addRow.appendChild(elements[i]);
+				}
+				
+				jforClose.before(addRow.childNodes);
+				
+				dataBinder.compileDom( addRow );
+			};
+			
+		}
+		else{
+			buildNewRow = function(k, jforClose){
+				//let addRow = $(document.createElement('div'));
+				let addRow = $this.clone();
+				addRow.attr('j-for-id',k);
+				
+				jforClose.before(addRow);
+				
+				dataBinder.compileDom( addRow[0] );
+				
+				return addRow;
+			};
+			
+		}
+		
 		let render = function(){
 			let data = getData();
 			if(currentData===data) return;
@@ -101,19 +132,13 @@ jstack.dataBindingCompilers.for = {
 					'index':index,
 					'key':k,
 				});
-				//console.log(row.dataComment());
 				if(create){
 					row.insertBefore(jforClose);
 					
-					let addRow;
-					if(isTemplate){
-						addRow = $(document.importNode(content, true));
-					}
-					else{
-						addRow = $this.clone();
-						addRow.attr('j-for-id',k);
-					}
-					addRow.insertBefore(jforClose);
+					//let addRow = buildNewRow(k);
+					//addRow.insertBefore(jforClose);
+					
+					buildNewRow(k,jforClose);
 					
 					$('<!--/j:for:id-->').insertBefore(jforClose);
 				}
@@ -123,6 +148,7 @@ jstack.dataBindingCompilers.for = {
 			//remove
 			$.each(domRows,function(k,row){
 				row.commentChildren().remove();
+				$(row[0].nextSibling).remove();
 				row.remove();
 			});
 			
@@ -130,7 +156,9 @@ jstack.dataBindingCompilers.for = {
 		
 		dataBinder.addWatcher(jfor[0],render);
 		render();
-
+		
+		return false;
+		
 	},
 };
 

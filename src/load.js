@@ -1,45 +1,39 @@
 (function(){
 	
 let mutationObserver = new MutationObserver(function(mutations){
-$.each(mutations,function(i,mutation){
-	$.each(mutation.addedNodes,function(ii,node){
-		
-		jstack.walkTheDOM(node,function(n){
-			if(!document.body.contains(n)) return false;
-
-			if(n.nodeType!=Node.ELEMENT_NODE) return;
-
-			if(!document.body.contains(n)) return false;
+	$.each(mutations,function(i,mutation){
+		$.each(mutation.addedNodes,function(ii,node){
 			
-			let $n = $(n);
-			if($n.data('j:load:state')){
-				return;
-			}
-			$n.data('j:load:state',true);
-			jstack.trigger(n,'load');
+			jstack.walkTheDOM(node,function(n){
+				if(!document.body.contains(n) || n.nodeType!=Node.ELEMENT_NODE) return false;
+				let $n = $(n);
+				if($n.data('j:load:state')){
+					return;
+				}
+				$n.data('j:load:state',true);
+				jstack.trigger(n,'load');
+			});
 			
-
 		});
-		
-	});
 
-	$.each(mutation.removedNodes,function(ii,node){
-		jstack.walkTheDOM(node,function(n){
-			if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-				return false;
-			}
-			jstack.trigger(n,'unload');
+		$.each(mutation.removedNodes,function(ii,node){
+			jstack.walkTheDOM(node,function(n){
+				if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
+					return false;
+				}
+				jstack.trigger(n,'unload');
+			});
 		});
 	});
 });
-});
+
 mutationObserver.observe(document.body, {
-subtree: true,
-childList: true,
-characterData: true,
-attributes: false,
-attributeOldValue: false,
-characterDataOldValue: false,
+	subtree: true,
+	childList: true,
+	characterData: true,
+	attributes: false,
+	attributeOldValue: false,
+	characterDataOldValue: false,
 });
 
 jstack._eventStack = {};

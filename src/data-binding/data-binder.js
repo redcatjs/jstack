@@ -51,7 +51,8 @@ class dataBinder {
 					n = n.parentNode;
 				}
 			}
-			if(n===document.body) break;
+			//if(n===document.body) break;
+			if(n===this.view || n===document.body) break;
 		}
 		return a;
 	}
@@ -214,7 +215,6 @@ class dataBinder {
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
 					c++;
-					
 				}
 			}
 		});
@@ -276,29 +276,35 @@ class dataBinder {
 	}
 	
 	compileHTML(html){
-		let self = this;
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
+		
+		this.compileDom(dom);
+
+		return dom.childNodes;
+	}
+	
+	compileDom(dom){
+		
+		let self = this;
 		
 		$.each(jstack.dataBindingCompilers,function(k,compiler){
 			
 			jstack.walkTheDOM(dom,function(n){
 				
-				var matchResult = compiler.match.call(n);
+				let matchResult = compiler.match.call(n);
 				if(matchResult){
-					compiler.callback.call(n,self,matchResult);
+					return compiler.callback.call(n,self,matchResult);
 				}
 				
 			});
 			
 		});
-				
-		return dom.childNodes;
+		
 	}
 	
-	
 	filter(el,value){
-		var filter = this.getFilter(el);
+		let filter = this.getFilter(el);
 		if(typeof(filter)=='function'){
 			value = filter(value);
 		}
@@ -306,11 +312,11 @@ class dataBinder {
 	}
 	getFilter(el){
 		let $el = $(el);
-		var filter = $el.data('j-filter');
+		let filter = $el.data('j-filter');
 		if(!filter){
-			var attrFilter = el.getAttribute('j-filter');
+			let attrFilter = el.getAttribute('j-filter');
 			if(attrFilter){
-				var method = this.getValue(el,attrFilter);
+				let method = this.getValue(el,attrFilter);
 				$el.data('j-filter',method);
 			}
 		}
@@ -318,8 +324,8 @@ class dataBinder {
 	}
 	compilerAttrRender(el,tokens){
 		var r = '';
-		for(var i = 0, l = tokens.length; i<l; i++){
-			var token = tokens[i];
+		for(let i = 0, l = tokens.length; i<l; i++){
+			let token = tokens[i];
 			if(token.substr(0,2)=='{{'){
 				token = token.substr(2,token.length-4);
 				
@@ -342,13 +348,13 @@ class dataBinder {
 		};
 	}
 	static textTokenizer(text){
-		var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
+		let tagRE = /\{\{((?:.|\n)+?)\}\}/g;
 		if (!tagRE.test(text)) {
 			return false;
 		}
-		var tokens = [];
-		var lastIndex = tagRE.lastIndex = 0;
-		var match, index;
+		let tokens = [];
+		let lastIndex = tagRE.lastIndex = 0;
+		let match, index;
 		while ((match = tagRE.exec(text))) {
 			index = match.index;
 			// push text token
