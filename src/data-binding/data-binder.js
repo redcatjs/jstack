@@ -26,9 +26,9 @@ class dataBinder {
 		}
 	}
 	getValue(el,varKey,defaultValue){
-		var key = '';
+		let key = '';
 
-		var ns = dataBinder.getClosestFormNamespace(el.parentNode);
+		let ns = dataBinder.getClosestFormNamespace(el.parentNode);
 		if(ns){
 			key += ns+'.';
 		}
@@ -38,8 +38,8 @@ class dataBinder {
 		return dataBinder.dotGet(key,this.model,defaultValue);
 	}
 	getParentsForId(el){
-		var a = [];
-		var n = el;
+		let a = [];
+		let n = el;
 		while(n){
 			if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
 				a.push(n);
@@ -79,7 +79,7 @@ class dataBinder {
 		}
 
 
-		var forCollection = this.getParentsForId(el).reverse();
+		let forCollection = this.getParentsForId(el).reverse();
 
 		for(let i = 0, l = forCollection.length; i<l; i++){
 			let forid = forCollection[i];
@@ -109,8 +109,8 @@ class dataBinder {
 			scopeValue[value] = forRow.value;
 		}
 
-		var params = [ '$controller', '$this', '$scope' ];
-		var args = [ controller, el, scopeValue ];
+		let params = [ '$controller', '$this', '$scope' ];
+		let args = [ controller, el, scopeValue ];
 		$.each(scopeValue,function(param,arg){
 			params.push(param);
 			args.push(arg);
@@ -118,15 +118,15 @@ class dataBinder {
 
 		params.push("return "+varKey+";");
 
-		var value;
+		let value;
 		try{
-			var func = Function.apply(null,params);
+			let func = Function.apply(null,params);
 			value = func.apply(null,args);
 		}
 
 		catch(jstackException){
 			if(jstack.config.debug){
-				var warn = [jstackException.message, ", expression: "+varKey, "element", el];
+				let warn = [jstackException.message, ", expression: "+varKey, "element", el];
 				if(el.nodeType==Node.COMMENT_NODE){
 					warn.push($(el).parent().get());
 				}
@@ -137,21 +137,21 @@ class dataBinder {
 		return typeof(value)=='undefined'?'':value;
 	}
 	inputToModel(el,eventType,triggeredValue){
-		var input = $(el);
+		let input = $(el);
 
-		var self = this;
+		let self = this;
 
-		var data = this.model;
-		var name = el.getAttribute('name');
+		let data = this.model;
+		let name = el.getAttribute('name');
 
-		var performInputToModel = function(){
-			var key = dataBinder.getScopedInput(el);
+		let performInputToModel = function(){
+			let key = dataBinder.getScopedInput(el);
 			if(filteredValue!=value){
 				value = filteredValue;
 				input.populateInput(value,{preventValEvent:true});
 			}
 
-			var oldValue = dataBinder.dotGet(key,data);
+			let oldValue = dataBinder.dotGet(key,data);
 
 			value = dataBinder.dotSet(key,data,value);
 			input.trigger('j:input',[value]);
@@ -168,7 +168,7 @@ class dataBinder {
 			}
 		};
 
-		var value;
+		let value;
 		if(typeof(triggeredValue)!=='undefined'){
 			value = triggeredValue;
 		}
@@ -176,7 +176,7 @@ class dataBinder {
 			value = dataBinder.getInputVal(el);
 		}
 		
-		var filteredValue = this.filter(el,value);
+		let filteredValue = this.filter(el,value);
 
 
 		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
@@ -200,7 +200,7 @@ class dataBinder {
 		watchers.push(render);
 	}
 	runWatchers(){
-		var self = this;
+		let self = this;
 		let w = this.watchers;
 		//console.log('update');
 		
@@ -223,7 +223,7 @@ class dataBinder {
 
 	update(){
 		//console.log('update');
-		var self = this;
+		let self = this;
 		if(this.updateDeferQueued){
 			return;
 		}
@@ -322,7 +322,7 @@ class dataBinder {
 		return filter;
 	}
 	compilerAttrRender(el,tokens){
-		var r = '';
+		let r = '';
 		for(let i = 0, l = tokens.length; i<l; i++){
 			let token = tokens[i];
 			if(token.substr(0,2)=='{{'){
@@ -361,7 +361,7 @@ class dataBinder {
 				tokens.push(text.slice(lastIndex, index));
 			}
 			// tag token
-			var exp = match[1].trim();
+			let exp = match[1].trim();
 			tokens.push("{{" + exp + "}}");
 			lastIndex = index + match[0].length;
 		}
@@ -447,10 +447,10 @@ class dataBinder {
 		}
 	}
 	static getScopedInput(input){
-		var name = input.getAttribute('name');
-		var key = dataBinder.getKey(name);
+		let name = input.getAttribute('name');
+		let key = dataBinder.getKey(name);
 		if(key.substr(-1)=='.'&&input.type=='checkbox'){
-			var index;
+			let index;
 			$(input).closest('form').find(':checkbox[name="'+name+'"]').each(function(i){
 				if(this===input){
 					index = i;
@@ -459,8 +459,8 @@ class dataBinder {
 			});
 			key += index;
 		}
-		var scopeKey = '';
-		var ns = dataBinder.getClosestFormNamespace(input.parentNode);
+		let scopeKey = '';
+		let ns = dataBinder.getClosestFormNamespace(input.parentNode);
 		if(ns){
 			scopeKey += ns+'.';
 		}
@@ -473,12 +473,12 @@ class dataBinder {
 			case 'input':
 				switch(el.type){
 					case 'checkbox':
-						var $el = $(el);
+						let $el = $(el);
 						return $el.prop('checked')?$el.val():'';
 					break;
 					case 'radio':
-						var form;
-						var p = el.parentNode;
+						let form;
+						let p = el.parentNode;
 						while(p){
 							if(p.tagName&&p.tagName.toLowerCase()=='form'){
 								form = p;
@@ -487,7 +487,7 @@ class dataBinder {
 							p = p.parentNode;
 						}
 						if(form){
-							var checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
+							let checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
 							return checked.length?checked.val():'';
 						}
 						return '';
@@ -508,15 +508,15 @@ class dataBinder {
 			break;
 			case 'j-select':
 				el = $(el);
-				var multiple = el[0].hasAttribute('multiple');
-				var data = el.data('preselect');
+				let multiple = el[0].hasAttribute('multiple');
+				let data = el.data('preselect');
 				if(!data){
 					if(multiple){
 						data = [];
 					}
 					el.children().each(function(){
 						if(this.hasAttribute('selected')){
-							var val = this.value;
+							let val = this.value;
 							if(multiple){
 								data.push(val);
 							}
