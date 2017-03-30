@@ -1,10 +1,28 @@
-jstack.walkTheDOM = function(node, func){
+(function(){
+
+let walkTheDOM = function(node, func){
 	if(func(node)===false){
 		return;
 	}
-	var children = node.childNodes;
-	for(var i = 0; i < children.length; i++){
+	let children = node.childNodes;
+	for(let i = 0, l = children.length; i < l; i++){
 		if(!children[i]) continue;
-		this.walkTheDOM(children[i], func);
+		walkTheDOM(children[i], func);
 	}
 };
+
+let dynWalkTheDOM = function(node, func){
+	if(func(node)===false){
+		return;
+	}
+	let children = node.childNodes;
+	for(let i = 0; i < children.length; i++){
+		if(!children[i]) continue;
+		dynWalkTheDOM(children[i], func);
+	}
+};
+
+jstack.walkTheDOM = walkTheDOM;
+jstack.dynWalkTheDOM = dynWalkTheDOM;
+
+})();
