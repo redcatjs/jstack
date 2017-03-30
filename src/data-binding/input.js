@@ -8,25 +8,25 @@ jstack.dataBindingCompilers.input = {
 		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
 	},
 	callback(dataBinder,matched){
-		var el = this;
-		var $el = $(this);
+		let el = this;
+		let $el = $(this);
 
-		var currentData;
+		let currentData;
 
 		//default to model					
-		var key = jstack.dataBinder.getScopedInput(el);
-		var val = jstack.dataBinder.getInputVal(el);
+		let key = jstack.dataBinder.getScopedInput(el);
+		let val = jstack.dataBinder.getInputVal(el);
 		let controllerData = jstack.dataBinder.getControllerData(el);
 		jstack.dataBinder.dotSet(key,controllerData,val,true);
 		
-		var getData = function(){
-			var defaultValue = jstack.dataBinder.getInputVal(el);
-			var key = jstack.dataBinder.getKey( el.getAttribute('name') );
+		let getData = function(){
+			let defaultValue = jstack.dataBinder.getInputVal(el);
+			let key = jstack.dataBinder.getKey( el.getAttribute('name') );
 			return dataBinder.getValue(el,key,defaultValue);
 		};
 
-		var render = function(){
-			var data = getData();
+		let render = function(){
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 
