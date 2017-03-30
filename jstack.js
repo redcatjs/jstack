@@ -1018,16 +1018,34 @@ jstack.traverseDom = function(node, func, asc){
 	}
 	return result;
 };
-jstack.walkTheDOM = function(node, func){
+(function(){
+
+let walkTheDOM = function(node, func){
 	if(func(node)===false){
 		return;
 	}
-	var children = node.childNodes;
-	for(var i = 0; i < children.length; i++){
+	let children = node.childNodes;
+	for(let i = 0, l = children.length; i < l; i++){
 		if(!children[i]) continue;
-		this.walkTheDOM(children[i], func);
+		walkTheDOM(children[i], func);
 	}
 };
+
+let dynWalkTheDOM = function(node, func){
+	if(func(node)===false){
+		return;
+	}
+	let children = node.childNodes;
+	for(let i = 0; i < children.length; i++){
+		if(!children[i]) continue;
+		dynWalkTheDOM(children[i], func);
+	}
+};
+
+jstack.walkTheDOM = walkTheDOM;
+jstack.dynWalkTheDOM = dynWalkTheDOM;
+
+})();
 
 $.arrayCompare = function (a, b) {
 	return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
@@ -2570,8 +2588,39 @@ jstack.dataBindingCompilers.for = {
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
-		let content = this.content;
-
+		
+		let buildNewRow;
+		
+		if(isTemplate){
+			let content = this.content;
+			buildNewRow = function(k, jforClose){
+				let elements = document.importNode(content, true);
+				let addRow = document.createElement('div');
+				for(let i = 0, l = elements.length; i<l; i++){
+					addRow.appendChild(elements[i]);
+				}
+				
+				jforClose.before(addRow.childNodes);
+				
+				dataBinder.compileDom( addRow );
+			};
+			
+		}
+		else{
+			buildNewRow = function(k, jforClose){
+				//let addRow = $(document.createElement('div'));
+				let addRow = $this.clone();
+				addRow.attr('j-for-id',k);
+				
+				jforClose.before(addRow);
+				
+				dataBinder.compileDom( addRow[0] );
+				
+				return addRow;
+			};
+			
+		}
+		
 		let render = function(){
 			let data = getData();
 			if(currentData===data) return;
@@ -2609,19 +2658,13 @@ jstack.dataBindingCompilers.for = {
 					'index':index,
 					'key':k,
 				});
-				//console.log(row.dataComment());
 				if(create){
 					row.insertBefore(jforClose);
 					
-					let addRow;
-					if(isTemplate){
-						addRow = $(document.importNode(content, true));
-					}
-					else{
-						addRow = $this.clone();
-						addRow.attr('j-for-id',k);
-					}
-					addRow.insertBefore(jforClose);
+					//let addRow = buildNewRow(k);
+					//addRow.insertBefore(jforClose);
+					
+					buildNewRow(k,jforClose);
 					
 					$('<!--/j:for:id-->').insertBefore(jforClose);
 				}
@@ -2631,6 +2674,7 @@ jstack.dataBindingCompilers.for = {
 			//remove
 			$.each(domRows,function(k,row){
 				row.commentChildren().remove();
+				$(row[0].nextSibling).remove();
 				row.remove();
 			});
 			
@@ -2638,7 +2682,9 @@ jstack.dataBindingCompilers.for = {
 		
 		dataBinder.addWatcher(jfor[0],render);
 		render();
-
+		
+		return false;
+		
 	},
 };
 
@@ -3075,7 +3121,8 @@ class dataBinder {
 					n = n.parentNode;
 				}
 			}
-			if(n===document.body) break;
+			//if(n===document.body) break;
+			if(n===this.view || n===document.body) break;
 		}
 		return a;
 	}
@@ -3214,11 +3261,9 @@ class dataBinder {
 	addWatcher(el,render){
 		let w = this.watchers;
 		let watchers = w.get(el);
-		//let watchers = el.__jstackWatchers;
 		if(!watchers){
 			watchers = [];
 			w.set(el,watchers);
-			//el.__jstackWatchers = watchers;
 		}
 		watchers.push(render);
 	}
@@ -3227,23 +3272,21 @@ class dataBinder {
 		let w = this.watchers;
 		//console.log('update');
 		
-		let now = new Date().getTime();
-		console.log('runWatchers START');
-		let c = 0;
+		//let now = new Date().getTime();
+		//console.log('runWatchers START');
+		//let c = 0;
 		
 		jstack.walkTheDOM( this.view, function(n){
 			let watchers = w.get(n);
-			//let watchers = n.__jstackWatchers;
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					c++;
-					
+					//c++;
 				}
 			}
 		});
 		
-		console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
+		//console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
 
 	update(){
@@ -3300,29 +3343,35 @@ class dataBinder {
 	}
 	
 	compileHTML(html){
-		let self = this;
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
+		
+		this.compileDom(dom);
+
+		return dom.childNodes;
+	}
+	
+	compileDom(dom){
+		
+		let self = this;
 		
 		$.each(jstack.dataBindingCompilers,function(k,compiler){
 			
 			jstack.walkTheDOM(dom,function(n){
 				
-				var matchResult = compiler.match.call(n);
+				let matchResult = compiler.match.call(n);
 				if(matchResult){
-					compiler.callback.call(n,self,matchResult);
+					return compiler.callback.call(n,self,matchResult);
 				}
 				
 			});
 			
 		});
-				
-		return dom.childNodes;
+		
 	}
 	
-	
 	filter(el,value){
-		var filter = this.getFilter(el);
+		let filter = this.getFilter(el);
 		if(typeof(filter)=='function'){
 			value = filter(value);
 		}
@@ -3330,11 +3379,11 @@ class dataBinder {
 	}
 	getFilter(el){
 		let $el = $(el);
-		var filter = $el.data('j-filter');
+		let filter = $el.data('j-filter');
 		if(!filter){
-			var attrFilter = el.getAttribute('j-filter');
+			let attrFilter = el.getAttribute('j-filter');
 			if(attrFilter){
-				var method = this.getValue(el,attrFilter);
+				let method = this.getValue(el,attrFilter);
 				$el.data('j-filter',method);
 			}
 		}
@@ -3342,8 +3391,8 @@ class dataBinder {
 	}
 	compilerAttrRender(el,tokens){
 		var r = '';
-		for(var i = 0, l = tokens.length; i<l; i++){
-			var token = tokens[i];
+		for(let i = 0, l = tokens.length; i<l; i++){
+			let token = tokens[i];
 			if(token.substr(0,2)=='{{'){
 				token = token.substr(2,token.length-4);
 				
@@ -3366,13 +3415,13 @@ class dataBinder {
 		};
 	}
 	static textTokenizer(text){
-		var tagRE = /\{\{((?:.|\n)+?)\}\}/g;
+		let tagRE = /\{\{((?:.|\n)+?)\}\}/g;
 		if (!tagRE.test(text)) {
 			return false;
 		}
-		var tokens = [];
-		var lastIndex = tagRE.lastIndex = 0;
-		var match, index;
+		let tokens = [];
+		let lastIndex = tagRE.lastIndex = 0;
+		let match, index;
 		while ((match = tagRE.exec(text))) {
 			index = match.index;
 			// push text token
@@ -3643,45 +3692,39 @@ jstack.dataBindingCompilers.text = {
 (function(){
 	
 let mutationObserver = new MutationObserver(function(mutations){
-$.each(mutations,function(i,mutation){
-	$.each(mutation.addedNodes,function(ii,node){
-		
-		jstack.walkTheDOM(node,function(n){
-			if(!document.body.contains(n)) return false;
-
-			if(n.nodeType!=Node.ELEMENT_NODE) return;
-
-			if(!document.body.contains(n)) return false;
+	$.each(mutations,function(i,mutation){
+		$.each(mutation.addedNodes,function(ii,node){
 			
-			let $n = $(n);
-			if($n.data('j:load:state')){
-				return;
-			}
-			$n.data('j:load:state',true);
-			jstack.trigger(n,'load');
+			jstack.walkTheDOM(node,function(n){
+				if(!document.body.contains(n) || n.nodeType!=Node.ELEMENT_NODE) return false;
+				let $n = $(n);
+				if($n.data('j:load:state')){
+					return;
+				}
+				$n.data('j:load:state',true);
+				jstack.trigger(n,'load');
+			});
 			
-
 		});
-		
-	});
 
-	$.each(mutation.removedNodes,function(ii,node){
-		jstack.walkTheDOM(node,function(n){
-			if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-				return false;
-			}
-			jstack.trigger(n,'unload');
+		$.each(mutation.removedNodes,function(ii,node){
+			jstack.walkTheDOM(node,function(n){
+				if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
+					return false;
+				}
+				jstack.trigger(n,'unload');
+			});
 		});
 	});
 });
-});
+
 mutationObserver.observe(document.body, {
-subtree: true,
-childList: true,
-characterData: true,
-attributes: false,
-attributeOldValue: false,
-characterDataOldValue: false,
+	subtree: true,
+	childList: true,
+	characterData: true,
+	attributes: false,
+	attributeOldValue: false,
+	characterDataOldValue: false,
 });
 
 jstack._eventStack = {};
