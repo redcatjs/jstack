@@ -11,7 +11,8 @@ let walkTheDOM = function(node, func){
 	}
 };
 
-let dynWalkTheDOM = function(node, func){
+/*
+let staticWalkTheDOM = function(node, func){
 	if(func(node)===false){
 		return;
 	}
@@ -21,8 +22,8 @@ let dynWalkTheDOM = function(node, func){
 		dynWalkTheDOM(children[i], func);
 	}
 };
+*/
 
 jstack.walkTheDOM = walkTheDOM;
-jstack.dynWalkTheDOM = dynWalkTheDOM;
 
 })();
