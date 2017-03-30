@@ -16,8 +16,45 @@ jstack.dataBindingCompilers.input = {
 		//default to model					
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
-		let controllerData = jstack.dataBinder.getControllerData(el);
-		jstack.dataBinder.dotSet(key,controllerData,val,true);
+		
+		let origin = jstack.getObserverTarget( dataBinder.model );
+		
+		let modelValue = jstack.dataBinder.dotSet(key,origin,val,true);
+		
+		if(!modelValue){
+			modelValue = '';
+		}
+		
+		//model to default dom value
+		if(modelValue!==val){
+			let nodeName = el.tagName.toLowerCase();
+			if(nodeName=='select'){
+				let found;
+				$el.find('option').each(function(){
+					if(this.hasAttribute('value')){
+						if(this.value==modelValue){
+							found = true;
+							return false;
+						}
+					}
+					else{
+						if($(this).text()==modelValue){
+							found = true;
+							return false;
+						}
+					}
+				});
+				if(found){
+					$el.populateInput(modelValue,{preventValEvent:true});
+				}
+				else{
+					jstack.dataBinder.dotSet(key,dataBinder.model,val);
+				}
+			}
+			else{
+				$el.populateInput(modelValue,{preventValEvent:true});
+			}
+		}
 		
 		let getData = function(){
 			let defaultValue = jstack.dataBinder.getInputVal(el);
