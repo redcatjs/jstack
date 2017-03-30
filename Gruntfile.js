@@ -61,13 +61,14 @@ grunt.initConfig({
 				"src/jquery/xhrPool.js",
 				"src/jquery/onFirst-onLast.js",
 				"src/jquery/selectRange.js",
+				"src/jquery/serializeForm.js",
 				
 				"src/template/getTemplate.js",
 				
 				"src/route.js",
 				"src/routeMVC.js",
 				
-				"src/data-binding/data-binding.js",
+				"src/data-binding/data-binder.js",
 				"src/data-binding/for.js",
 				"src/data-binding/if.js",
 				"src/data-binding/switch.js",
@@ -76,7 +77,6 @@ grunt.initConfig({
 				"src/data-binding/two-points.js",
 				"src/data-binding/input-file.js",
 				"src/data-binding/input.js",
-				"src/data-binding/data-binder.js",
 				"src/data-binding/text.js",
 				
 				"src/load.js",
