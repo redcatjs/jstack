@@ -191,11 +191,9 @@ class dataBinder {
 	addWatcher(el,render){
 		let w = this.watchers;
 		let watchers = w.get(el);
-		//let watchers = el.__jstackWatchers;
 		if(!watchers){
 			watchers = [];
 			w.set(el,watchers);
-			//el.__jstackWatchers = watchers;
 		}
 		watchers.push(render);
 	}
@@ -204,22 +202,21 @@ class dataBinder {
 		let w = this.watchers;
 		//console.log('update');
 		
-		let now = new Date().getTime();
-		console.log('runWatchers START');
-		let c = 0;
+		//let now = new Date().getTime();
+		//console.log('runWatchers START');
+		//let c = 0;
 		
 		jstack.walkTheDOM( this.view, function(n){
 			let watchers = w.get(n);
-			//let watchers = n.__jstackWatchers;
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					c++;
+					//c++;
 				}
 			}
 		});
 		
-		console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
+		//console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
 
 	update(){
