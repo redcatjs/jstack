@@ -2542,17 +2542,15 @@ class dataBinder {
 		
 		this.updateDeferQueued = false;
 		this.updateDeferInProgress = false;
-		this.updateDeferStateObserver = null;
+		this.updateDeferStateObserver = [];
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
 		this.watchers = new WeakMap();
 	}
 	ready(callback){
-		if(this.updateDeferStateObserver){
-			this.updateDeferStateObserver.then(function(){
-				callback();
-			});
+		if(this.updateDeferInProgress){
+			this.updateDeferStateObserver.push(callback);
 		}
 		else{
 			callback();
@@ -2687,8 +2685,8 @@ class dataBinder {
 			let oldValue = dataBinder.dotGet(key,data);
 
 			value = dataBinder.dotSet(key,data,value);
-			input.trigger('j:input',[value]);
 
+			input.trigger('j:input',[value]);
 			if(eventType=='j:update'){
 				input.trigger('j:input:update',[value]);
 			}
@@ -2699,6 +2697,7 @@ class dataBinder {
 			if(oldValue!==value){
 				input.trigger('j:change',[value,oldValue]);
 			}
+
 		};
 
 		let value;
@@ -2765,9 +2764,6 @@ class dataBinder {
 		}
 		else{
 			this.updateDeferInProgress = true;
-			if(!this.updateDeferStateObserver){
-				this.updateDeferStateObserver = $.Deferred();
-			}
 			setTimeout(function(){
 				self.runWatchers();
 				if(self.updateDeferQueued){
@@ -2776,8 +2772,9 @@ class dataBinder {
 					self.update();
 				}
 				else{
-					self.updateDeferStateObserver.resolve();
-					self.updateDeferStateObserver = null;
+					while(self.updateDeferStateObserver.length){
+						self.updateDeferStateObserver.pop()();
+					}
 					self.updateDeferInProgress = false;
 				}
 			},10);
@@ -2924,11 +2921,7 @@ class dataBinder {
 			if(array.length==index+1){
 				if(isDefault){
 					if(typeof(obj[k])==='undefined'){
-						
-						obj = jstack.getObserverTarget( obj );
-						
 						obj[k] = value;
-						
 					}
 					else{
 						value = obj[k];
@@ -3625,8 +3618,45 @@ jstack.dataBindingCompilers.input = {
 		//default to model					
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
-		let controllerData = jstack.dataBinder.getControllerData(el);
-		jstack.dataBinder.dotSet(key,controllerData,val,true);
+		
+		let origin = jstack.getObserverTarget( dataBinder.model );
+		
+		let modelValue = jstack.dataBinder.dotSet(key,origin,val,true);
+		
+		if(!modelValue){
+			modelValue = '';
+		}
+		
+		//model to default dom value
+		if(modelValue!==val){
+			let nodeName = el.tagName.toLowerCase();
+			if(nodeName=='select'){
+				let found;
+				$el.find('option').each(function(){
+					if(this.hasAttribute('value')){
+						if(this.value==modelValue){
+							found = true;
+							return false;
+						}
+					}
+					else{
+						if($(this).text()==modelValue){
+							found = true;
+							return false;
+						}
+					}
+				});
+				if(found){
+					$el.populateInput(modelValue,{preventValEvent:true});
+				}
+				else{
+					jstack.dataBinder.dotSet(key,dataBinder.model,val);
+				}
+			}
+			else{
+				$el.populateInput(modelValue,{preventValEvent:true});
+			}
+		}
 		
 		let getData = function(){
 			let defaultValue = jstack.dataBinder.getInputVal(el);
