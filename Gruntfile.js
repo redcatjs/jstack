@@ -89,17 +89,20 @@ grunt.initConfig({
 		}
 	},
 	
+	/*
 	uglify: {
 		build: {
 			src: 'jstack.js',
 			dest: 'jstack.min.js'
 		}
 	},
+	*/
 	
 	watch: {
 		scripts: {
 			files: ['src/*.js','src/*/*.js','Gruntfile.js'],
-			tasks: ['concat','uglify'],
+			//tasks: ['concat','uglify'],
+			tasks: ['concat'],
 			options: {
 				debounceDelay: 250,
 			},
@@ -115,6 +118,6 @@ grunt.loadNpmTasks('grunt-contrib-watch');
 
 // cli exec
 grunt.registerTask('default', ['concat']);
-grunt.registerTask('default', ['concat', 'uglify']);
+//grunt.registerTask('default', ['concat', 'uglify']);
 
 };
