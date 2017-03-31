@@ -256,7 +256,7 @@ class dataBinder {
 	
 	constructor(model,view,controller){
 		
-		//modelObservable(model,this);
+		modelObservable(model,this);
 		
 		this.model = model;
 		this.view = view;
@@ -429,20 +429,20 @@ class dataBinder {
 
 		let oldValue = dataBinder.dotGet(key,data);
 
-		value = dataBinder.dotSet(key,data,value);
-		//let setterCallback = function(target,k,v){
-			//console.log(k,v);
-			//let oldValue = target[k];
-			//target[k] = v;
-			//target.modelTrigger({
-				//type:'set',
-				//target:target,
-				//key:k,
-				//oldValue:oldValue,
-				//value:value,
-			//});
-		//};
-		//value = dataBinder.dotSet(key,data,value,false,setterCallback);
+		//value = dataBinder.dotSet(key,data,value);
+		let setterCallback = function(target,k,v){
+			console.log(k,v);
+			let oldValue = target[k];
+			target[k] = v;
+			target.modelTrigger({
+				type:'set',
+				target:target,
+				key:k,
+				oldValue:oldValue,
+				value:value,
+			});
+		};
+		value = dataBinder.dotSet(key,data,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		
