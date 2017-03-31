@@ -1,6 +1,6 @@
 (function(){
 
-class modelProxy{
+class modelObserver{
 	constructor(o,dataBinder){
 		this.o = o;
 		this.dataBinder = dataBinder;
@@ -8,14 +8,11 @@ class modelProxy{
 		this.observers = [];
 	}
 	
-	triggerObserver(change,key){
-		let observers
-		if(typeof(key)=='undefined'||key===false){
-			observers = this.observers;
+	modelTrigger(change){
+		for(let i=0, l=this.observers.length;i<l;i++){
+			this.observers[i](change);
 		}
-		else{
-			observers = this.keysObservers[key];
-		}
+		let observers = this.keysObservers[change.key];
 		if(observers){
 			for(let i=0, l=observers.length;i<l;i++){
 				observers[i](change);
@@ -159,7 +156,7 @@ class modelProxy{
 	}
 }
 
-let modelProxify = function(obj,dataBinder){
+let modelObservable = function(obj,dataBinder){
 
 	//modelObserve
 	//modelSet
@@ -170,23 +167,37 @@ let modelProxify = function(obj,dataBinder){
 	//modelSplice
 	//modelDelete
 	
-	let modelProxyObject = new modelProxy(obj,dataBinder);
+	let modelObserverObject = new modelObserver(obj,dataBinder);
 	
 	if(!obj.modelObserve){
 		Object.defineProperty(obj, 'modelObserve', {
-			value: modelProxyObject.modelObserve,
+			value: function(){
+				return modelObserverObject.modelObserve.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+	}
+	if(!obj.modelTrigger){
+		Object.defineProperty(obj, 'modelTrigger', {
+			value: function(){
+				return modelObserverObject.modelTrigger.apply(modelObserverObject,arguments);
+			},
 			enumerable: false
 		});
 	}
 	if(!obj.modelSet){
 		Object.defineProperty(obj, 'modelSet', {
-			value: modelProxyObject.modelSet,
+			value: function(){
+				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+			},
 			enumerable: false
 		});
 	}
 	if(!obj.modelDelete){
 		Object.defineProperty(obj, 'modelDelete', {
-			value: modelProxyObject.modelDelete,
+			value: function(){
+				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+			},
 			enumerable: false
 		});
 	}
@@ -194,82 +205,58 @@ let modelProxify = function(obj,dataBinder){
 	if(Array.isArray(obj)){
 		if(!obj.modelPush){
 			Object.defineProperty(obj, 'modelPush', {
-				value: modelProxyObject.modelPush,
+				value: function(){
+					return modelObserverObject.modelPush.apply(modelObserverObject,arguments);
+				},
 				enumerable: false
 			});
 		}
 		if(!obj.modelUnshift){
 			Object.defineProperty(obj, 'modelUnshift', {
-				value: modelProxyObject.modelUnshift,
+				value: function(){
+					return modelObserverObject.modelUnshift.apply(modelObserverObject,arguments);
+				},
 				enumerable: false
 			});
 		}
 		if(!obj.modelPop){
 			Object.defineProperty(obj, 'modelPop', {
-				value: modelProxyObject.modelPop,
+				value: function(){
+					return modelObserverObject.modelPop.apply(modelObserverObject,arguments);
+				},
 				enumerable: false
 			});
 		}
 		if(!obj.modelShift){
 			Object.defineProperty(obj, 'modelShift', {
-				value: modelProxyObject.modelShift,
+				value: function(){
+					return modelObserverObject.modelShift.apply(modelObserverObject,arguments);
+				},
 				enumerable: false
 			});
 		}
 		if(!obj.modelSplice){
 			Object.defineProperty(obj, 'modelSplice', {
-				value: modelProxyObject.modelSplice,
+				value: function(){
+					return modelObserverObject.modelSplice.apply(modelObserverObject,arguments);
+				},
 				enumerable: false
 			});
 		}
 	}
 	
-	let proxy = new Proxy(obj,{
-		set: function(target, key, value){
-			let oldValue = target[key];
-			if(typeof(value)=='object'&&value!==null){
-				value = modelProxify(value,dataBinder);
-			}
-			target[key] = value;
-			modelProxyObject.triggerObserver({
-				type:'set',
-				target:target,
-				key:key,
-				oldValue:oldValue,
-				value:value,
-			});
-			return true;
-		},
-		deleteProperty: function (target, key) {
-			let oldValue = target[key];
-			if(Array.isArray(target))
-				target.splice(key,1);
-			else
-				delete(target[key]);
-			modelProxyObject.triggerObserver({
-				type:'unset',
-				target:target,
-				key:key,
-				oldValue:oldValue,
-			});
-			return true;
-		}	
-	});
-	
 	$.each(obj,function(k,v){
 		if(typeof(v)=='object'&&v!==null){
-			obj[k] = modelProxify( v, dataBinder );
+			modelObservable( v, dataBinder );
 		}
 	});
-	
-	return proxy;
 };
 
 class dataBinder {
 	
 	constructor(model,view,controller){
 		
-		model = modelProxify(model,this);
+		modelObservable(model,this);
 		
 		this.model = model;
 		this.view = view;
@@ -442,12 +429,19 @@ class dataBinder {
 
 		let oldValue = dataBinder.dotGet(key,data);
 
+		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
-			target.modelSet(k,v,function(){
-				
+			console.log(k,v);
+			let oldValue = target[k];
+			target[k] = v;
+			target.modelTrigger({
+				type:'set',
+				target:target,
+				key:k,
+				oldValue:oldValue,
+				value:value,
 			});
 		};
-		
 		value = dataBinder.dotSet(key,data,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
