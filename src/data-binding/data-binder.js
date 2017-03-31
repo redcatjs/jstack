@@ -256,7 +256,7 @@ class dataBinder {
 	
 	constructor(model,view,controller){
 		
-		modelObservable(model,this);
+		//modelObservable(model,this);
 		
 		this.model = model;
 		this.view = view;
@@ -429,20 +429,20 @@ class dataBinder {
 
 		let oldValue = dataBinder.dotGet(key,data);
 
-		//value = dataBinder.dotSet(key,data,value);
-		let setterCallback = function(target,k,v){
-			console.log(k,v);
-			let oldValue = target[k];
-			target[k] = v;
-			target.modelTrigger({
-				type:'set',
-				target:target,
-				key:k,
-				oldValue:oldValue,
-				value:value,
-			});
-		};
-		value = dataBinder.dotSet(key,data,value,false,setterCallback);
+		value = dataBinder.dotSet(key,data,value);
+		//let setterCallback = function(target,k,v){
+			//console.log(k,v);
+			//let oldValue = target[k];
+			//target[k] = v;
+			//target.modelTrigger({
+				//type:'set',
+				//target:target,
+				//key:k,
+				//oldValue:oldValue,
+				//value:value,
+			//});
+		//};
+		//value = dataBinder.dotSet(key,data,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		
@@ -498,24 +498,28 @@ class dataBinder {
 	update(){
 		let self = this;
 		if(this.updateDeferQueued){
+			//console.log('update updateDeferQueued');
 			return;
 		}
 		if(this.updateDeferInProgress){
+			//console.log('update updateDeferInProgress');
 			this.updateDeferQueued = true;
 			self.updateDeferStateObserver.then(function(){
 				self.update();
 			});
 		}
 		else{
+			//console.log('update setTimeout');
 			this.updateDeferInProgress = true;
 			setTimeout(function(){
 				self.updateDeferQueued = false;
-				//console.log('update');
+				//console.log('update perform');
 				self.runWatchers();
 				self.updateDeferInProgress = false;
 				let defer = self.updateDeferStateObserver;
 				self.updateDeferStateObserver = $.Deferred();
 				defer.resolve();
+				self.updateDeferQueued = false;
 			},10);
 			
 		}
