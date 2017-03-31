@@ -241,7 +241,7 @@ class dataBinder {
 				let defer = self.updateDeferStateObserver;
 				self.updateDeferStateObserver = $.Deferred();
 				defer.resolve();
-			},3000);
+			},10);
 			
 		}
 	}
