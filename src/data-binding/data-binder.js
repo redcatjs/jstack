@@ -179,7 +179,6 @@ class dataBinder {
 
 		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
-			console.log(target,k,v);
 			let oldValue = target[k];
 			target[k] = v;
 			target.modelTrigger({
@@ -234,7 +233,7 @@ class dataBinder {
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					//c++;
+					c++;
 				}
 			}
 		});

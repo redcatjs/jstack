@@ -17,9 +17,12 @@ jstack.dataBindingCompilers.input = {
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		let origin = jstack.getObserverTarget( dataBinder.model );
+		let setterCallback = function(target,k,v){
+			let origin = jstack.getObserverTarget(target);
+			origin[k] = v;
+		};
 		
-		let modelValue = jstack.dataBinder.dotSet(key,origin,val,true);
+		let modelValue = jstack.dataBinder.dotSet(key,dataBinder.model,val,true,setterCallback);
 		
 		if(!modelValue){
 			modelValue = '';
@@ -48,7 +51,8 @@ jstack.dataBindingCompilers.input = {
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					jstack.dataBinder.dotSet(key,dataBinder.model,val);
+					//jstack.dataBinder.dotSet(key,dataBinder.model,val);
+					jstack.dataBinder.dotSet(key,dataBinder.model,val,false,setterCallback);
 				}
 			}
 			else{
