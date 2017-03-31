@@ -57,7 +57,6 @@ grunt.initConfig({
 				"src/jquery/jModel.js",
 				"src/jquery/comment.js",
 				"src/jquery/jData.js",
-				"src/jquery/onJstackReady.js",
 				"src/jquery/xhrPool.js",
 				"src/jquery/onFirst-onLast.js",
 				"src/jquery/selectRange.js",
