@@ -252,7 +252,7 @@ let modelObservable = function(obj,dataBinder){
 		}
 	});
 	
-	let proxy = new Proxy({
+	let proxy = new Proxy(obj,{
 		set: function(target, key, value){
 			let oldValue = target[key];
 			if(typeof(value)=='object'&&value!==null){
