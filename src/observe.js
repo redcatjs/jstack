@@ -58,9 +58,7 @@ let observable = function(obj,parentProxy,parentKey){
 		proxyTarget: obj,
 	};
 	
-	let proxy;
-	
-	proxy = new Proxy(obj,{
+	let proxy = new Proxy(obj,{
 		get: function (target, key) {
 			if(key===prefix){
 				return observer;
