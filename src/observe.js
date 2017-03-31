@@ -2,7 +2,7 @@
 
 let prefix = '__JSTACK__OBSERVABLE__';
 
-var observable = function(obj,parentProxy,parentKey){
+let observable = function(obj,parentProxy,parentKey){
 	
 	let observer = obj[prefix];
 	if(observer){
@@ -68,7 +68,6 @@ var observable = function(obj,parentProxy,parentKey){
 			return target[key];
 		},
 		set: function(target, key, value){
-			
 			let oldValue = target[key];
 			
 			if(typeof(value)=='object'&&value!==null){
@@ -93,7 +92,7 @@ var observable = function(obj,parentProxy,parentKey){
 			let oldValue = target[key];
 			
 			
-			if (Array.isArray(target))
+			if(Array.isArray(target))
 				target.splice(key,1);
 			else
 				delete(target[key]);
@@ -131,7 +130,7 @@ var observable = function(obj,parentProxy,parentKey){
 	return proxy;
 };
 
-var observe = function(obj,key,callback,namespace,recursive){
+let observe = function(obj,key,callback,namespace,recursive){
 	
 	if(typeof(key)=='function'){
 		recursive = namespace;
