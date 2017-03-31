@@ -1,8 +1,276 @@
 (function(){
+
+class modelProxy{
+	constructor(o,dataBinder){
+		this.o = o;
+		this.dataBinder = dataBinder;
+		this.keysObservers = {};
+		this.observers = [];
+	}
 	
+	triggerObserver(change,key){
+		let observers
+		if(typeof(key)=='undefined'||key===false){
+			observers = this.observers;
+		}
+		else{
+			observers = this.keysObservers[key];
+		}
+		if(observers){
+			for(let i=0, l=observers.length;i<l;i++){
+				observers[i](change);
+			}
+		}
+	}
+	addObserver(callback,key){
+		let observers
+		if(typeof(key)=='undefined'||key===false){
+			observers = this.observers;
+		}
+		else{
+			if(!this.keysObservers[key]){
+				this.keysObservers[key] = [];
+			}	
+			observers = this.keysObservers[key];
+		}
+		observers.push(callback);
+	}
+	removeObserver(callback,key){
+		let observers
+		if(typeof(key)=='undefined'||key===false){
+			observers = this.observers;
+		}
+		else{
+			observers = this.keysObservers[key];
+		}
+		if(observers){
+			for(let i=0, l=observers.length;i<l;i++){
+				if(callback===observers[i]){
+					observers.splice(i,1);
+				}
+			}
+		}
+	}
+	
+	modelObserve(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		if(args.length){
+			for(let i = 0, l = args.length;i<l;i++){
+				let arg = args[i];
+				if(arg instanceof Array){
+					for(let i2 = 0, l2 = arg.length;i2<l2;i2++){
+						this.addObserver(callback,arg[i2]);
+					}
+				}
+				else{
+					this.addObserver(callback,arg);
+				}
+			}
+		}
+		else{
+			this.addObserver(callback);
+		}
+	}
+	modelUnobserve(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		if(args.length){
+			for(let i = 0, l = args.length;i<l;i++){
+				let arg = args[i];
+				if(arg instanceof Array){
+					for(let i2 = 0, l2 = arg.length;i2<l2;i2++){
+						this.removeObserver(callback,arg[i2]);
+					}
+				}
+				else{
+					this.removeObserver(callback,arg);
+				}
+			}
+		}
+		else{
+			this.removeObserver(callback);
+		}
+	}
+	
+	modelSet(key,value,callback){
+		this.o[key] = value;
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelDelete(key,callback){
+		delete this.o[key];
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	
+	modelPush(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.push.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelUnshift(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.unshift.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelSplice(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.splice.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelShift(callback){
+		this.o.shift();
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelPop(callback){
+		this.o.pop();
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+}
+
+let modelProxify = function(obj,dataBinder){
+
+	//modelObserve
+	//modelSet
+	//modelPush
+	//modelUnshift
+	//modelShift
+	//modelPop
+	//modelSplice
+	//modelDelete
+	
+	let modelProxyObject = new modelProxy(obj,dataBinder);
+	
+	if(!obj.modelObserve){
+		Object.defineProperty(obj, 'modelObserve', {
+			value: modelProxyObject.modelObserve,
+			enumerable: false
+		});
+	}
+	if(!obj.modelSet){
+		Object.defineProperty(obj, 'modelSet', {
+			value: modelProxyObject.modelSet,
+			enumerable: false
+		});
+	}
+	if(!obj.modelDelete){
+		Object.defineProperty(obj, 'modelDelete', {
+			value: modelProxyObject.modelDelete,
+			enumerable: false
+		});
+	}
+	
+	if(Array.isArray(obj)){
+		if(!obj.modelPush){
+			Object.defineProperty(obj, 'modelPush', {
+				value: modelProxyObject.modelPush,
+				enumerable: false
+			});
+		}
+		if(!obj.modelUnshift){
+			Object.defineProperty(obj, 'modelUnshift', {
+				value: modelProxyObject.modelUnshift,
+				enumerable: false
+			});
+		}
+		if(!obj.modelPop){
+			Object.defineProperty(obj, 'modelPop', {
+				value: modelProxyObject.modelPop,
+				enumerable: false
+			});
+		}
+		if(!obj.modelShift){
+			Object.defineProperty(obj, 'modelShift', {
+				value: modelProxyObject.modelShift,
+				enumerable: false
+			});
+		}
+		if(!obj.modelSplice){
+			Object.defineProperty(obj, 'modelSplice', {
+				value: modelProxyObject.modelSplice,
+				enumerable: false
+			});
+		}
+	}
+	
+	let proxy = new Proxy(obj,{
+		set: function(target, key, value){
+			let oldValue = target[key];
+			if(typeof(value)=='object'&&value!==null){
+				value = modelProxify(value,dataBinder);
+			}
+			target[key] = value;
+			modelProxyObject.triggerObserver({
+				type:'set',
+				target:target,
+				key:key,
+				oldValue:oldValue,
+				value:value,
+			});
+			return true;
+		},
+		deleteProperty: function (target, key) {
+			let oldValue = target[key];
+			if(Array.isArray(target))
+				target.splice(key,1);
+			else
+				delete(target[key]);
+			modelProxyObject.triggerObserver({
+				type:'unset',
+				target:target,
+				key:key,
+				oldValue:oldValue,
+			});
+			return true;
+		}	
+	});
+	
+	$.each(obj,function(k,v){
+		if(typeof(v)=='object'&&v!==null){
+			obj[k] = modelProxify( v, dataBinder );
+		}
+	});
+	
+	return proxy;
+};
+
 class dataBinder {
 	
 	constructor(model,view,controller){
+		
+		model = modelProxify(model,this);
+		
 		this.model = model;
 		this.view = view;
 		this.controller = controller;
@@ -14,7 +282,9 @@ class dataBinder {
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
 		this.watchers = new WeakMap();
+		
 	}
+	
 	ready(callback){
 		if(this.updateDeferInProgress){
 			this.updateDeferStateObserver.then(callback);
@@ -172,7 +442,13 @@ class dataBinder {
 
 		let oldValue = dataBinder.dotGet(key,data);
 
-		value = dataBinder.dotSet(key,data,value);
+		let setterCallback = function(target,k,v){
+			target.modelSet(k,v,function(){
+				
+			});
+		};
+		
+		value = dataBinder.dotSet(key,data,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		
@@ -382,7 +658,7 @@ class dataBinder {
 			}
 		}, data);
 	}
-	static dotSet(key,data,value,isDefault){
+	static dotSet(key,data,value,isDefault,setterCallback){
 		if(typeof(data)!='object'||data===null){
 			return;
 		}
@@ -390,19 +666,34 @@ class dataBinder {
 			if(array.length==index+1){
 				if(isDefault){
 					if(typeof(obj[k])==='undefined'){
-						obj[k] = value;
+						if(setterCallback){
+							setterCallback(obj,k,value);
+						}
+						else{
+							obj[k] = value;
+						}
 					}
 					else{
 						value = obj[k];
 					}
 				}
 				else{
-					obj[k] = value;
+					if(setterCallback){
+						setterCallback(obj,k,value);
+					}
+					else{
+						obj[k] = value;
+					}
 				}
 			}
 			else{
 				if(typeof(obj[k])!='object'||obj[k]===null){
-					obj[k] = {};
+					if(setterCallback){
+						setterCallback(obj,k,{});
+					}
+					else{
+						obj[k] = {};
+					}
 				}
 				return obj[k];
 			}
