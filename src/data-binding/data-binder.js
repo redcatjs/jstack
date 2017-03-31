@@ -135,43 +135,9 @@ class dataBinder {
 		return typeof(value)=='undefined'?'':value;
 	}
 	inputToModel(el,eventType,triggeredValue){
-		let input = $(el);
-
 		let self = this;
-
-		let data = this.model;
+		
 		let name = el.getAttribute('name');
-
-		let performInputToModel = function(){
-			let key = dataBinder.getScopedInput(el);
-			if(filteredValue!=value){
-				value = filteredValue;
-				input.populateInput(value,{preventValEvent:true});
-			}
-
-			let oldValue = dataBinder.dotGet(key,data);
-
-			value = dataBinder.dotSet(key,data,value);
-			
-			input.trigger('j:input:model',[value]);
-			
-			self.ready(function(){
-			
-				input.trigger('j:input',[value]);
-				if(eventType=='j:update'){
-					input.trigger('j:input:update',[value]);
-				}
-				else{
-					input.trigger('j:input:user',[value]);
-				}
-
-				if(oldValue!==value){
-					input.trigger('j:change',[value,oldValue]);
-				}
-			
-			});
-
-		};
 
 		let value;
 		if(typeof(triggeredValue)!=='undefined'){
@@ -183,18 +149,51 @@ class dataBinder {
 		
 		let filteredValue = this.filter(el,value);
 
-
 		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
 			filteredValue.then(function(val){
 				filteredValue = val;
-				performInputToModel();
+				self.performInputToModel(el,value,filteredValue,eventType);
 			});
 		}
 		else{
-			performInputToModel();
+			self.performInputToModel(el,value,filteredValue,eventType);
 		}
 
 	}
+	performInputToModel(el,value,filteredValue,eventType){
+		let self = this;
+		let data = this.model;
+		let input = $(el);
+		let key = dataBinder.getScopedInput(el);
+		if(filteredValue!=value){
+			value = filteredValue;
+			input.populateInput(value,{preventValEvent:true});
+		}
+
+		let oldValue = dataBinder.dotGet(key,data);
+
+		value = dataBinder.dotSet(key,data,value);
+		
+		input.trigger('j:input:model',[value]);
+		
+		self.ready(function(){
+		
+			input.trigger('j:input',[value]);
+			if(eventType=='j:update'){
+				input.trigger('j:input:update',[value]);
+			}
+			else{
+				input.trigger('j:input:user',[value]);
+			}
+
+			if(oldValue!==value){
+				input.trigger('j:change',[value,oldValue]);
+			}
+		
+		});
+
+	}
+	
 	addWatcher(el,render){
 		let w = this.watchers;
 		let watchers = w.get(el);
