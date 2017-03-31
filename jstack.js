@@ -2677,7 +2677,6 @@ class dataBinder {
 
 		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
-			console.log(target,k,v);
 			let oldValue = target[k];
 			target[k] = v;
 			target.modelTrigger({
@@ -2732,7 +2731,7 @@ class dataBinder {
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					//c++;
+					c++;
 				}
 			}
 		});
@@ -3894,9 +3893,12 @@ jstack.dataBindingCompilers.input = {
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		let origin = jstack.getObserverTarget( dataBinder.model );
+		let setterCallback = function(target,k,v){
+			let origin = jstack.getObserverTarget(target);
+			origin[k] = v;
+		};
 		
-		let modelValue = jstack.dataBinder.dotSet(key,origin,val,true);
+		let modelValue = jstack.dataBinder.dotSet(key,dataBinder.model,val,true,setterCallback);
 		
 		if(!modelValue){
 			modelValue = '';
@@ -3925,7 +3927,8 @@ jstack.dataBindingCompilers.input = {
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					jstack.dataBinder.dotSet(key,dataBinder.model,val);
+					//jstack.dataBinder.dotSet(key,dataBinder.model,val);
+					jstack.dataBinder.dotSet(key,dataBinder.model,val,false,setterCallback);
 				}
 			}
 			else{
