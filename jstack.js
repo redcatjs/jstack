@@ -2731,7 +2731,7 @@ class dataBinder {
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					c++;
+					//c++;
 				}
 			}
 		});
