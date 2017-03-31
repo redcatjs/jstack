@@ -9,7 +9,7 @@ class dataBinder {
 		
 		this.updateDeferQueued = false;
 		this.updateDeferInProgress = false;
-		this.updateDeferStateObserver = [];
+		this.updateDeferStateObserver = $.Deferred();
 		
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
@@ -17,7 +17,7 @@ class dataBinder {
 	}
 	ready(callback){
 		if(this.updateDeferInProgress){
-			this.updateDeferStateObserver.push(callback);
+			this.updateDeferStateObserver.then(callback);
 		}
 		else{
 			callback();
@@ -221,30 +221,27 @@ class dataBinder {
 	}
 
 	update(){
-		//console.log('update');
 		let self = this;
 		if(this.updateDeferQueued){
 			return;
 		}
 		if(this.updateDeferInProgress){
 			this.updateDeferQueued = true;
+			self.updateDeferStateObserver.then(function(){
+				self.update();
+			});
 		}
 		else{
 			this.updateDeferInProgress = true;
 			setTimeout(function(){
+				self.updateDeferQueued = false;
+				//console.log('update');
 				self.runWatchers();
-				if(self.updateDeferQueued){
-					self.updateDeferInProgress = false;
-					self.updateDeferQueued = false;
-					self.update();
-				}
-				else{
-					while(self.updateDeferStateObserver.length){
-						self.updateDeferStateObserver.pop()();
-					}
-					self.updateDeferInProgress = false;
-				}
-			},10);
+				self.updateDeferInProgress = false;
+				let defer = self.updateDeferStateObserver;
+				self.updateDeferStateObserver = $.Deferred();
+				defer.resolve();
+			},3000);
 			
 		}
 	}
