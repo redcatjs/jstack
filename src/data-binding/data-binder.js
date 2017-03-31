@@ -245,18 +245,32 @@ let modelObservable = function(obj,dataBinder){
 		}
 	}
 	
+	
 	$.each(obj,function(k,v){
 		if(typeof(v)=='object'&&v!==null){
-			modelObservable( v, dataBinder );
+			obj[k] = modelObservable( v, dataBinder );
 		}
 	});
+	
+	let proxy = new Proxy{
+		set: function(target, key, value){
+			let oldValue = target[key];
+			if(typeof(value)=='object'&&value!==null){
+				value = modelObservable(value, proxy, key);
+			}
+			target[key] = value;
+			return true;
+		}
+	}
+	
+	return proxy;
 };
 
 class dataBinder {
 	
 	constructor(model,view,controller){
 		
-		modelObservable(model,this);
+		model = modelObservable(model,this);
 		
 		this.model = model;
 		this.view = view;
@@ -431,7 +445,7 @@ class dataBinder {
 
 		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
-			console.log(k,v);
+			console.log(target,k,v);
 			let oldValue = target[k];
 			target[k] = v;
 			target.modelTrigger({
@@ -476,7 +490,6 @@ class dataBinder {
 	runWatchers(){
 		let self = this;
 		let w = this.watchers;
-		//console.log('update');
 		
 		//let now = new Date().getTime();
 		//console.log('runWatchers START');
