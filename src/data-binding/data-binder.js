@@ -152,18 +152,22 @@ class dataBinder {
 			let oldValue = dataBinder.dotGet(key,data);
 
 			value = dataBinder.dotSet(key,data,value);
+			
+			self.ready(function(){
+			
+				input.trigger('j:input',[value]);
+				if(eventType=='j:update'){
+					input.trigger('j:input:update',[value]);
+				}
+				else{
+					input.trigger('j:input:user',[value]);
+				}
 
-			input.trigger('j:input',[value]);
-			if(eventType=='j:update'){
-				input.trigger('j:input:update',[value]);
-			}
-			else{
-				input.trigger('j:input:user',[value]);
-			}
-
-			if(oldValue!==value){
-				input.trigger('j:change',[value,oldValue]);
-			}
+				if(oldValue!==value){
+					input.trigger('j:change',[value,oldValue]);
+				}
+			
+			});
 
 		};
 
