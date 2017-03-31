@@ -153,6 +153,8 @@ class dataBinder {
 
 			value = dataBinder.dotSet(key,data,value);
 			
+			input.trigger('j:input:model',[value]);
+			
 			self.ready(function(){
 			
 				input.trigger('j:input',[value]);
