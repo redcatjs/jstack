@@ -100,7 +100,6 @@ grunt.initConfig({
 		scripts: {
 			files: ['src/*.js','src/*/*.js','Gruntfile.js'],
 			tasks: ['concat','uglify'],
-			tasks: ['concat'],
 			options: {
 				debounceDelay: 250,
 			},
