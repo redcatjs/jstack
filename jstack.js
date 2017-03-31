@@ -71,9 +71,7 @@ let observable = function(obj,parentProxy,parentKey){
 		proxyTarget: obj,
 	};
 	
-	let proxy;
-	
-	proxy = new Proxy(obj,{
+	let proxy = new Proxy(obj,{
 		get: function (target, key) {
 			if(key===prefix){
 				return observer;
@@ -2499,10 +2497,265 @@ jstack.routeMVC = function(path,obj){
 };
 
 (function(){
+
+class modelObserver{
+	constructor(o,dataBinder){
+		this.o = o;
+		this.dataBinder = dataBinder;
+		this.keysObservers = {};
+		this.observers = [];
+	}
 	
+	modelTrigger(change){
+		for(let i=0, l=this.observers.length;i<l;i++){
+			this.observers[i](change);
+		}
+		let observers = this.keysObservers[change.key];
+		if(observers){
+			for(let i=0, l=observers.length;i<l;i++){
+				observers[i](change);
+			}
+		}
+	}
+	addObserver(callback,key){
+		let observers
+		if(typeof(key)=='undefined'||key===false){
+			observers = this.observers;
+		}
+		else{
+			if(!this.keysObservers[key]){
+				this.keysObservers[key] = [];
+			}	
+			observers = this.keysObservers[key];
+		}
+		observers.push(callback);
+	}
+	removeObserver(callback,key){
+		let observers
+		if(typeof(key)=='undefined'||key===false){
+			observers = this.observers;
+		}
+		else{
+			observers = this.keysObservers[key];
+		}
+		if(observers){
+			for(let i=0, l=observers.length;i<l;i++){
+				if(callback===observers[i]){
+					observers.splice(i,1);
+				}
+			}
+		}
+	}
+	
+	modelObserve(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		if(args.length){
+			for(let i = 0, l = args.length;i<l;i++){
+				let arg = args[i];
+				if(arg instanceof Array){
+					for(let i2 = 0, l2 = arg.length;i2<l2;i2++){
+						this.addObserver(callback,arg[i2]);
+					}
+				}
+				else{
+					this.addObserver(callback,arg);
+				}
+			}
+		}
+		else{
+			this.addObserver(callback);
+		}
+	}
+	modelUnobserve(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		if(args.length){
+			for(let i = 0, l = args.length;i<l;i++){
+				let arg = args[i];
+				if(arg instanceof Array){
+					for(let i2 = 0, l2 = arg.length;i2<l2;i2++){
+						this.removeObserver(callback,arg[i2]);
+					}
+				}
+				else{
+					this.removeObserver(callback,arg);
+				}
+			}
+		}
+		else{
+			this.removeObserver(callback);
+		}
+	}
+	
+	modelSet(key,value,callback){
+		this.o[key] = value;
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelDelete(key,callback){
+		delete this.o[key];
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	
+	modelPush(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.push.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelUnshift(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.unshift.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelSplice(){
+		let args = Array.prototype.slice.call(arguments);
+		let callback;
+		if(args.length&&typeof(args[args.length-1])=='function'){
+			callback = args.pop();
+		}
+		Array.prototype.splice.apply(this.o,args);
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelShift(callback){
+		this.o.shift();
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+	modelPop(callback){
+		this.o.pop();
+		if(callback){
+			this.dataBinder.ready(callback);
+		}
+	}
+}
+
+let modelObservable = function(obj,dataBinder){
+
+	//modelObserve
+	//modelSet
+	//modelPush
+	//modelUnshift
+	//modelShift
+	//modelPop
+	//modelSplice
+	//modelDelete
+	
+	let modelObserverObject = new modelObserver(obj,dataBinder);
+	
+	if(!obj.modelObserve){
+		Object.defineProperty(obj, 'modelObserve', {
+			value: function(){
+				return modelObserverObject.modelObserve.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+	}
+	if(!obj.modelTrigger){
+		Object.defineProperty(obj, 'modelTrigger', {
+			value: function(){
+				return modelObserverObject.modelTrigger.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+	}
+	if(!obj.modelSet){
+		Object.defineProperty(obj, 'modelSet', {
+			value: function(){
+				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+	}
+	if(!obj.modelDelete){
+		Object.defineProperty(obj, 'modelDelete', {
+			value: function(){
+				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+	}
+	
+	if(Array.isArray(obj)){
+		if(!obj.modelPush){
+			Object.defineProperty(obj, 'modelPush', {
+				value: function(){
+					return modelObserverObject.modelPush.apply(modelObserverObject,arguments);
+				},
+				enumerable: false
+			});
+		}
+		if(!obj.modelUnshift){
+			Object.defineProperty(obj, 'modelUnshift', {
+				value: function(){
+					return modelObserverObject.modelUnshift.apply(modelObserverObject,arguments);
+				},
+				enumerable: false
+			});
+		}
+		if(!obj.modelPop){
+			Object.defineProperty(obj, 'modelPop', {
+				value: function(){
+					return modelObserverObject.modelPop.apply(modelObserverObject,arguments);
+				},
+				enumerable: false
+			});
+		}
+		if(!obj.modelShift){
+			Object.defineProperty(obj, 'modelShift', {
+				value: function(){
+					return modelObserverObject.modelShift.apply(modelObserverObject,arguments);
+				},
+				enumerable: false
+			});
+		}
+		if(!obj.modelSplice){
+			Object.defineProperty(obj, 'modelSplice', {
+				value: function(){
+					return modelObserverObject.modelSplice.apply(modelObserverObject,arguments);
+				},
+				enumerable: false
+			});
+		}
+	}
+	
+	$.each(obj,function(k,v){
+		if(typeof(v)=='object'&&v!==null){
+			modelObservable( v, dataBinder );
+		}
+	});
+};
+
 class dataBinder {
 	
 	constructor(model,view,controller){
+		
+		modelObservable(model,this);
+		
 		this.model = model;
 		this.view = view;
 		this.controller = controller;
@@ -2514,7 +2767,9 @@ class dataBinder {
 		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
 		this.watchers = new WeakMap();
+		
 	}
+	
 	ready(callback){
 		if(this.updateDeferInProgress){
 			this.updateDeferStateObserver.then(callback);
@@ -2635,43 +2890,9 @@ class dataBinder {
 		return typeof(value)=='undefined'?'':value;
 	}
 	inputToModel(el,eventType,triggeredValue){
-		let input = $(el);
-
 		let self = this;
-
-		let data = this.model;
+		
 		let name = el.getAttribute('name');
-
-		let performInputToModel = function(){
-			let key = dataBinder.getScopedInput(el);
-			if(filteredValue!=value){
-				value = filteredValue;
-				input.populateInput(value,{preventValEvent:true});
-			}
-
-			let oldValue = dataBinder.dotGet(key,data);
-
-			value = dataBinder.dotSet(key,data,value);
-			
-			input.trigger('j:input:model',[value]);
-			
-			self.ready(function(){
-			
-				input.trigger('j:input',[value]);
-				if(eventType=='j:update'){
-					input.trigger('j:input:update',[value]);
-				}
-				else{
-					input.trigger('j:input:user',[value]);
-				}
-
-				if(oldValue!==value){
-					input.trigger('j:change',[value,oldValue]);
-				}
-			
-			});
-
-		};
 
 		let value;
 		if(typeof(triggeredValue)!=='undefined'){
@@ -2683,18 +2904,64 @@ class dataBinder {
 		
 		let filteredValue = this.filter(el,value);
 
-
 		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
 			filteredValue.then(function(val){
 				filteredValue = val;
-				performInputToModel();
+				self.performInputToModel(el,value,filteredValue,eventType);
 			});
 		}
 		else{
-			performInputToModel();
+			self.performInputToModel(el,value,filteredValue,eventType);
 		}
 
 	}
+	performInputToModel(el,value,filteredValue,eventType){
+		let self = this;
+		let data = this.model;
+		let input = $(el);
+		let key = dataBinder.getScopedInput(el);
+		if(filteredValue!=value){
+			value = filteredValue;
+			input.populateInput(value,{preventValEvent:true});
+		}
+
+		let oldValue = dataBinder.dotGet(key,data);
+
+		//value = dataBinder.dotSet(key,data,value);
+		let setterCallback = function(target,k,v){
+			console.log(k,v);
+			let oldValue = target[k];
+			target[k] = v;
+			target.modelTrigger({
+				type:'set',
+				target:target,
+				key:k,
+				oldValue:oldValue,
+				value:value,
+			});
+		};
+		value = dataBinder.dotSet(key,data,value,false,setterCallback);
+		
+		input.trigger('j:input:model',[value]);
+		
+		self.ready(function(){
+		
+			input.trigger('j:input',[value]);
+			if(eventType=='j:update'){
+				input.trigger('j:input:update',[value]);
+			}
+			else{
+				input.trigger('j:input:user',[value]);
+			}
+
+			if(oldValue!==value){
+				input.trigger('j:change',[value,oldValue]);
+			}
+		
+		});
+
+	}
+	
 	addWatcher(el,render){
 		let w = this.watchers;
 		let watchers = w.get(el);
@@ -2883,7 +3150,7 @@ class dataBinder {
 			}
 		}, data);
 	}
-	static dotSet(key,data,value,isDefault){
+	static dotSet(key,data,value,isDefault,setterCallback){
 		if(typeof(data)!='object'||data===null){
 			return;
 		}
@@ -2891,19 +3158,34 @@ class dataBinder {
 			if(array.length==index+1){
 				if(isDefault){
 					if(typeof(obj[k])==='undefined'){
-						obj[k] = value;
+						if(setterCallback){
+							setterCallback(obj,k,value);
+						}
+						else{
+							obj[k] = value;
+						}
 					}
 					else{
 						value = obj[k];
 					}
 				}
 				else{
-					obj[k] = value;
+					if(setterCallback){
+						setterCallback(obj,k,value);
+					}
+					else{
+						obj[k] = value;
+					}
 				}
 			}
 			else{
 				if(typeof(obj[k])!='object'||obj[k]===null){
-					obj[k] = {};
+					if(setterCallback){
+						setterCallback(obj,k,{});
+					}
+					else{
+						obj[k] = {};
+					}
 				}
 				return obj[k];
 			}
