@@ -79,6 +79,7 @@ let observable = function(obj,parentProxy,parentKey){
 			return target[key];
 		},
 		set: function(target, key, value){
+			
 			let oldValue = target[key];
 			
 			if(typeof(value)=='object'&&value!==null){
@@ -266,11 +267,11 @@ let constructor = function(controllerSet,element,hash){
 	
 	
 	this.startDataObserver = function(){
-		let object = self.data;
 		
 		self.data = self.data.observable();
 		
 		self.dataBinder = new jstack.dataBinder(self.data,self.element[0],self);
+		self.data = self.dataBinder.model;
 		self.dataBinder.eventListener();
 		
 		self.data.observe(function(change){
@@ -2672,9 +2673,9 @@ class dataBinder {
 			value = filteredValue;
 			input.populateInput(value,{preventValEvent:true});
 		}
-
+		
 		let oldValue = dataBinder.dotGet(key,data);
-
+		
 		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
 			let oldValue = target[k];
@@ -3279,82 +3280,63 @@ let modelObservable = function(obj,dataBinder){
 	
 	let modelObserverObject = new modelObserver(obj,dataBinder);
 	
-	if(!obj.modelObserve){
-		Object.defineProperty(obj, 'modelObserve', {
-			value: function(){
-				return modelObserverObject.modelObserve.apply(modelObserverObject,arguments);
-			},
-			enumerable: false
-		});
-	}
-	if(!obj.modelTrigger){
-		Object.defineProperty(obj, 'modelTrigger', {
-			value: function(){
-				return modelObserverObject.modelTrigger.apply(modelObserverObject,arguments);
-			},
-			enumerable: false
-		});
-	}
-	if(!obj.modelSet){
-		Object.defineProperty(obj, 'modelSet', {
-			value: function(){
-				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
-			},
-			enumerable: false
-		});
-	}
-	if(!obj.modelDelete){
-		Object.defineProperty(obj, 'modelDelete', {
-			value: function(){
-				return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
-			},
-			enumerable: false
-		});
-	}
-	
+	Object.defineProperty(obj, 'modelObserve', {
+		value: function(){
+			return modelObserverObject.modelObserve.apply(modelObserverObject,arguments);
+		},
+		enumerable: false
+	});
+	Object.defineProperty(obj, 'modelTrigger', {
+		value: function(){
+			return modelObserverObject.modelTrigger.apply(modelObserverObject,arguments);
+		},
+		enumerable: false
+	});
+	Object.defineProperty(obj, 'modelSet', {
+		value: function(){
+			return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+		},
+		enumerable: false
+	});
+	Object.defineProperty(obj, 'modelDelete', {
+		value: function(){
+			return modelObserverObject.modelSet.apply(modelObserverObject,arguments);
+		},
+		enumerable: false
+	});
+
 	if(Array.isArray(obj)){
-		if(!obj.modelPush){
-			Object.defineProperty(obj, 'modelPush', {
-				value: function(){
-					return modelObserverObject.modelPush.apply(modelObserverObject,arguments);
-				},
-				enumerable: false
-			});
-		}
-		if(!obj.modelUnshift){
-			Object.defineProperty(obj, 'modelUnshift', {
-				value: function(){
-					return modelObserverObject.modelUnshift.apply(modelObserverObject,arguments);
-				},
-				enumerable: false
-			});
-		}
-		if(!obj.modelPop){
-			Object.defineProperty(obj, 'modelPop', {
-				value: function(){
-					return modelObserverObject.modelPop.apply(modelObserverObject,arguments);
-				},
-				enumerable: false
-			});
-		}
-		if(!obj.modelShift){
-			Object.defineProperty(obj, 'modelShift', {
-				value: function(){
-					return modelObserverObject.modelShift.apply(modelObserverObject,arguments);
-				},
-				enumerable: false
-			});
-		}
-		if(!obj.modelSplice){
-			Object.defineProperty(obj, 'modelSplice', {
-				value: function(){
-					return modelObserverObject.modelSplice.apply(modelObserverObject,arguments);
-				},
-				enumerable: false
-			});
-		}
+		Object.defineProperty(obj, 'modelPush', {
+			value: function(){
+				return modelObserverObject.modelPush.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+		Object.defineProperty(obj, 'modelUnshift', {
+			value: function(){
+				return modelObserverObject.modelUnshift.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+		Object.defineProperty(obj, 'modelPop', {
+			value: function(){
+				return modelObserverObject.modelPop.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+		Object.defineProperty(obj, 'modelShift', {
+			value: function(){
+				return modelObserverObject.modelShift.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
+		Object.defineProperty(obj, 'modelSplice', {
+			value: function(){
+				return modelObserverObject.modelSplice.apply(modelObserverObject,arguments);
+			},
+			enumerable: false
+		});
 	}
-	
 	
 	$.each(obj,function(k,v){
 		if(typeof(v)=='object'&&v!==null){
@@ -3364,9 +3346,8 @@ let modelObservable = function(obj,dataBinder){
 	
 	let proxy = new Proxy(obj,{
 		set: function(target, key, value){
-			let oldValue = target[key];
 			if(typeof(value)=='object'&&value!==null){
-				value = modelObservable(value, proxy, key);
+				value = modelObservable(value, dataBinder);
 			}
 			target[key] = value;
 			return true;
