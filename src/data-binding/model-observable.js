@@ -167,6 +167,10 @@ let modelObservable = function(obj,dataBinder){
 	//modelSplice
 	//modelDelete
 	
+	if(obj.modelObserve){
+		return;
+	}
+	
 	let modelObserverObject = new modelObserver(obj,dataBinder);
 	
 	if(!obj.modelObserve){
