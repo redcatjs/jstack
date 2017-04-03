@@ -31,11 +31,11 @@ let constructor = function(controllerSet,element,hash){
 	
 	
 	this.startDataObserver = function(){
-		let object = self.data;
 		
 		self.data = self.data.observable();
 		
 		self.dataBinder = new jstack.dataBinder(self.data,self.element[0],self);
+		self.data = self.dataBinder.model;
 		self.dataBinder.eventListener();
 		
 		self.data.observe(function(change){
