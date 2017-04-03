@@ -133,11 +133,25 @@ let observable = function(obj,parentProxy,parentKey){
 		
 	});
 	
-	$.each(obj,function(k,v){
-		if(typeof(v)=='object'&&v!==null){
-			obj[k] = observable( v, proxy, k );
+	if(obj instanceof Array){
+		for(let i = 0, l=obj.length; i<l; i++){
+			let v = obj[i];
+			if(typeof(v)=='object'&&v!==null){
+				obj[i] = observable( v, proxy, i );
+			}
 		}
-	});
+	}
+	else{
+		for(let k in obj){
+			if(!obj.hasOwnProperty(k)){
+				continue;
+			}
+			let v = obj[k];
+			if(typeof(v)=='object'&&v!==null){
+				obj[k] = observable( v, proxy, k );
+			}
+		}
+	}
 	
 	return proxy;
 };
