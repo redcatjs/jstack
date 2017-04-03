@@ -99,7 +99,8 @@ grunt.initConfig({
 	watch: {
 		scripts: {
 			files: ['src/*.js','src/*/*.js','Gruntfile.js'],
-			tasks: ['concat','uglify'],
+			//tasks: ['concat','uglify'],
+			tasks: ['concat'],
 			options: {
 				debounceDelay: 250,
 			},
@@ -110,11 +111,11 @@ grunt.initConfig({
 
 // plug-in register
 grunt.loadNpmTasks('grunt-contrib-concat');
-grunt.loadNpmTasks('grunt-contrib-uglify');
+//grunt.loadNpmTasks('grunt-contrib-uglify');
 grunt.loadNpmTasks('grunt-contrib-watch');
 
 // cli exec
 grunt.registerTask('default', ['concat']);
-grunt.registerTask('default', ['concat', 'uglify']);
+//grunt.registerTask('default', ['concat', 'uglify']);
 
 };
