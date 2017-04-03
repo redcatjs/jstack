@@ -66,6 +66,7 @@ let observable = function(obj,parentProxy,parentKey){
 			return target[key];
 		},
 		set: function(target, key, value){
+			
 			let oldValue = target[key];
 			
 			if(typeof(value)=='object'&&value!==null){

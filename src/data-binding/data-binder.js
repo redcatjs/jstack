@@ -174,9 +174,9 @@ class dataBinder {
 			value = filteredValue;
 			input.populateInput(value,{preventValEvent:true});
 		}
-
+		
 		let oldValue = dataBinder.dotGet(key,data);
-
+		
 		//value = dataBinder.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
 			let oldValue = target[k];
