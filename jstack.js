@@ -3274,7 +3274,7 @@ let modelObservable = function(obj,dataBinder){
 	//modelDelete
 	
 	if(obj.modelObserve){
-		return;
+		return obj;
 	}
 	
 	let modelObserverObject = new modelObserver(obj,dataBinder);
