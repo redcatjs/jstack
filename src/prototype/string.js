@@ -116,6 +116,7 @@ if(!String.prototype.trim){
 			return trim( this, charlist );
 		},
 		enumerable:false,
+		writable: true,
 	});
 	
 }
@@ -133,7 +134,8 @@ if(!String.prototype.rtrim){
 		value: function( charlist ) {
 			return rtrim( this, charlist );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 
@@ -143,7 +145,8 @@ if(!String.prototype.escapeRegExp){
 			//return this.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
 			return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!String.prototype.replaceAllRegExp){
@@ -151,7 +154,8 @@ if(!String.prototype.replaceAllRegExp){
 		value: function(find, replace){
 			return this.replace( new RegExp( find, "g" ), replace );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!String.prototype.replaceAll){
@@ -160,7 +164,8 @@ if(!String.prototype.replaceAll){
 		find = find.escapeRegExp();
 			return this.replaceAllRegExp(find, replace);
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!String.prototype.camelCase){
@@ -168,7 +173,8 @@ if(!String.prototype.camelCase){
 		value: function() {
 			return this.replace( /(\_[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "_", "" );} );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!String.prototype.camelCaseDash){
@@ -176,7 +182,8 @@ if(!String.prototype.camelCaseDash){
 		value: function() {
 			return this.replace( /(\-[a-z])/g, function( $1 ) {return $1.toUpperCase().replace( "-", "" );} );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 
@@ -186,7 +193,8 @@ if(!String.prototype.snakeCase){
 		value: function() {
 			return this.replace( /([A-Z])/g, function( $1 ) {return "_" + $1.toLowerCase();} );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 
@@ -195,15 +203,17 @@ if(!String.prototype.snakeCaseDash){
 		value: function() {
 			return this.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!String.prototype.ucfirst){
 	Object.defineProperty(String.prototype, 'ucfirst',{
-	   value: function(){
-		   return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
-	   },
-	   enumerable: false
+		value: function(){
+			return this.charAt( 0 ).toUpperCase() + this.substr( 1 );
+		},
+		enumerable: false,
+		writable: true,
 	});
 }
 
