@@ -924,6 +924,7 @@ if(!String.prototype.lcfirst){
 			return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
 		},
 		enumerable: false
+		writable: true,
 	});
 }
 
