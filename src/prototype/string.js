@@ -222,7 +222,7 @@ if(!String.prototype.lcfirst){
 		value: function() {
 			return this.charAt( 0 ).toLowerCase() + this.substr( 1 );
 		},
-		enumerable: false
+		enumerable: false,
 		writable: true,
 	});
 }
