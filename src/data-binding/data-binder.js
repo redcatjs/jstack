@@ -275,10 +275,7 @@ class dataBinder {
 		let self = this;		
 		$(this.view).on('input change j:update', ':input[name]', function(e,value){
 			
-			if(e.__jstackStopPropagation){
-				return;
-			}
-			e.__jstackStopPropagation = true;
+			e.stopPropagation();
 			
 			if(this.type=='file') return;
 			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
