@@ -3,20 +3,20 @@ jstack.dataBindingCompilers.if = {
 		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-if');
 	},
 	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
-		var jif = $('<!--j:if-->');
+		let el = this;
+		let $this = $(this);
+		let jif = $('<!--j:if-->');
 		$this.before(jif);
 
-		var jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
-		var jelseEl = $this.nextUntil('[j-if]','[j-else]');
+		let jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
+		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
 
 		if(this.tagName.toLowerCase()=='template'){
 			$this = $(jstack.fragmentToHTML(this));
 			$(el).detach();
 		}
 
-		var lastBlock;
+		let lastBlock;
 		if(jelseEl.length){
 			lastBlock = jelseEl;
 		}
@@ -28,18 +28,18 @@ jstack.dataBindingCompilers.if = {
 		}
 		$('<!--/j:if-->').insertAfter(lastBlock);
 
-		var myvar = el.getAttribute('j-if');
+		let myvar = el.getAttribute('j-if');
 		el.removeAttribute('j-if');
-		var currentData;
-		var getData = function(){
+		let currentData;
+		let getData = function(){
 			return Boolean(dataBinder.getValueEval(jif[0],myvar));
 		};
 
-		var getData2;
-		var currentData2 = null;
+		let getData2;
+		let currentData2 = null;
 		if(jelseifEl.length){
-			var myvar2 = [];
-			var newJelseifEl = [];
+			let myvar2 = [];
+			let newJelseifEl = [];
 			jelseifEl.each(function(){
 				myvar2.push( this.getAttribute('j-else-if') );
 				this.removeAttribute('j-else-if');
@@ -55,8 +55,8 @@ jstack.dataBindingCompilers.if = {
 			jelseifEl = $(newJelseifEl);
 
 			getData2 = function(){
-				var data = false;
-				for(var i=0, l=myvar2.length;i<l;i++){
+				let data = false;
+				for(let i=0, l=myvar2.length;i<l;i++){
 					if( Boolean(dataBinder.getValueEval(jif[0],myvar2[i])) ){
 						data = i;
 						break;
@@ -67,7 +67,7 @@ jstack.dataBindingCompilers.if = {
 		}
 
 		if(jelseEl.length){
-			var newJelseEl = [];
+			let newJelseEl = [];
 			jelseEl.each(function(){
 				this.removeAttribute('j-else');
 				if(this.tagName.toLowerCase()=='template'){
@@ -82,10 +82,10 @@ jstack.dataBindingCompilers.if = {
 			jelseEl = $(newJelseEl);
 		}
 
-		var render = function(){
+		let render = function(){
 
-			var data = getData();
-			var data2 = null;
+			let data = getData();
+			let data2 = null;
 			if(getData2){
 				data2 = data?false:getData2();
 			}
@@ -115,7 +115,7 @@ jstack.dataBindingCompilers.if = {
 						jelseifEl.detach();
 					}
 					else{
-						var jelseifElMatch = $(jelseifEl[data2]);
+						let jelseifElMatch = $(jelseifEl[data2]);
 						jelseifElMatch.data('j:if:state',true);
 						jelseifElMatch.insertAfter(jif);
 					}
