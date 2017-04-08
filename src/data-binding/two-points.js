@@ -6,7 +6,7 @@ jstack.dataBindingElementCompiler.twoPoints = {
 			}
 		}
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		
 		let attrs = {};
 		for(let i = 0, atts = el.attributes, l = atts.length; i < l; i++) {
@@ -21,7 +21,7 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		let attrsVarsCurrent = {};
 		let propAttrs = ['selected','checked'];
 		let nodeName = el.nodeName.toLowerCase();
-		$.each(attrs,function(k,v){
+		attrs.each(function(v,k){
 			let tokens = jstack.dataBinder.textTokenizer(v);
 			let key = k.substr(1);
 			if(tokens===false){
@@ -33,7 +33,7 @@ jstack.dataBindingElementCompiler.twoPoints = {
 			el.removeAttribute(k);
 		});
 		let render = function(){
-			$.each(attrsVars,function(k,v){
+			attrsVars.each(function(v,k){
 				let value = dataBinder.compilerAttrRender(el,v);
 				if(attrsVarsCurrent[k]===value) return;
 				attrsVarsCurrent[k] = value;

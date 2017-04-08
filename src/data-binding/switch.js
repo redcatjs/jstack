@@ -2,7 +2,7 @@ jstack.dataBindingElementCompiler.switch = {
 	match(n){
 		return n.hasAttribute('j-switch');
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		let $this = $(el);
 		let myvar = el.getAttribute('j-switch');
 		el.removeAttribute('j-switch');

@@ -2,7 +2,7 @@ jstack.dataBindingElementCompiler.href = {
 	match(n){
 		return n.hasAttribute('j-href');
 	},
-	callback(n,dataBinder){
+	callback(n,dataBinder,scope){
 		let original = n.getAttribute('j-href');
 		n.removeAttribute('j-href');
 

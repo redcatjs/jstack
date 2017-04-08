@@ -2,7 +2,7 @@ jstack.dataBindingElementCompiler.show = {
 	match(n){
 		return n.hasAttribute('j-show');
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		let $this = $(el);
 
 		let myvar = el.getAttribute('j-show');

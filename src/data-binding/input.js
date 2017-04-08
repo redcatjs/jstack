@@ -7,7 +7,7 @@ jstack.dataBindingElementCompiler.input = {
 	match(n){
 		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		let $el = $(el);
 
 		let currentData;

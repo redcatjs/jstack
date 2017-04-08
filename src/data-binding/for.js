@@ -8,7 +8,7 @@ jstack.dataBindingElementCompiler.for = {
 	match(n){
 		return n.hasAttribute('j-for');
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		let $this = $(el);
 		let jfor = $('<!--j:for-->');
 		let jforClose = $('<!--/j:for-->');

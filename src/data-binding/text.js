@@ -3,7 +3,7 @@ jstack.dataBindingTextCompiler.text = {
 	match: function(n){
 		return n.textContent;
 	},
-	callback: function(el,dataBinder){
+	callback: function(el,dataBinder,scope){
 		let textString = el.textContent.toString();
 		let tokens = jstack.dataBinder.textTokenizer(textString);
 		if(tokens===false) return;

@@ -2,7 +2,7 @@ jstack.dataBindingElementCompiler.if = {
 	match(n){
 		return n.hasAttribute('j-if');
 	},
-	callback(el,dataBinder){
+	callback(el,dataBinder,scope){
 		let $this = $(el);
 		let jif = $('<!--j:if-->');
 		$this.before(jif);
