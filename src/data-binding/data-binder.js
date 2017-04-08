@@ -294,7 +294,7 @@ class dataBinder {
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
 		
-		this.compileDom(dom);
+		this.compileDom(dom,[]);
 
 		return dom.childNodes;
 	}
@@ -303,17 +303,12 @@ class dataBinder {
 		
 		let self = this;
 		
-		$.each(jstack.dataBindingCompilers,function(k,compiler){
-			
+		jstack.dataBindingCompilers.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
-				
-				let matchResult = compiler.match.call(n);
-				if(matchResult){
-					return compiler.callback.call(n,self,matchResult);
+				if(compiler.match.call(n)){
+					return compiler.callback.call(n,self);
 				}
-				
 			});
-			
 		});
 		
 	}

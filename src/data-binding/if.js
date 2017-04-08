@@ -96,7 +96,6 @@ jstack.dataBindingCompilers.if = {
 			$this.data('j:if:state',data);
 			if(data){
 				$this.insertAfter(jif);
-
 				if(jelseifEl.length){
 					jelseifEl.data('j:if:state',false);
 					jelseifEl.detach();
