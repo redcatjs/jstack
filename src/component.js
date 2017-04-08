@@ -1,29 +1,5 @@
 jstack.component = {};
 
-//define loaders
-jstack.loader(':attrStartsWith("j-on-")',function(){
-	var $this = $(this);
-	var attrs = $this.attrStartsWith('j-on-');
-	var controller = jstack.dataBinder.getControllerObject(this);
-	$.each(attrs,function(k,v){
-		var event = k.substr(5);
-		$this[0].removeAttribute(k);
-		$this.on(event,function(e){
-			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-			}
-			var method = controller.methods[v];
-			if(typeof(method)!='function'){
-				return;
-			}
-			var r = method.call(controller,e,this);
-			if(r===false){
-				return false;
-			}
-		});
-	});
-});
-
 //j-component
 jstack.loader('[j-component]',function(){
 	var el = this;
