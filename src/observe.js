@@ -12,7 +12,7 @@ let observable = function(obj,parentProxy,parentKey){
 	}
 	
 	let notify = function(change,preventPropagation){
-		$.each(observer.namespaces,function(namespace,callbackStack){
+		observer.namespaces.each(function(callbackStack,namespace){
 			
 			if(preventPropagation[namespace]){
 				return;

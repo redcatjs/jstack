@@ -231,7 +231,7 @@ let modelObservable = function(obj,dataBinder){
 		});
 	}
 	
-	$.each(obj,function(k,v){
+	obj.each(function(v,k){
 		if(typeof(v)=='object'&&v!==null){
 			obj[k] = modelObservable( v, dataBinder );
 		}

@@ -98,7 +98,7 @@ jstack.controller = function(controller, element, hash){
 			let controllerPath = jstack.config.controllersPath+controller.extend;
 			$js.require(controllerPath);
 			$js(controllerPath,function(){
-				$.each(jstack.controllers[controller.extend],function(k,v){
+				jstack.controllers[controller.extend].each(function(v,k){
 					switch(k){
 						case 'dependencies':
 							if(v instanceof Array){
@@ -120,7 +120,7 @@ jstack.controller = function(controller, element, hash){
 		}		
 		if(controller.mixins){
 			for(let i = 0, l = mixins.length;i<l;i++){
-				$.each(mixins[i],function(k,v){
+				mixins[i].each(function(v,k){
 					if(typeof(controller[k])=='undefined'){
 						controller[k] = v;
 					}

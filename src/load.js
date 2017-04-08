@@ -1,8 +1,8 @@
 (function(){
 	
 let mutationObserver = new MutationObserver(function(mutations){
-	$.each(mutations,function(i,mutation){
-		$.each(mutation.addedNodes,function(ii,node){
+	mutations.each(function(mutation,i){
+		mutation.addedNodes.each(function(node,ii){
 			
 			jstack.walkTheDOM(node,function(n){
 				if(!document.body.contains(n) || n.nodeType!=Node.ELEMENT_NODE) return false;
@@ -16,7 +16,7 @@ let mutationObserver = new MutationObserver(function(mutations){
 			
 		});
 
-		$.each(mutation.removedNodes,function(ii,node){
+		mutation.removedNodes.each(function(node,ii){
 			jstack.walkTheDOM(node,function(n){
 				if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
 					return false;
@@ -47,7 +47,7 @@ jstack.trigger = function(n,eventName){
 		});
 	}
 	if(jstack._eventStack[eventName]){
-		$.each(jstack._eventStack,function(selector,callbacks){
+		jstack._eventStack.each(function(callbacks,selector){
 			if($n.is(selector)){
 				callbacks.forEach(function(callback){
 					callback.call(n);
