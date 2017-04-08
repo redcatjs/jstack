@@ -2803,7 +2803,7 @@ class dataBinder {
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
 		
 		
-		this.compileDom(dom, $.extend({},this.model) );
+		this.compileDom(dom, this.model);
 
 		return dom.childNodes;
 	}
