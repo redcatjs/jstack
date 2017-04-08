@@ -525,33 +525,6 @@ class dataBinder {
 			break;
 		}
 	}
-	static getControllerData(el){
-		return $(dataBinder.getController(el)).data('jModel');
-	}
-	static getController(p){
-
-		let controller;
-		
-		while(p){
-			if(p.hasAttribute&&p.hasAttribute('j-controller')){
-				controller = p;
-				break;
-			}
-			p = p.parentNode;
-		}
-		
-
-		if(!controller){
-			controller = document.body;
-			controller.setAttribute('j-controller','')
-			$(controller).data('jModel',{});
-		}
-
-		return controller;
-	}
-	static getControllerObject(el){
-		return $(dataBinder.getController(el)).data('jController');
-	}
 }
 
 
