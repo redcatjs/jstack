@@ -25,7 +25,7 @@ let observable = function(obj,parentProxy,parentKey){
 	}
 	
 	let notify = function(change,preventPropagation){
-		$.each(observer.namespaces,function(namespace,callbackStack){
+		observer.namespaces.each(function(callbackStack,namespace){
 			
 			if(preventPropagation[namespace]){
 				return;
@@ -348,7 +348,7 @@ jstack.controller = function(controller, element, hash){
 			let controllerPath = jstack.config.controllersPath+controller.extend;
 			$js.require(controllerPath);
 			$js(controllerPath,function(){
-				$.each(jstack.controllers[controller.extend],function(k,v){
+				jstack.controllers[controller.extend].each(function(v,k){
 					switch(k){
 						case 'dependencies':
 							if(v instanceof Array){
@@ -370,7 +370,7 @@ jstack.controller = function(controller, element, hash){
 		}		
 		if(controller.mixins){
 			for(let i = 0, l = mixins.length;i<l;i++){
-				$.each(mixins[i],function(k,v){
+				mixins[i].each(function(v,k){
 					if(typeof(controller[k])=='undefined'){
 						controller[k] = v;
 					}
@@ -3314,7 +3314,7 @@ let modelObservable = function(obj,dataBinder){
 		});
 	}
 	
-	$.each(obj,function(k,v){
+	obj.each(function(v,k){
 		if(typeof(v)=='object'&&v!==null){
 			obj[k] = modelObservable( v, dataBinder );
 		}
@@ -4070,8 +4070,8 @@ jstack.dataBindingTextCompiler.text = {
 (function(){
 	
 let mutationObserver = new MutationObserver(function(mutations){
-	$.each(mutations,function(i,mutation){
-		$.each(mutation.addedNodes,function(ii,node){
+	mutations.each(function(mutation,i){
+		mutation.addedNodes.each(function(node,ii){
 			
 			jstack.walkTheDOM(node,function(n){
 				if(!document.body.contains(n) || n.nodeType!=Node.ELEMENT_NODE) return false;
@@ -4085,7 +4085,7 @@ let mutationObserver = new MutationObserver(function(mutations){
 			
 		});
 
-		$.each(mutation.removedNodes,function(ii,node){
+		mutation.removedNodes.each(function(node,ii){
 			jstack.walkTheDOM(node,function(n){
 				if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
 					return false;
@@ -4116,7 +4116,7 @@ jstack.trigger = function(n,eventName){
 		});
 	}
 	if(jstack._eventStack[eventName]){
-		$.each(jstack._eventStack,function(selector,callbacks){
+		jstack._eventStack.each(function(callbacks,selector){
 			if($n.is(selector)){
 				callbacks.forEach(function(callback){
 					callback.call(n);
