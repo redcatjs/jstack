@@ -1,21 +1,23 @@
 jstack.dataBindingCompilers.twoPoints = {
 	match(){
-		if(this.nodeType !== Node.ELEMENT_NODE){
-			return;
-		}
-		var r;
-		for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
-			var att = atts[i];
-			if(att.name.substr(0,1) === ':') {
-				if(!r){
-					r = {};
+		if(this.nodeType === Node.ELEMENT_NODE){			
+			for(let i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
+				if(atts[i].name.substr(0,1) === ':') {
+					return true;
 				}
-				r[att.name] = att.value;
 			}
 		}
-		return r;
 	},
-	callback(dataBinder,attrs){
+	callback(dataBinder){
+		
+		let attrs = {};
+		for(let i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
+			let att = atts[i];
+			if(att.name.substr(0,1) === ':') {
+				attrs[att.name] = att.value;
+			}
+		}
+		
 		var el = this;
 		var $this = $(this);
 		var attrsVars = {};
