@@ -2798,6 +2798,10 @@ class dataBinder {
 		
 	}
 	
+	compile(el){
+		this.compileDom(el, this.model);
+	}
+	
 	compileHTML(html){
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
