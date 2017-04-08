@@ -3510,12 +3510,14 @@ jstack.dataBindingElementCompiler.if = {
 			let div = document.createElement('div');
 			div.appendChild( document.importNode(el.content, true) );
 			
-			dataBinder.compileDom( div, scope );
-			
 			$this = $(div);
 			
 			$(el).detach();
 		}
+		
+		$this.contents().each(function(){
+			dataBinder.compileDom( this, scope );
+		});
 
 		let lastBlock;
 		if(jelseEl.length){
@@ -3556,7 +3558,8 @@ jstack.dataBindingElementCompiler.if = {
 					});
 				}
 				else{
-					newJelseifEl.push(node);
+					newJelseifEl.push(this);
+					dataBinder.compileDom( this, scope );
 				}
 			});
 			jelseifEl = $(newJelseifEl);
@@ -3590,6 +3593,7 @@ jstack.dataBindingElementCompiler.if = {
 				}
 				else{
 					newJelseEl.push(this);
+					dataBinder.compileDom( this, scope );
 				}
 			});
 			jelseEl = $(newJelseEl);
@@ -3647,6 +3651,8 @@ jstack.dataBindingElementCompiler.if = {
 		
 		dataBinder.addWatcher(jif[0],render);
 		render();
+		
+		return false;
 	},
 };
 
