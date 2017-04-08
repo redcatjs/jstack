@@ -34,7 +34,7 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		});
 		let render = function(){
 			attrsVars.each(function(v,k){
-				let value = dataBinder.compilerAttrRender(el,v);
+				let value = dataBinder.compilerAttrRender(el,v,scope);
 				if(attrsVarsCurrent[k]===value) return;
 				attrsVarsCurrent[k] = value;
 

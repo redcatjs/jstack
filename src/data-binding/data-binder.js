@@ -28,7 +28,7 @@ class dataBinder {
 			callback();
 		}
 	}
-	getValue(el,varKey,defaultValue){
+	getValue(el,expression,defaultValue){
 		let key = '';
 
 		let ns = dataBinder.getClosestFormNamespace(el.parentNode);
@@ -36,7 +36,7 @@ class dataBinder {
 			key += ns+'.';
 		}
 
-		key += varKey;
+		key += expression;
 
 		return dataBinder.dotGet(key,this.model,defaultValue);
 	}
@@ -61,65 +61,32 @@ class dataBinder {
 		}
 		return a;
 	}
-	getValueEval(el,varKey){
+	getValueEval(el,expression,scope){
 
 		let controller = this.controller;
-		let scopeValue = this.model;
 
-		scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
-		if(typeof(varKey)=='undefined'){
-			varKey = 'undefined';
+		if(typeof(expression)=='undefined'){
+			expression = 'undefined';
 		}
-		else if(varKey===null){
-			varKey = 'null';
+		else if(expression===null){
+			expression = 'null';
 		}
-		else if(varKey.trim()==''){
-			varKey = 'undefined';
+		else if(expression.trim()==''){
+			expression = 'undefined';
 		}
 		else{
-			varKey = varKey.replace(/[\r\t\n]/g,'');
-			varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
+			expression = expression.replace(/[\r\t\n]/g,'');
+			expression = expression.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 		}
-
-
-		let forCollection = this.getParentsForId(el).reverse();
-
-		for(let i = 0, l = forCollection.length; i<l; i++){
-			let forid = forCollection[i];
-
-			let parentFor = $(forid);
-			let parentForList = parentFor.parentComment('j:for');
-
-			if(!parentForList.length) continue;
-
-			let jforCommentData = parentForList.dataComment();
-			let value = jforCommentData.value;
-			
-			let forRow = parentFor.dataComment('j:for:row');
-			
-			if(!forRow){
-				console.log(varKey, el, parentFor, parentFor.dataComment());
-			}
-			
-			let index = jforCommentData.index;
-			let key = jforCommentData.key;
-			if(index){
-				scopeValue[index] = forRow.index;
-			}
-			if(key){
-				scopeValue[key] = forRow.key;
-			}
-			scopeValue[value] = forRow.value;
-		}
-
+		
 		let params = [ '$controller', '$this', '$scope' ];
-		let args = [ controller, el, scopeValue ];
-		$.each(scopeValue,function(param,arg){
+		let args = [ controller, el, scope ];
+		scope.each(function(arg,param){
 			params.push(param);
 			args.push(arg);
 		});
 
-		params.push("return "+varKey+";");
+		params.push("return "+expression+";");
 
 		let value;
 		try{
@@ -129,7 +96,7 @@ class dataBinder {
 
 		catch(jstackException){
 			if(jstack.config.debug){
-				let warn = [jstackException.message, ", expression: "+varKey, "element", el];
+				let warn = [jstackException.message, ", expression: "+expression, "element", el];
 				if(el.nodeType==Node.COMMENT_NODE){
 					warn.push($(el).parent().get());
 				}
@@ -294,26 +261,27 @@ class dataBinder {
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
 		
-		this.compileDom(dom,[]);
+		
+		this.compileDom(dom, $.extend({},this.model) );
 
 		return dom.childNodes;
 	}
 	
-	compileDom(dom){
+	compileDom(dom,scope){
 		
 		let self = this;
 		
 		jstack.dataBindingElementCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					return compiler.callback(n,self);
+					return compiler.callback(n,self,scope);
 				}
 			});
 		});
 		jstack.dataBindingTextCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					return compiler.callback(n,self);
+					return compiler.callback(n,self,scope);
 				}
 			});
 		});
@@ -339,7 +307,7 @@ class dataBinder {
 		}
 		return filter;
 	}
-	compilerAttrRender(el,tokens){
+	compilerAttrRender(el,tokens,scope){
 		let r = '';
 		for(let i = 0, l = tokens.length; i<l; i++){
 			let token = tokens[i];
@@ -352,17 +320,11 @@ class dataBinder {
 					freeze = true;
 				}
 				
-				token = this.getValueEval(el,token);
+				token = this.getValueEval(el,token,scope);
 			}
 			r += typeof(token)!=='undefined'&&token!==null?token:'';
 		}
 		return r;
-	}
-	createCompilerAttrRender(el,tokens){
-		let self = this;
-		return function(){
-			return self.compilerAttrRender(el,tokens);
-		};
 	}
 	static textTokenizer(text){
 		let tagRE = /\{\{((?:.|\n)+?)\}\}/g;
