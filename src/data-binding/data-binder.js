@@ -306,14 +306,14 @@ class dataBinder {
 		jstack.dataBindingElementCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					return compiler.callback.call(n,self);
+					return compiler.callback(n,self);
 				}
 			});
 		});
 		jstack.dataBindingTextCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					return compiler.callback.call(n,self);
+					return compiler.callback(n,self);
 				}
 			});
 		});

@@ -6,25 +6,24 @@ jstack.dataBindingElementCompiler.twoPoints = {
 			}
 		}
 	},
-	callback(dataBinder){
+	callback(el,dataBinder){
 		
 		let attrs = {};
-		for(let i = 0, atts = this.attributes, l = atts.length; i < l; i++) {
+		for(let i = 0, atts = el.attributes, l = atts.length; i < l; i++) {
 			let att = atts[i];
 			if(att.name.substr(0,1) === ':') {
 				attrs[att.name] = att.value;
 			}
 		}
 		
-		var el = this;
-		var $this = $(this);
-		var attrsVars = {};
-		var attrsVarsCurrent = {};
-		var propAttrs = ['selected','checked'];
-		var nodeName = this.nodeName.toLowerCase();
+		let $this = $(el);
+		let attrsVars = {};
+		let attrsVarsCurrent = {};
+		let propAttrs = ['selected','checked'];
+		let nodeName = el.nodeName.toLowerCase();
 		$.each(attrs,function(k,v){
-			var tokens = jstack.dataBinder.textTokenizer(v);
-			var key = k.substr(1);
+			let tokens = jstack.dataBinder.textTokenizer(v);
+			let key = k.substr(1);
 			if(tokens===false){
 				el.setAttribute(key,v);
 			}
@@ -33,9 +32,9 @@ jstack.dataBindingElementCompiler.twoPoints = {
 			}
 			el.removeAttribute(k);
 		});
-		var render = function(){
+		let render = function(){
 			$.each(attrsVars,function(k,v){
-				var value = dataBinder.compilerAttrRender(el,v);
+				let value = dataBinder.compilerAttrRender(el,v);
 				if(attrsVarsCurrent[k]===value) return;
 				attrsVarsCurrent[k] = value;
 

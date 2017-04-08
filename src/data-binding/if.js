@@ -2,17 +2,16 @@ jstack.dataBindingElementCompiler.if = {
 	match(n){
 		return n.hasAttribute('j-if');
 	},
-	callback(dataBinder){
-		let el = this;
-		let $this = $(this);
+	callback(el,dataBinder){
+		let $this = $(el);
 		let jif = $('<!--j:if-->');
 		$this.before(jif);
 
 		let jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
 		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
 
-		if(this.tagName.toLowerCase()=='template'){
-			$this = $(jstack.fragmentToHTML(this));
+		if(el.tagName.toLowerCase()=='template'){
+			$this = $(jstack.fragmentToHTML(el));
 			$(el).detach();
 		}
 

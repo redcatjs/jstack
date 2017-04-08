@@ -2,19 +2,18 @@ jstack.dataBindingElementCompiler.show = {
 	match(n){
 		return n.hasAttribute('j-show');
 	},
-	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
+	callback(el,dataBinder){
+		let $this = $(el);
 
-		var myvar = this.getAttribute('j-show');
-		this.removeAttribute('j-show');
-		var currentData;
-		var getData = function(){
+		let myvar = el.getAttribute('j-show');
+		el.removeAttribute('j-show');
+		let currentData;
+		let getData = function(){
 			return Boolean(dataBinder.getValueEval(el,myvar));
 		};
 
-		var render = function(){
-			var data = getData();
+		let render = function(){
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 

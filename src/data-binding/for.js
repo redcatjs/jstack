@@ -8,9 +8,8 @@ jstack.dataBindingElementCompiler.for = {
 	match(n){
 		return n.hasAttribute('j-for');
 	},
-	callback(dataBinder){
-		let el = this;
-		let $this = $(this);
+	callback(el,dataBinder){
+		let $this = $(el);
 		let jfor = $('<!--j:for-->');
 		let jforClose = $('<!--/j:for-->');
 		$this.replaceWith(jfor);
@@ -66,7 +65,7 @@ jstack.dataBindingElementCompiler.for = {
 		let buildNewRow;
 		
 		if(isTemplate){
-			let content = this.content;
+			let content = el.content;
 			buildNewRow = function(k, jforClose){
 				let elements = document.importNode(content, true);
 				let addRow = document.createElement('div');

@@ -3,12 +3,12 @@ jstack.dataBindingTextCompiler.text = {
 	match: function(n){
 		return n.textContent;
 	},
-	callback: function(dataBinder){
-		let textString = this.textContent.toString();
+	callback: function(el,dataBinder){
+		let textString = el.textContent.toString();
 		let tokens = jstack.dataBinder.textTokenizer(textString);
 		if(tokens===false) return;
 
-		let $el = $(this);
+		let $el = $(el);
 
 		let last = $el;
 
