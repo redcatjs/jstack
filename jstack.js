@@ -1877,9 +1877,32 @@ $.fn.replaceTagName = function(replaceWith) {
 	}
 	return $(tags);
 };
+(function(){
+
+let getController = function(p){
+	let controller;
+	
+	while(p){
+		if(p.hasAttribute&&p.hasAttribute('j-controller')){
+			controller = p;
+			break;
+		}
+		p = p.parentNode;
+	}
+	
+
+	if(!controller){
+		controller = document.body;
+		controller.setAttribute('j-controller','')
+		$(controller).data('jModel',{});
+	}
+
+	return controller;
+};
+
 $.fn.jModel = function(key,defaultValue){
 	if(this.length<=1){
-		var r = jstack.dataBinder.getControllerData(this[0]);
+		var r = $(getController(this[0])).data('jModel');
 		if(typeof(key)!='undefined'){
 			return typeof(r[key])=='undefined'?defaultValue:r[key];
 		}
@@ -1893,6 +1916,9 @@ $.fn.jModel = function(key,defaultValue){
 		return data;
 	}
 };
+
+})();
+
 $.fn.findComments = function(tag){
 	var arr = [];
 	this.each(function(){
@@ -1999,37 +2025,22 @@ $.fn.dataComment = function(){
 
 $.fn.jData = function(key){
 	if(this.length>1){
-		var a = [];
+		let a = [];
 		this.each(function(){
 			a.push( $.fn.jData.call( $(this), key ) );
 		});
 		return a;
 	}
 	else{
-			
-		var a = {};
-		var el = this[0];
-		
-		let controller = $(jstack.dataBinder.getController(el)).data('jController');
-		let dataBinder;
-		if(controller){
-			dataBinder = controller.dataBinder;
-		}
-		
-		$.each(this.attrStartsWith('j-data-'),function(k,v){
-			a[k] = v;
-		});
-		var data = {};
-		$.each(a,function(k,v){
+		let el = this[0];
+		let data = {};
+		this.attrStartsWith('j-data-').each(function(v,k){
 			$.attrsToObject( k.substr(7), v, data );
 		});
-		
 		if(key){
 			data = jstack.dataBinder.dotGet(key,data);
 		}
-		
 		return data;
-	
 	}
 };
 
@@ -3055,33 +3066,6 @@ class dataBinder {
 			break;
 		}
 	}
-	static getControllerData(el){
-		return $(dataBinder.getController(el)).data('jModel');
-	}
-	static getController(p){
-
-		let controller;
-		
-		while(p){
-			if(p.hasAttribute&&p.hasAttribute('j-controller')){
-				controller = p;
-				break;
-			}
-			p = p.parentNode;
-		}
-		
-
-		if(!controller){
-			controller = document.body;
-			controller.setAttribute('j-controller','')
-			$(controller).data('jModel',{});
-		}
-
-		return controller;
-	}
-	static getControllerObject(el){
-		return $(dataBinder.getController(el)).data('jController');
-	}
 }
 
 
@@ -3885,6 +3869,43 @@ jstack.dataBindingElementCompiler.jData = {
 	},
 };
 
+jstack.dataBindingElementCompiler.jOn = {
+	match(n){	
+		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
+			if(atts[i].name.substr(0,5) === 'j-on-') {
+				return true;
+			}
+		}
+	},
+	callback(el,dataBinder,scope){
+		let $el = $(el);
+		let controller = dataBinder.controller;
+		let jOnList = [];
+		for(let i = 0, atts = el.attributes, l = atts.length; i < l; i++) {
+			let att = atts[i];
+			let k = att.name;
+			if(k.substr(0,5) === 'j-on-') {
+				let v = att.value;
+				jOnList.push(k);
+				let eventName = k.substr(5);
+				$el.on(eventName,function(e){
+					if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
+						throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
+					}
+					var method = controller.methods[v];
+					if(typeof(method)!='function'){
+						return;
+					}
+					return method.call(controller,e,this);
+				});
+			}
+		}
+		jOnList.forEach(function(k){
+			el.removeAttribute(k);
+		});
+	},
+};
+
 jstack.dataBindingElementCompiler.inputFile = {
 	match(n){
 		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
@@ -4150,30 +4171,6 @@ $.fn.onUnload = function(callback){
 })();
 
 jstack.component = {};
-
-//define loaders
-jstack.loader(':attrStartsWith("j-on-")',function(){
-	var $this = $(this);
-	var attrs = $this.attrStartsWith('j-on-');
-	var controller = jstack.dataBinder.getControllerObject(this);
-	$.each(attrs,function(k,v){
-		var event = k.substr(5);
-		$this[0].removeAttribute(k);
-		$this.on(event,function(e){
-			if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-				throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-			}
-			var method = controller.methods[v];
-			if(typeof(method)!='function'){
-				return;
-			}
-			var r = method.call(controller,e,this);
-			if(r===false){
-				return false;
-			}
-		});
-	});
-});
 
 //j-component
 jstack.loader('[j-component]',function(){
