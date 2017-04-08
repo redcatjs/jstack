@@ -40,30 +40,7 @@ class dataBinder {
 
 		return dataBinder.dotGet(key,this.model,defaultValue);
 	}
-	getParentsForId(el){
-		let a = [];
-		let n = el;
-		while(n){
-			if(n.nodeType===Node.COMMENT_NODE&&n.nodeValue.split(' ')[0]==='j:for:id'){
-				a.push(n);
-				n = n.parentNode;
-			}
-			if(n){
-				if(n.previousSibling){
-					n = n.previousSibling;
-				}
-				else{
-					n = n.parentNode;
-				}
-			}
-			//if(n===document.body) break;
-			if(n===this.view || n===document.body) break;
-		}
-		return a;
-	}
-	getValueEval(el,expression,scope){
-
-		let controller = this.controller;
+	static getValueEval(el,expression,scope){
 
 		if(typeof(expression)=='undefined'){
 			expression = 'undefined';
@@ -72,28 +49,19 @@ class dataBinder {
 			expression = 'null';
 		}
 		else if(expression.trim()==''){
-			expression = 'undefined';
-		}
-		else{
-			expression = expression.replace(/[\r\t\n]/g,'');
-			expression = expression.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
+			expression = '';
 		}
 		
-		let params = [ '$controller', '$this', '$scope' ];
-		let args = [ controller, el, scope ];
-		scope.each(function(arg,param){
-			params.push(param);
-			args.push(arg);
-		});
-
+		let params = Object.keys(scope);
+		let args = Object.values(scope);
+		
 		params.push("return "+expression+";");
 
 		let value;
 		try{
 			let func = Function.apply(null,params);
-			value = func.apply(null,args);
+			value = func.apply(el,args);
 		}
-
 		catch(jstackException){
 			if(jstack.config.debug){
 				let warn = [jstackException.message, ", expression: "+expression, "element", el];
@@ -324,7 +292,7 @@ class dataBinder {
 					freeze = true;
 				}
 				
-				token = this.getValueEval(el,token,scope);
+				token = dataBinder.getValueEval(el,token,scope);
 			}
 			r += typeof(token)!=='undefined'&&token!==null?token:'';
 		}

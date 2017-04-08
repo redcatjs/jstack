@@ -40,7 +40,7 @@ jstack.dataBindingElementCompiler.if = {
 		el.removeAttribute('j-if');
 		let currentData;
 		let getData = function(){
-			return Boolean(dataBinder.getValueEval(jif[0],myvar,scope));
+			return Boolean(jstack.dataBinder.getValueEval(jif[0],myvar,scope));
 		};
 
 		let getData2;
@@ -72,7 +72,7 @@ jstack.dataBindingElementCompiler.if = {
 			getData2 = function(){
 				let data = false;
 				for(let i=0, l=myvar2.length;i<l;i++){
-					if( Boolean(dataBinder.getValueEval(jif[0],myvar2[i],scope)) ){
+					if( Boolean(jstack.dataBinder.getValueEval(jif[0],myvar2[i],scope)) ){
 						data = i;
 						break;
 					}

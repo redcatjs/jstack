@@ -40,7 +40,7 @@ jstack.dataBindingTextCompiler.text = {
 			
 			let currentData;
 			let render = function(){
-				let data = dataBinder.getValueEval(text[0],token,scope);
+				let data = jstack.dataBinder.getValueEval(text[0],token,scope);
 				if(currentData===data) return;
 				currentData = data;
 				text.commentChildren().remove();

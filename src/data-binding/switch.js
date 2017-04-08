@@ -11,7 +11,7 @@ jstack.dataBindingElementCompiler.switch = {
 
 		let currentData;
 		let getData = function(){
-			return Boolean(dataBinder.getValueEval(el,myvar,scope));
+			return Boolean(jstack.dataBinder.getValueEval(el,myvar,scope));
 		};
 		let render = function(){
 			

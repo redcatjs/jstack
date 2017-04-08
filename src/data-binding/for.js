@@ -98,7 +98,7 @@ jstack.dataBindingElementCompiler.for = {
 		let forStack = {};
 		
 		let render = function(){
-			let data = dataBinder.getValueEval(jfor[0],myvar,scope);
+			let data = jstack.dataBinder.getValueEval(jfor[0],myvar,scope);
 			
 			if(!data){
 				forStack.each(function(n){
