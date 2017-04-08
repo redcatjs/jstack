@@ -4,6 +4,7 @@ if(!Object.prototype.observable){
 			return jstack.observable(this,options);
 		},
 		enumerable: false
+		writable: true,
 	});
 }
 if(!Object.prototype.observe){
@@ -12,6 +13,7 @@ if(!Object.prototype.observe){
 			return jstack.observe(this,key,callback,namespace,recursive);
 		},
 		enumerable: false
+		writable: true,
 	});
 }
 if(!Object.prototype.unobserve){
@@ -19,6 +21,7 @@ if(!Object.prototype.unobserve){
 		value: function(key,callback,namespace,recursive){
 			return jstack.unobserve(this,key,callback,namespace,recursive);
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
