@@ -18,12 +18,7 @@ $.fn.jData = function(key){
 		}
 		
 		$.each(this.attrStartsWith('j-data-'),function(k,v){
-			var tokens = jstack.dataBinder.textTokenizer(v);
-			var value = v;
-			if(tokens!==false && dataBinder){
-				value = dataBinder.compilerAttrRender(el, tokens, dataBinder.model); //TODO get scope for loop
-			}
-			a[k] = value;
+			a[k] = v;
 		});
 		var data = {};
 		$.each(a,function(k,v){

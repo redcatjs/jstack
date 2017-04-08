@@ -1,7 +1,7 @@
-jstack.dataBindingElementCompiler.twoPoints = {
+jstack.dataBindingElementCompiler.jData = {
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
-			if(atts[i].name.substr(0,1) === ':') {
+			if(atts[i].name.substr(0,7) === 'j-data-') {
 				return true;
 			}
 		}
@@ -11,7 +11,7 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		let attrs = {};
 		for(let i = 0, atts = el.attributes, l = atts.length; i < l; i++) {
 			let att = atts[i];
-			if(att.name.substr(0,1) === ':') {
+			if(att.name.substr(0,7) === 'j-data-') {
 				attrs[att.name] = att.value;
 			}
 		}
@@ -19,39 +19,21 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		let $this = $(el);
 		let attrsVars = {};
 		let attrsVarsCurrent = {};
-		let propAttrs = ['selected','checked'];
 		attrs.each(function(v,k){
 			let tokens = jstack.dataBinder.textTokenizer(v);
-			let key = k.substr(1);
 			if(tokens===false){
-				el.setAttribute(key,v);
+				el.setAttribute(k,v);
 			}
 			else{
-				attrsVars[key] = tokens;
+				attrsVars[k] = tokens;
 			}
-			el.removeAttribute(k);
 		});
 		let render = function(){
 			attrsVars.each(function(v,k){
 				let value = dataBinder.compilerAttrRender(el,v,scope);
 				if(attrsVarsCurrent[k]===value) return;
 				attrsVarsCurrent[k] = value;
-
-				if(propAttrs.indexOf(k)!==-1){
-					$this.prop(k,value);
-				}
-				else if(typeof(value) === "boolean"){
-					if(value){
-						el.setAttribute(k,k);
-					}
-					else{
-						el.removeAttribute(k);
-					}
-				}
-				else{
-					el.setAttribute(k,value);
-				}
-
+				el.setAttribute(k,value);
 			});
 		};
 		

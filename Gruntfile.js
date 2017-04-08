@@ -74,6 +74,7 @@ grunt.initConfig({
 				"src/data-binding/show.js",
 				"src/data-binding/href.js",
 				"src/data-binding/two-points.js",
+				"src/data-binding/j-data.js",
 				"src/data-binding/input-file.js",
 				"src/data-binding/input.js",
 				"src/data-binding/text.js",
