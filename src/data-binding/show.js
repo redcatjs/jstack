@@ -1,6 +1,6 @@
-jstack.dataBindingCompilers.show = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-show');
+jstack.dataBindingElementCompiler.show = {
+	match(n){
+		return n.hasAttribute('j-show');
 	},
 	callback(dataBinder){
 		var el = this;

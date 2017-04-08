@@ -1,17 +1,15 @@
-jstack.dataBindingCompilers.twoPoints = {
-	match(){
-		if(this.nodeType === Node.ELEMENT_NODE){			
-			for(let i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
-				if(atts[i].name.substr(0,1) === ':') {
-					return true;
-				}
+jstack.dataBindingElementCompiler.twoPoints = {
+	match(n){	
+		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
+			if(atts[i].name.substr(0,1) === ':') {
+				return true;
 			}
 		}
 	},
 	callback(dataBinder){
 		
 		let attrs = {};
-		for(let i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
+		for(let i = 0, atts = this.attributes, l = atts.length; i < l; i++) {
 			let att = atts[i];
 			if(att.name.substr(0,1) === ':') {
 				attrs[att.name] = att.value;

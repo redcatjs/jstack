@@ -303,9 +303,16 @@ class dataBinder {
 		
 		let self = this;
 		
-		jstack.dataBindingCompilers.each(function(compiler){
+		jstack.dataBindingElementCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
-				if(compiler.match.call(n)){
+				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
+					return compiler.callback.call(n,self);
+				}
+			});
+		});
+		jstack.dataBindingTextCompiler.each(function(compiler){
+			jstack.walkTheDOM(dom,function(n){
+				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
 					return compiler.callback.call(n,self);
 				}
 			});
@@ -589,7 +596,7 @@ class dataBinder {
 jstack.dataBinder = dataBinder;
 
 
-jstack.dataBindingCompilers = {};
+jstack.dataBindingElementCompiler = {};
 
 $(document.body).on('reset','form',function(){
 	$(this).populateReset();

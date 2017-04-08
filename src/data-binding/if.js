@@ -1,6 +1,6 @@
-jstack.dataBindingCompilers.if = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-if');
+jstack.dataBindingElementCompiler.if = {
+	match(n){
+		return n.hasAttribute('j-if');
 	},
 	callback(dataBinder){
 		let el = this;

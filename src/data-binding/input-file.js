@@ -1,6 +1,6 @@
-jstack.dataBindingCompilers.inputFile = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('name')&&this.tagName.toLowerCase()=='input'&&this.type=='file';
+jstack.dataBindingElementCompiler.inputFile = {
+	match(n){
+		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
 	},
 	callback(dataBinder){
 		$(this).on('input change', function(e){

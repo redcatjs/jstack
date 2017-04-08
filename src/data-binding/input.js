@@ -3,9 +3,9 @@
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
 const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 
-jstack.dataBindingCompilers.input = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+jstack.dataBindingElementCompiler.input = {
+	match(n){
+		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
 	callback(dataBinder){
 		let el = this;
