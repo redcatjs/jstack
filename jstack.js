@@ -685,11 +685,6 @@ jstack.randomColor = function(){
     //return color;
     return '#'+Math.random().toString(16).substr(2,6);
 };
-jstack.fragmentToHTML = function(fragment){
-	var div = document.createElement('div');
-	div.appendChild( document.importNode(fragment.content, true) );
-	return div.innerHTML;
-};
 (function(){
 
 var re = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
@@ -3532,7 +3527,14 @@ jstack.dataBindingElementCompiler.if = {
 		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
 
 		if(el.tagName.toLowerCase()=='template'){
-			$this = $(jstack.fragmentToHTML(el));
+			
+			let div = document.createElement('div');
+			div.appendChild( document.importNode(el.content, true) );
+			
+			dataBinder.compileDom( div, scope );
+			
+			$this = $(div);
+			
 			$(el).detach();
 		}
 
@@ -3564,7 +3566,13 @@ jstack.dataBindingElementCompiler.if = {
 				myvar2.push( this.getAttribute('j-else-if') );
 				this.removeAttribute('j-else-if');
 				if(this.tagName.toLowerCase()=='template'){
-					$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+					
+					let div = document.createElement('div');
+					div.appendChild( document.importNode(this.content, true) );
+					
+					dataBinder.compileDom( div, scope );
+					
+					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
 				}
@@ -3591,7 +3599,13 @@ jstack.dataBindingElementCompiler.if = {
 			jelseEl.each(function(){
 				this.removeAttribute('j-else');
 				if(this.tagName.toLowerCase()=='template'){
-					$( '<div>'+jstack.fragmentToHTML(this)+'</div>' ).contents().each(function(){
+					
+					let div = document.createElement('div');
+					div.appendChild( document.importNode(this.content, true) );
+					
+					dataBinder.compileDom( div, scope );
+					
+					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
 				}
