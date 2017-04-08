@@ -936,7 +936,8 @@ if(!Object.prototype.observable){
 		value: function(options){
 			return jstack.observable(this,options);
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!Object.prototype.observe){
@@ -944,7 +945,8 @@ if(!Object.prototype.observe){
 		value: function(key,callback,namespace,recursive){
 			return jstack.observe(this,key,callback,namespace,recursive);
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
 	});
 }
 if(!Object.prototype.unobserve){
@@ -952,7 +954,21 @@ if(!Object.prototype.unobserve){
 		value: function(key,callback,namespace,recursive){
 			return jstack.unobserve(this,key,callback,namespace,recursive);
 		},
-		enumerable: false
+		enumerable: false,
+		writable: true,
+	});
+}
+if(!Object.prototype.each){
+	Object.defineProperty(Object.prototype, 'each', {
+		value: function(callback){
+			let o = this;
+			Object.keys(this).map(function(k){
+				callback(o[k],k,o);
+			});
+			return this;
+		},
+		enumerable: false,
+		writable: true,
 	});
 }
 
@@ -2009,7 +2025,7 @@ $.fn.jData = function(key){
 			var tokens = jstack.dataBinder.textTokenizer(v);
 			var value = v;
 			if(tokens!==false && dataBinder){
-				value = dataBinder.compilerAttrRender(el,tokens);
+				value = dataBinder.compilerAttrRender(el, tokens, dataBinder.model); //TODO get scope for loop
 			}
 			a[k] = value;
 		});
@@ -2552,7 +2568,7 @@ class dataBinder {
 			callback();
 		}
 	}
-	getValue(el,varKey,defaultValue){
+	getValue(el,expression,defaultValue){
 		let key = '';
 
 		let ns = dataBinder.getClosestFormNamespace(el.parentNode);
@@ -2560,7 +2576,7 @@ class dataBinder {
 			key += ns+'.';
 		}
 
-		key += varKey;
+		key += expression;
 
 		return dataBinder.dotGet(key,this.model,defaultValue);
 	}
@@ -2585,65 +2601,32 @@ class dataBinder {
 		}
 		return a;
 	}
-	getValueEval(el,varKey){
+	getValueEval(el,expression,scope){
 
 		let controller = this.controller;
-		let scopeValue = this.model;
 
-		scopeValue = scopeValue ? JSON.parse(JSON.stringify(scopeValue)) : {}; //clone Proxy
-		if(typeof(varKey)=='undefined'){
-			varKey = 'undefined';
+		if(typeof(expression)=='undefined'){
+			expression = 'undefined';
 		}
-		else if(varKey===null){
-			varKey = 'null';
+		else if(expression===null){
+			expression = 'null';
 		}
-		else if(varKey.trim()==''){
-			varKey = 'undefined';
+		else if(expression.trim()==''){
+			expression = 'undefined';
 		}
 		else{
-			varKey = varKey.replace(/[\r\t\n]/g,'');
-			varKey = varKey.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
+			expression = expression.replace(/[\r\t\n]/g,'');
+			expression = expression.replace(/(?:^|\b)(this)(?=\b|$)/g,'$this');
 		}
-
-
-		let forCollection = this.getParentsForId(el).reverse();
-
-		for(let i = 0, l = forCollection.length; i<l; i++){
-			let forid = forCollection[i];
-
-			let parentFor = $(forid);
-			let parentForList = parentFor.parentComment('j:for');
-
-			if(!parentForList.length) continue;
-
-			let jforCommentData = parentForList.dataComment();
-			let value = jforCommentData.value;
-			
-			let forRow = parentFor.dataComment('j:for:row');
-			
-			if(!forRow){
-				console.log(varKey, el, parentFor, parentFor.dataComment());
-			}
-			
-			let index = jforCommentData.index;
-			let key = jforCommentData.key;
-			if(index){
-				scopeValue[index] = forRow.index;
-			}
-			if(key){
-				scopeValue[key] = forRow.key;
-			}
-			scopeValue[value] = forRow.value;
-		}
-
+		
 		let params = [ '$controller', '$this', '$scope' ];
-		let args = [ controller, el, scopeValue ];
-		$.each(scopeValue,function(param,arg){
+		let args = [ controller, el, scope ];
+		scope.each(function(arg,param){
 			params.push(param);
 			args.push(arg);
 		});
 
-		params.push("return "+varKey+";");
+		params.push("return "+expression+";");
 
 		let value;
 		try{
@@ -2653,7 +2636,7 @@ class dataBinder {
 
 		catch(jstackException){
 			if(jstack.config.debug){
-				let warn = [jstackException.message, ", expression: "+varKey, "element", el];
+				let warn = [jstackException.message, ", expression: "+expression, "element", el];
 				if(el.nodeType==Node.COMMENT_NODE){
 					warn.push($(el).parent().get());
 				}
@@ -2818,26 +2801,29 @@ class dataBinder {
 		
 		let dom = $('<html><rootnode>'+html+'</rootnode></html>').get(0);
 		
-		this.compileDom(dom);
+		
+		this.compileDom(dom, $.extend({},this.model) );
 
 		return dom.childNodes;
 	}
 	
-	compileDom(dom){
+	compileDom(dom,scope){
 		
 		let self = this;
 		
-		$.each(jstack.dataBindingCompilers,function(k,compiler){
-			
+		jstack.dataBindingElementCompiler.each(function(compiler){
 			jstack.walkTheDOM(dom,function(n){
-				
-				let matchResult = compiler.match.call(n);
-				if(matchResult){
-					return compiler.callback.call(n,self,matchResult);
+				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
+					return compiler.callback(n,self,scope);
 				}
-				
 			});
-			
+		});
+		jstack.dataBindingTextCompiler.each(function(compiler){
+			jstack.walkTheDOM(dom,function(n){
+				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
+					return compiler.callback(n,self,scope);
+				}
+			});
 		});
 		
 	}
@@ -2861,7 +2847,7 @@ class dataBinder {
 		}
 		return filter;
 	}
-	compilerAttrRender(el,tokens){
+	compilerAttrRender(el,tokens,scope){
 		let r = '';
 		for(let i = 0, l = tokens.length; i<l; i++){
 			let token = tokens[i];
@@ -2874,17 +2860,11 @@ class dataBinder {
 					freeze = true;
 				}
 				
-				token = this.getValueEval(el,token);
+				token = this.getValueEval(el,token,scope);
 			}
 			r += typeof(token)!=='undefined'&&token!==null?token:'';
 		}
 		return r;
-	}
-	createCompilerAttrRender(el,tokens){
-		let self = this;
-		return function(){
-			return self.compilerAttrRender(el,tokens);
-		};
 	}
 	static textTokenizer(text){
 		let tagRE = /\{\{((?:.|\n)+?)\}\}/g;
@@ -3118,7 +3098,7 @@ class dataBinder {
 jstack.dataBinder = dataBinder;
 
 
-jstack.dataBindingCompilers = {};
+jstack.dataBindingElementCompiler = {};
 
 $(document.body).on('reset','form',function(){
 	$(this).populateReset();
@@ -3389,13 +3369,12 @@ const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]
 const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
-jstack.dataBindingCompilers.for = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-for');
+jstack.dataBindingElementCompiler.for = {
+	match(n){
+		return n.hasAttribute('j-for');
 	},
-	callback(dataBinder){
-		let el = this;
-		let $this = $(this);
+	callback(el,dataBinder,scope){
+		let $this = $(el);
 		let jfor = $('<!--j:for-->');
 		let jforClose = $('<!--/j:for-->');
 		$this.replaceWith(jfor);
@@ -3432,17 +3411,12 @@ jstack.dataBindingCompilers.for = {
 			}
 		}
 
-		let currentData;
-		let getData = function(){
-			return dataBinder.getValueEval(jfor[0],myvar);
-		};
-
 		//parentForList
-		jfor.dataComment({
-			value:value,
-			key:key,
-			index:index,
-		});
+		//jfor.dataComment({
+			//value:value,
+			//key:key,
+			//index:index,
+		//});
 
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
@@ -3451,8 +3425,8 @@ jstack.dataBindingCompilers.for = {
 		let buildNewRow;
 		
 		if(isTemplate){
-			let content = this.content;
-			buildNewRow = function(k, jforClose){
+			let content = el.content;
+			buildNewRow = function(k, jforClose, scopeExtend){
 				let elements = document.importNode(content, true);
 				let addRow = document.createElement('div');
 				for(let i = 0, l = elements.length; i<l; i++){
@@ -3461,80 +3435,76 @@ jstack.dataBindingCompilers.for = {
 				
 				jforClose.before(addRow.childNodes);
 				
-				dataBinder.compileDom( addRow );
+				let newScope = $.extend({},dataBinder.model,scope,scopeExtend);
+				
+				dataBinder.compileDom( addRow, newScope );
+				
+				return addRow;
 			};
 			
 		}
 		else{
-			buildNewRow = function(k, jforClose){
+			buildNewRow = function(k, jforClose, scopeExtend){
 				//let addRow = $(document.createElement('div'));
 				let addRow = $this.clone();
 				addRow.attr('j-for-id',k);
 				
 				jforClose.before(addRow);
 				
-				dataBinder.compileDom( addRow[0] );
+				let newScope = $.extend({},dataBinder.model,scope,scopeExtend);
+
+				dataBinder.compileDom( addRow[0], newScope );
 				
 				return addRow;
 			};
 			
 		}
 		
+		let forStack = {};
+		
 		let render = function(){
-			let data = getData();
-			if(currentData===data) return;
-			currentData = data;
+			let data = dataBinder.getValueEval(jfor[0],myvar,scope);
 			
 			if(!data){
-				data = [];
-			}
-			
-			let domRows = {};
-			
-			$.each(jfor.commentChildren(),function(k,v){
-				if(v.nodeType===Node.COMMENT_NODE&&this.nodeValue.split(' ')[0] == 'j:for:id'){
-					let row = $(v);
-					let data = row.dataComment('j:for:row');
-					if(data&&typeof(data.key)!=='undefined'){
-						let key = data.key;
-						domRows[key] = row;
-					}
-				}
-			});
-			
-			//add
-			let index = 1;
-			$.each(data,function(k,v){
-				let row = domRows[k];
-				delete domRows[k];
-				let create;
-				if(!row){
-					row = $('<!--j:for:id-->');
-					create = true;
-				}
-				row.dataComment('j:for:row',{
-					'value':v,
-					'index':index,
-					'key':k,
+				forStack.each(function(n){
+					n.remove();
 				});
-				if(create){
-					row.insertBefore(jforClose);
-					
-					//let addRow = buildNewRow(k);
-					//addRow.insertBefore(jforClose);
-					
-					buildNewRow(k,jforClose);
-					
-					$('<!--/j:for:id-->').insertBefore(jforClose);
+				return;
+			}
+						
+			//add
+			let i = 1;
+			let keys = Object.keys(forStack);
+			data.each(function(v,k){
+				let scopeExtend = {};
+				scopeExtend[value] = v;
+				if(key){
+					scopeExtend[key] = k;
 				}
-				index++;
+				if(index){
+					scopeExtend[index] = i;
+				}
+				if(keys.indexOf(k)===-1){
+					forStack[k] = {
+						el:buildNewRow(k,jforClose,scopeExtend),
+						scope:scopeExtend,
+					};
+				}
+				else{
+					$.extend(forStack[k].scope, scopeExtend);
+				}
+				i++;
 			});
 
 			//remove
-			$.each(domRows,function(k,row){
-				row.commentChildren().remove();
-				$(row[0].nextSibling).remove();
-				row.remove();
+			i = 0;
+			keys = Object.keys(data);
+			forStack.each(function(row,k){
+				if(keys.indexOf(k)===-1){
+					delete forStack[k];
+					row.el.remove();
+				}
+				i++;
 			});
 			
 		};
@@ -3549,25 +3519,24 @@ jstack.dataBindingCompilers.for = {
 
 })();
 
-jstack.dataBindingCompilers.if = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-if');
+jstack.dataBindingElementCompiler.if = {
+	match(n){
+		return n.hasAttribute('j-if');
 	},
-	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
-		var jif = $('<!--j:if-->');
+	callback(el,dataBinder,scope){
+		let $this = $(el);
+		let jif = $('<!--j:if-->');
 		$this.before(jif);
 
-		var jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
-		var jelseEl = $this.nextUntil('[j-if]','[j-else]');
+		let jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
+		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
 
-		if(this.tagName.toLowerCase()=='template'){
-			$this = $(jstack.fragmentToHTML(this));
+		if(el.tagName.toLowerCase()=='template'){
+			$this = $(jstack.fragmentToHTML(el));
 			$(el).detach();
 		}
 
-		var lastBlock;
+		let lastBlock;
 		if(jelseEl.length){
 			lastBlock = jelseEl;
 		}
@@ -3579,18 +3548,18 @@ jstack.dataBindingCompilers.if = {
 		}
 		$('<!--/j:if-->').insertAfter(lastBlock);
 
-		var myvar = el.getAttribute('j-if');
+		let myvar = el.getAttribute('j-if');
 		el.removeAttribute('j-if');
-		var currentData;
-		var getData = function(){
-			return Boolean(dataBinder.getValueEval(jif[0],myvar));
+		let currentData;
+		let getData = function(){
+			return Boolean(dataBinder.getValueEval(jif[0],myvar,scope));
 		};
 
-		var getData2;
-		var currentData2 = null;
+		let getData2;
+		let currentData2 = null;
 		if(jelseifEl.length){
-			var myvar2 = [];
-			var newJelseifEl = [];
+			let myvar2 = [];
+			let newJelseifEl = [];
 			jelseifEl.each(function(){
 				myvar2.push( this.getAttribute('j-else-if') );
 				this.removeAttribute('j-else-if');
@@ -3606,9 +3575,9 @@ jstack.dataBindingCompilers.if = {
 			jelseifEl = $(newJelseifEl);
 
 			getData2 = function(){
-				var data = false;
-				for(var i=0, l=myvar2.length;i<l;i++){
-					if( Boolean(dataBinder.getValueEval(jif[0],myvar2[i])) ){
+				let data = false;
+				for(let i=0, l=myvar2.length;i<l;i++){
+					if( Boolean(dataBinder.getValueEval(jif[0],myvar2[i],scope)) ){
 						data = i;
 						break;
 					}
@@ -3618,7 +3587,7 @@ jstack.dataBindingCompilers.if = {
 		}
 
 		if(jelseEl.length){
-			var newJelseEl = [];
+			let newJelseEl = [];
 			jelseEl.each(function(){
 				this.removeAttribute('j-else');
 				if(this.tagName.toLowerCase()=='template'){
@@ -3633,10 +3602,10 @@ jstack.dataBindingCompilers.if = {
 			jelseEl = $(newJelseEl);
 		}
 
-		var render = function(){
+		let render = function(){
 
-			var data = getData();
-			var data2 = null;
+			let data = getData();
+			let data2 = null;
 			if(getData2){
 				data2 = data?false:getData2();
 			}
@@ -3647,7 +3616,6 @@ jstack.dataBindingCompilers.if = {
 			$this.data('j:if:state',data);
 			if(data){
 				$this.insertAfter(jif);
-
 				if(jelseifEl.length){
 					jelseifEl.data('j:if:state',false);
 					jelseifEl.detach();
@@ -3666,7 +3634,7 @@ jstack.dataBindingCompilers.if = {
 						jelseifEl.detach();
 					}
 					else{
-						var jelseifElMatch = $(jelseifEl[data2]);
+						let jelseifElMatch = $(jelseifEl[data2]);
 						jelseifElMatch.data('j:if:state',true);
 						jelseifElMatch.insertAfter(jif);
 					}
@@ -3689,32 +3657,31 @@ jstack.dataBindingCompilers.if = {
 	},
 };
 
-jstack.dataBindingCompilers.switch = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-switch');
+jstack.dataBindingElementCompiler.switch = {
+	match(n){
+		return n.hasAttribute('j-switch');
 	},
-	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
-		var myvar = this.getAttribute('j-switch');
-		this.removeAttribute('j-switch');
+	callback(el,dataBinder,scope){
+		let $this = $(el);
+		let myvar = el.getAttribute('j-switch');
+		el.removeAttribute('j-switch');
 
-		var cases = $this.find('[j-case],[j-case-default]');
+		let cases = $this.find('[j-case],[j-case-default]');
 
-		var currentData;
-		var getData = function(){
-			return Boolean(dataBinder.getValueEval(el,myvar));
+		let currentData;
+		let getData = function(){
+			return Boolean(dataBinder.getValueEval(el,myvar,scope));
 		};
-		var render = function(){
+		let render = function(){
 			
-			var data = getData();
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 
-			var found = false;
+			let found = false;
 			cases.filter('[j-case]').each(function(){
-				var jcase = $(this);
-				var caseVal = this.getAttribute('j-case');
+				let jcase = $(this);
+				let caseVal = this.getAttribute('j-case');
 				if(caseVal==data){
 					jcase.appendTo($this);
 					found = true;
@@ -3724,7 +3691,7 @@ jstack.dataBindingCompilers.switch = {
 				}
 			});
 			cases.filter('[j-case-default]').each(function(){
-				var jcase = $(this);
+				let jcase = $(this);
 				if(found){
 					jcase.detach();
 				}
@@ -3740,23 +3707,22 @@ jstack.dataBindingCompilers.switch = {
 	},
 };
 
-jstack.dataBindingCompilers.show = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-show');
+jstack.dataBindingElementCompiler.show = {
+	match(n){
+		return n.hasAttribute('j-show');
 	},
-	callback(dataBinder){
-		var el = this;
-		var $this = $(this);
+	callback(el,dataBinder,scope){
+		let $this = $(el);
 
-		var myvar = this.getAttribute('j-show');
-		this.removeAttribute('j-show');
-		var currentData;
-		var getData = function(){
-			return Boolean(dataBinder.getValueEval(el,myvar));
+		let myvar = el.getAttribute('j-show');
+		el.removeAttribute('j-show');
+		let currentData;
+		let getData = function(){
+			return Boolean(dataBinder.getValueEval(el,myvar,scope));
 		};
 
-		var render = function(){
-			var data = getData();
+		let render = function(){
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
 
@@ -3773,66 +3739,63 @@ jstack.dataBindingCompilers.show = {
 	},
 };
 
-jstack.dataBindingCompilers.href = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('j-href');
+jstack.dataBindingElementCompiler.href = {
+	match(n){
+		return n.hasAttribute('j-href');
 	},
-	callback(dataBinder){
+	callback(n,dataBinder,scope){
+		let original = n.getAttribute('j-href');
+		n.removeAttribute('j-href');
 
-		var el = this;
-		var $this = $(this);
-
-		var original = this.getAttribute('j-href');
-		this.removeAttribute('j-href');
-
-		var tokens = jstack.dataBinder.textTokenizer(original);
+		let tokens = jstack.dataBinder.textTokenizer(original);
 		if(tokens===false){
-			el.setAttribute('href',jstack.route.baseLocation + "#" + original);
+			n.setAttribute('href',jstack.route.baseLocation + "#" + original);
 			return;
 		}
 
-		var currentData;
-		var getData = dataBinder.createCompilerAttrRender(el,tokens);
-		var render = function(){
-			var data = getData();
+		let currentData;
+		let getData = function(){
+			return dataBinder.compilerAttrRender(n,tokens,scope);
+		};
+		let render = function(){
+			let data = getData();
 			if(currentData===data) return;
 			currentData = data;
-			el.setAttribute('href',jstack.route.baseLocation + "#" + data);
+			n.setAttribute('href',jstack.route.baseLocation + "#" + data);
 		};
 		
-		dataBinder.addWatcher(el,render);
+		dataBinder.addWatcher(n,render);
 		
 		render();
 	},
 };
 
-jstack.dataBindingCompilers.twoPoints = {
-	match(){
-		if(this.nodeType !== Node.ELEMENT_NODE){
-			return;
-		}
-		var r;
-		for (var i = 0, atts = this.attributes, n = atts.length; i < n; i++) {
-			var att = atts[i];
-			if(att.name.substr(0,1) === ':') {
-				if(!r){
-					r = {};
-				}
-				r[att.name] = att.value;
+jstack.dataBindingElementCompiler.twoPoints = {
+	match(n){	
+		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
+			if(atts[i].name.substr(0,1) === ':') {
+				return true;
 			}
 		}
-		return r;
 	},
-	callback(dataBinder,attrs){
-		var el = this;
-		var $this = $(this);
-		var attrsVars = {};
-		var attrsVarsCurrent = {};
-		var propAttrs = ['selected','checked'];
-		var nodeName = this.nodeName.toLowerCase();
-		$.each(attrs,function(k,v){
-			var tokens = jstack.dataBinder.textTokenizer(v);
-			var key = k.substr(1);
+	callback(el,dataBinder,scope){
+		
+		let attrs = {};
+		for(let i = 0, atts = el.attributes, l = atts.length; i < l; i++) {
+			let att = atts[i];
+			if(att.name.substr(0,1) === ':') {
+				attrs[att.name] = att.value;
+			}
+		}
+		
+		let $this = $(el);
+		let attrsVars = {};
+		let attrsVarsCurrent = {};
+		let propAttrs = ['selected','checked'];
+		let nodeName = el.nodeName.toLowerCase();
+		attrs.each(function(v,k){
+			let tokens = jstack.dataBinder.textTokenizer(v);
+			let key = k.substr(1);
 			if(tokens===false){
 				el.setAttribute(key,v);
 			}
@@ -3841,9 +3804,9 @@ jstack.dataBindingCompilers.twoPoints = {
 			}
 			el.removeAttribute(k);
 		});
-		var render = function(){
-			$.each(attrsVars,function(k,v){
-				var value = dataBinder.compilerAttrRender(el,v);
+		let render = function(){
+			attrsVars.each(function(v,k){
+				let value = dataBinder.compilerAttrRender(el,v,scope);
 				if(attrsVarsCurrent[k]===value) return;
 				attrsVarsCurrent[k] = value;
 
@@ -3870,12 +3833,12 @@ jstack.dataBindingCompilers.twoPoints = {
 	},
 };
 
-jstack.dataBindingCompilers.inputFile = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('name')&&this.tagName.toLowerCase()=='input'&&this.type=='file';
+jstack.dataBindingElementCompiler.inputFile = {
+	match(n){
+		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
 	},
-	callback(dataBinder){
-		$(this).on('input change', function(e){
+	callback(el,dataBinder){
+		$(el).on('input change', function(e){
 			dataBinder.inputToModel(this,e.type);
 		});
 	}
@@ -3886,13 +3849,12 @@ jstack.dataBindingCompilers.inputFile = {
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
 const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 
-jstack.dataBindingCompilers.input = {
-	match(){
-		return this.nodeType === Node.ELEMENT_NODE && this.hasAttribute('name')&&inputPseudoNodeNamesExtended[this.tagName.toLowerCase()]&&this.type!='file';
+jstack.dataBindingElementCompiler.input = {
+	match(n){
+		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
-	callback(dataBinder,matched){
-		let el = this;
-		let $el = $(this);
+	callback(el,dataBinder,scope){
+		let $el = $(el);
 
 		let currentData;
 
@@ -3968,16 +3930,17 @@ jstack.dataBindingCompilers.input = {
 
 })();
 
-jstack.dataBindingCompilers.text = {
-	match: function(){
-		return this.nodeType == Node.TEXT_NODE && this instanceof Text && this.textContent;
+jstack.dataBindingTextCompiler = {};
+jstack.dataBindingTextCompiler.text = {
+	match: function(n){
+		return n.textContent;
 	},
-	callback: function(dataBinder){
-		let textString = this.textContent.toString();
+	callback: function(el,dataBinder,scope){
+		let textString = el.textContent.toString();
 		let tokens = jstack.dataBinder.textTokenizer(textString);
 		if(tokens===false) return;
 
-		let $el = $(this);
+		let $el = $(el);
 
 		let last = $el;
 
@@ -4009,7 +3972,7 @@ jstack.dataBindingCompilers.text = {
 			
 			let currentData;
 			let render = function(){
-				let data = dataBinder.getValueEval(text[0],token);
+				let data = dataBinder.getValueEval(text[0],token,scope);
 				if(currentData===data) return;
 				currentData = data;
 				text.commentChildren().remove();
