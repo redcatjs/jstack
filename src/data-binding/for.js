@@ -109,7 +109,6 @@ jstack.dataBindingElementCompiler.for = {
 						
 			//add
 			let i = 1;
-			let keys = Object.keys(forStack);
 			data.each(function(v,k){
 				let scopeExtend = {};
 				scopeExtend[value] = v;
@@ -119,23 +118,23 @@ jstack.dataBindingElementCompiler.for = {
 				if(index){
 					scopeExtend[index] = i;
 				}
-				if(keys.indexOf(k)===-1){
+				let row = forStack[k];
+				if(typeof(row)==='undefined'){
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
 					};
 				}
 				else{
-					$.extend(forStack[k].scope, scopeExtend);
+					$.extend(true, row.scope, scopeExtend);
 				}
 				i++;
 			});
 
 			//remove
 			i = 0;
-			keys = Object.keys(data);
 			forStack.each(function(row,k){
-				if(keys.indexOf(k)===-1){
+				if(typeof(data[k])==='undefined'){
 					delete forStack[k];
 					row.el.remove();
 				}
