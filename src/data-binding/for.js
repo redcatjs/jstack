@@ -125,8 +125,15 @@ jstack.dataBindingElementCompiler.for = {
 						scope:scopeExtend,
 					};
 				}
+				else if(forStack[k].scope[value]!==v){
+					forStack[k].el.remove(); //remove
+					forStack[k] = {
+						el:buildNewRow(k,jforClose,scopeExtend),
+						scope:scopeExtend,
+					};
+				}
 				else{
-					$.extend(true, row.scope, scopeExtend);
+					$.extend(row.scope, scopeExtend);
 				}
 				i++;
 			});
