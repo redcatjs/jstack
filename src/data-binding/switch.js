@@ -3,28 +3,45 @@ jstack.dataBindingElementCompiler.switch = {
 		return n.hasAttribute('j-switch');
 	},
 	callback(el,dataBinder,scope){
-		let $this = $(el);
+		let jswitch = $('<!--j:switch-->');
+		let $this;
+		
 		let myvar = el.getAttribute('j-switch');
 		el.removeAttribute('j-switch');
 
+		if(el.tagName.toLowerCase()=='template'){
+			$this.before(jswitch);
+			let div = document.createElement('div');
+			div.appendChild( document.importNode(el.content, true) );
+			$(el).detach();
+			el = div;
+			$this = $(el);
+		}
+		else{
+			$this = $(el);
+			$this.append(jswitch);
+		}
+		
+		$this.contents().each(function(){
+			dataBinder.compileDom( this, scope );
+		});
+
+		
 		let cases = $this.find('[j-case],[j-case-default]');
 
 		let currentData;
-		let getData = function(){
-			return Boolean(jstack.dataBinder.getValueEval(el,myvar,scope));
-		};
 		let render = function(){
-			
-			let data = getData();
+			let data = jstack.dataBinder.getValueEval(el,myvar,scope);
 			if(currentData===data) return;
 			currentData = data;
+			jstack.log(myvar,scope);
 
 			let found = false;
 			cases.filter('[j-case]').each(function(){
 				let jcase = $(this);
 				let caseVal = this.getAttribute('j-case');
 				if(caseVal==data){
-					jcase.appendTo($this);
+					jcase.insertAfter(jswitch);
 					found = true;
 				}
 				else{
@@ -37,7 +54,7 @@ jstack.dataBindingElementCompiler.switch = {
 					jcase.detach();
 				}
 				else{
-					jcase.appendTo($this);
+					jcase.insertAfter(jswitch);
 				}
 			});
 
@@ -45,5 +62,7 @@ jstack.dataBindingElementCompiler.switch = {
 		
 		dataBinder.addWatcher(el,render);
 		render();
+		
+		return false;
 	},
 };
