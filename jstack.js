@@ -3222,7 +3222,9 @@ let modelObservable = function(obj,dataBinder){
 	//modelSplice
 	//modelDelete
 	
-	if(obj.modelObserve){
+	if(obj instanceof FileList||obj instanceof File) return obj;
+	
+	if(obj.modelObserve||obj instanceof FileList||obj instanceof File){
 		return obj;
 	}
 	
