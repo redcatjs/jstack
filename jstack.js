@@ -3318,6 +3318,72 @@ jstack.modelObservable = modelObservable;
 
 (function(){
 
+const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
+const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
+
+jstack.dataBindingElementCompiler.inputDefault = {
+	match(n){
+		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
+	},
+	callback(el,dataBinder,scope){
+		let $el = $(el);
+
+		let currentData;
+
+		//default to model					
+		let key = jstack.dataBinder.getScopedInput(el);
+		let val = jstack.dataBinder.getInputVal(el);
+		
+		let setterCallback = function(target,k,v){
+			let origin = jstack.getObserverTarget(target);
+			origin[k] = v;
+		};
+		
+		let modelValue = jstack.dataBinder.dotSet(key,dataBinder.model,val,true,setterCallback);
+		
+		if(!modelValue){
+			modelValue = '';
+		}
+		
+		//model to default dom value
+		if(modelValue!==val){
+			let nodeName = el.tagName.toLowerCase();
+			if(nodeName=='select'){
+				let found;
+				$el.find('option').each(function(){
+					if(this.hasAttribute('value')){
+						if(this.value==modelValue){
+							found = true;
+							return false;
+						}
+					}
+					else{
+						if($(this).text()==modelValue){
+							found = true;
+							return false;
+						}
+					}
+				});
+				if(found){
+					$el.populateInput(modelValue,{preventValEvent:true});
+				}
+				else{
+					//jstack.dataBinder.dotSet(key,dataBinder.model,val);
+					jstack.dataBinder.dotSet(key,dataBinder.model,val,false,setterCallback);
+				}
+			}
+			else{
+				$el.populateInput(modelValue,{preventValEvent:true});
+			}
+		}
+	},
+};
+
+
+})();
+
+(function(){
+
 const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
@@ -3646,28 +3712,45 @@ jstack.dataBindingElementCompiler.switch = {
 		return n.hasAttribute('j-switch');
 	},
 	callback(el,dataBinder,scope){
-		let $this = $(el);
+		let jswitch = $('<!--j:switch-->');
+		let $this;
+		
 		let myvar = el.getAttribute('j-switch');
 		el.removeAttribute('j-switch');
 
+		if(el.tagName.toLowerCase()=='template'){
+			$this.before(jswitch);
+			let div = document.createElement('div');
+			div.appendChild( document.importNode(el.content, true) );
+			$(el).detach();
+			el = div;
+			$this = $(el);
+		}
+		else{
+			$this = $(el);
+			$this.append(jswitch);
+		}
+		
+		$this.contents().each(function(){
+			dataBinder.compileDom( this, scope );
+		});
+
+		
 		let cases = $this.find('[j-case],[j-case-default]');
 
 		let currentData;
-		let getData = function(){
-			return Boolean(jstack.dataBinder.getValueEval(el,myvar,scope));
-		};
 		let render = function(){
-			
-			let data = getData();
+			let data = jstack.dataBinder.getValueEval(el,myvar,scope);
 			if(currentData===data) return;
 			currentData = data;
+			jstack.log(myvar,scope);
 
 			let found = false;
 			cases.filter('[j-case]').each(function(){
 				let jcase = $(this);
 				let caseVal = this.getAttribute('j-case');
 				if(caseVal==data){
-					jcase.appendTo($this);
+					jcase.insertAfter(jswitch);
 					found = true;
 				}
 				else{
@@ -3680,7 +3763,7 @@ jstack.dataBindingElementCompiler.switch = {
 					jcase.detach();
 				}
 				else{
-					jcase.appendTo($this);
+					jcase.insertAfter(jswitch);
 				}
 			});
 
@@ -3688,6 +3771,8 @@ jstack.dataBindingElementCompiler.switch = {
 		
 		dataBinder.addWatcher(el,render);
 		render();
+		
+		return false;
 	},
 };
 
@@ -3922,53 +4007,6 @@ jstack.dataBindingElementCompiler.input = {
 
 		let currentData;
 
-		//default to model					
-		let key = jstack.dataBinder.getScopedInput(el);
-		let val = jstack.dataBinder.getInputVal(el);
-		
-		let setterCallback = function(target,k,v){
-			let origin = jstack.getObserverTarget(target);
-			origin[k] = v;
-		};
-		
-		let modelValue = jstack.dataBinder.dotSet(key,dataBinder.model,val,true,setterCallback);
-		
-		if(!modelValue){
-			modelValue = '';
-		}
-		
-		//model to default dom value
-		if(modelValue!==val){
-			let nodeName = el.tagName.toLowerCase();
-			if(nodeName=='select'){
-				let found;
-				$el.find('option').each(function(){
-					if(this.hasAttribute('value')){
-						if(this.value==modelValue){
-							found = true;
-							return false;
-						}
-					}
-					else{
-						if($(this).text()==modelValue){
-							found = true;
-							return false;
-						}
-					}
-				});
-				if(found){
-					$el.populateInput(modelValue,{preventValEvent:true});
-				}
-				else{
-					//jstack.dataBinder.dotSet(key,dataBinder.model,val);
-					jstack.dataBinder.dotSet(key,dataBinder.model,val,false,setterCallback);
-				}
-			}
-			else{
-				$el.populateInput(modelValue,{preventValEvent:true});
-			}
-		}
-		
 		let getData = function(){
 			let defaultValue = jstack.dataBinder.getInputVal(el);
 			let key = jstack.dataBinder.getKey( el.getAttribute('name') );
