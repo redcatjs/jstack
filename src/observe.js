@@ -2,13 +2,21 @@
 
 let prefix = '__JSTACK__OBSERVABLE__';
 
-let observable = function(obj,parentProxy,parentKey){
+let observable = function(obj,options,parentProxy,parentKey){
 	
 	let observer = obj[prefix];
 	if(observer){
 		observer.parentKey = parentKey;
 		observer.parentProxy = parentProxy;
 		return obj;
+	}
+	
+	if(!options){
+		options = {};
+	}
+	
+	if(options.factory){
+		obj = options.factory(obj);
 	}
 	
 	let notify = function(change,preventPropagation){
@@ -70,7 +78,7 @@ let observable = function(obj,parentProxy,parentKey){
 			let oldValue = target[key];
 			
 			if(typeof(value)=='object'&&value!==null){
-				value = observable(value, proxy, key);
+				value = observable(value, options, proxy, key);
 			}
 			
 			target[key] = value;
@@ -124,7 +132,7 @@ let observable = function(obj,parentProxy,parentKey){
 		for(let i = 0, l=obj.length; i<l; i++){
 			let v = obj[i];
 			if(typeof(v)=='object'&&v!==null){
-				obj[i] = observable( v, proxy, i );
+				obj[i] = observable( v, options, proxy, i );
 			}
 		}
 	}
@@ -135,7 +143,7 @@ let observable = function(obj,parentProxy,parentKey){
 			}
 			let v = obj[k];
 			if(typeof(v)=='object'&&v!==null){
-				obj[k] = observable( v, proxy, k );
+				obj[k] = observable( v, options, proxy, k );
 			}
 		}
 	}
