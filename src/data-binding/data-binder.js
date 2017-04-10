@@ -8,7 +8,8 @@ class dataBinder {
 		
 		model = model.observable({
 			factory: function(obj){
-				return jstack.modelObservable(obj,self);
+				jstack.modelObservable(obj,self);
+				return obj;
 			},
 		});
 		
