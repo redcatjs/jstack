@@ -34,7 +34,6 @@ jstack.dataBindingElementCompiler.switch = {
 			let data = jstack.dataBinder.getValueEval(el,myvar,scope);
 			if(currentData===data) return;
 			currentData = data;
-			jstack.log(myvar,scope);
 
 			let found = false;
 			cases.filter('[j-case]').each(function(){
