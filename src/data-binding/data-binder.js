@@ -4,7 +4,20 @@ class dataBinder {
 	
 	constructor(model,view,controller){
 		
-		model = jstack.modelObservable(model,this);
+		let self = this;
+		
+		model = model.observable({
+			factory: function(obj){
+				return jstack.modelObservable(obj,self);
+			},
+		});
+		
+		model.observe(function(change){
+			//console.log('j:model:update',change);
+			self.update();
+		},'jstack.model',true);
+		
+		
 		
 		this.model = model;
 		this.view = view;
