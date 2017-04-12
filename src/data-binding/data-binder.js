@@ -261,18 +261,24 @@ class dataBinder {
 		let self = this;
 		
 		jstack.dataBindingElementCompiler.each(function(compiler){
+			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					return compiler.callback(n,self,scope);
+					breaker = compiler.callback(n,self,scope);
+					return breaker;
 				}
 			});
+			return breaker;
 		});
 		jstack.dataBindingTextCompiler.each(function(compiler){
+			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					return compiler.callback(n,self,scope);
+					breaker = compiler.callback(n,self,scope);
+					return breaker;
 				}
 			});
+			return breaker;
 		});
 		
 	}
