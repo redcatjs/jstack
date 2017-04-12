@@ -2804,18 +2804,24 @@ class dataBinder {
 		let self = this;
 		
 		jstack.dataBindingElementCompiler.each(function(compiler){
+			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					return compiler.callback(n,self,scope);
+					breaker = compiler.callback(n,self,scope);
+					return breaker;
 				}
 			});
+			return breaker;
 		});
 		jstack.dataBindingTextCompiler.each(function(compiler){
+			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					return compiler.callback(n,self,scope);
+					breaker = compiler.callback(n,self,scope);
+					return breaker;
 				}
 			});
+			return breaker;
 		});
 		
 	}
@@ -3324,7 +3330,7 @@ jstack.dataBindingElementCompiler.jTemplate = {
 		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
 	},
 	callback(n,dataBinder,scope){
-		dataBinder.templates[n.id] = $(n.innerHTML);
+		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
 		$(n).remove();
 		return false;
 	},
@@ -3444,13 +3450,6 @@ jstack.dataBindingElementCompiler.for = {
 			}
 		}
 
-		//parentForList
-		//jfor.dataComment({
-			//value:value,
-			//key:key,
-			//index:index,
-		//});
-
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
@@ -3566,8 +3565,9 @@ jstack.dataBindingElementCompiler.jInclude = {
 		let include = n.getAttribute('j-include');
 		n.removeAttribute('j-include');
 		$(n).empty();
-		dataBinder.templates[include].clone().appendTo(n);
-		dataBinder.compileDom(n,scope)
+		let c = dataBinder.templates[include].clone().contents();
+		c.appendTo(n);
+		dataBinder.compileDom(n,scope);
 		return false;
 	},
 };
