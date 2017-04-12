@@ -5,6 +5,9 @@ class dataBinder {
 	constructor(model,view,controller){
 		
 		let self = this;
+			
+		
+		this.templates = {};
 		
 		model = model.observable({
 			factory: function(obj){

@@ -68,6 +68,10 @@ grunt.initConfig({
 				
 				"src/data-binding/data-binder.js",
 				"src/data-binding/model-observable.js",
+				
+				"src/data-binding/j-template.js",
+				"src/data-binding/j-include.js",
+				
 				"src/data-binding/input-default.js",
 				"src/data-binding/for.js",
 				"src/data-binding/if.js",

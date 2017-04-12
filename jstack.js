@@ -2548,6 +2548,9 @@ class dataBinder {
 	constructor(model,view,controller){
 		
 		let self = this;
+			
+		
+		this.templates = {};
 		
 		model = model.observable({
 			factory: function(obj){
@@ -3315,6 +3318,27 @@ let modelObservable = function(obj,dataBinder){
 jstack.modelObservable = modelObservable;
 
 })();
+
+jstack.dataBindingElementCompiler.jTemplate = {
+	match(n){
+		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
+	},
+	callback(n,dataBinder,scope){
+		dataBinder.templates[n.id] = $(n.innerHTML);
+		$(n).remove();
+	},
+};
+
+jstack.dataBindingElementCompiler.jInclude = {
+	match(n){	
+		return n.hasAttribute('j-include');
+	},
+	callback(n,dataBinder,scope){
+		let include = n.getAttribute('j-include');
+		$(n).empty();
+		dataBinder.templates[include].clone().appendTo(n);
+	},
+};
 
 (function(){
 
