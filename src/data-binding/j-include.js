@@ -6,8 +6,11 @@ jstack.dataBindingElementCompiler.jInclude = {
 		let include = n.getAttribute('j-include');
 		n.removeAttribute('j-include');
 		$(n).empty();
-		dataBinder.templates[include].clone().appendTo(n);
-		dataBinder.compileDom(n,scope)
+		let c = dataBinder.templates[include].clone().contents();
+		c.appendTo(n);
+		c.each(function(){
+			dataBinder.compileDom(this,scope)
+		});
 		return false;
 	},
 };
