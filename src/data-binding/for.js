@@ -46,13 +46,6 @@ jstack.dataBindingElementCompiler.for = {
 			}
 		}
 
-		//parentForList
-		//jfor.dataComment({
-			//value:value,
-			//key:key,
-			//index:index,
-		//});
-
 		
 		let isTemplate = el.tagName.toLowerCase()=='template';
 		
