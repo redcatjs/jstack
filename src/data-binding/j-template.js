@@ -5,5 +5,6 @@ jstack.dataBindingElementCompiler.jTemplate = {
 	callback(n,dataBinder,scope){
 		dataBinder.templates[n.id] = $(n.innerHTML);
 		$(n).remove();
+		return false;
 	},
 };
