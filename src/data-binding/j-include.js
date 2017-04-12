@@ -8,9 +8,7 @@ jstack.dataBindingElementCompiler.jInclude = {
 		$(n).empty();
 		let c = dataBinder.templates[include].clone().contents();
 		c.appendTo(n);
-		c.each(function(){
-			dataBinder.compileDom(this,scope)
-		});
+		dataBinder.compileDom(n,scope);
 		return false;
 	},
 };
