@@ -4280,29 +4280,42 @@ jstack.loader('[j-component]',function(){
 });
 
 ( function() {
-	var hasOwnProperty2 = function(o,k){
-		var v = o[k];
+	let hasOwnProperty2 = function(o,k){
+		let v = o[k];
 		return v!==Object[k]&&v!==Object.__proto__[k]&&v!==Array[k]&&v!==Array.__proto__[k];
 	};
-	var toParamsPair = function( data ) {
-		var pair = [];
-		var params = $.param( data ).split( "&" );
-		for ( var i = 0; i < params.length; i++ ) {
-			var x = params[ i ].split( "=" );
-			var val = x[ 1 ] !== null ? decodeURIComponent( x[ 1 ] ) : "";
-			pair.push( [ decodeURIComponent( x[ 0 ] ), val ] );
+	let toParamsPair = function( data ) {
+		let pair = [];
+		let params = $.param( data ).split( "&" );
+		for ( let i = 0; i < params.length; i++ ) {
+			let x = params[ i ].split( "=" );
+			
+			let val;
+			if(x[ 1 ] === null){
+				val = "";
+			}
+			else{
+				val =  x[ 1 ];
+				val =  val.replace(/\+/g, '%20');
+				val =  decodeURIComponent( val );
+			}
+			let key = x[ 0 ];
+			key =  key.replace(/\+/g, '%20');
+			key =  decodeURIComponent( key );
+			
+			pair.push( [ key, val ] );
 		}
 		return pair;
 	};
 
 
-	var recurseFormat = function( o, files, prefix, deepness ) {
+	let recurseFormat = function( o, files, prefix, deepness ) {
 		if(!prefix){
 			prefix = "";
 		}
 		if(o instanceof Array){ //cast array of value as object
-			var obj = {};
-			for( var i = 0; i < o.length; i++ ) {
+			let obj = {};
+			for( let i = 0; i < o.length; i++ ) {
 				obj[i] = o[i];
 			}
 			return recurseFormat(obj, files, prefix, deepness);
@@ -4311,17 +4324,17 @@ jstack.loader('[j-component]',function(){
 			o = '';
 		}
 		else if(typeof(o)=='object'){
-			var obj = {};
+			let obj = {};
 			Object.keys(o).forEach(function(k){
-				var key = prefix + k;
-				var value = o[k];
+				let key = prefix + k;
+				let value = o[k];
 				if(value instanceof FileList){ //extract file
 					if(value.length==1){
 						files[key] = value[0];
 					}
 					else{
 						files[key] = [];
-						for(var i = 0; i < value.length; i++){
+						for(let i = 0; i < value.length; i++){
 							files[ key ].push( value[ i ] );
 						}
 					}
@@ -4338,7 +4351,7 @@ jstack.loader('[j-component]',function(){
 	jstack.ajaxNamespace = undefined;
 	
 	jstack.ajax = function() {
-		var settings, files = {};
+		let settings, files = {};
 		if ( arguments.length == 2 ) {
 			settings = arguments[ 1 ] || {};
 			settings.url = arguments[ 0 ];
@@ -4350,17 +4363,17 @@ jstack.loader('[j-component]',function(){
 			settings.data = recurseFormat( settings.data, files );
 		}
 		if ( !$.isEmptyObject( files ) ) {
-			var haveFiles;
-			var fd = new FormData();
-			var params = toParamsPair( settings.data );
-			for ( var i = 0; i < params.length; i++ ) {
+			let haveFiles;
+			let fd = new FormData();
+			let params = toParamsPair( settings.data );
+			for ( let i = 0; i < params.length; i++ ) {
 				fd.append( params[ i ][ 0 ], params[ i ][ 1 ] );
 			}
-			for ( var k in files ) {
+			for ( let k in files ) {
 				if ( files.hasOwnProperty( k ) ) {
-					var file = files[ k ];
+					let file = files[ k ];
 					if ( file instanceof Array ) {
-						for ( var i = 0; i < file.length; i++ ) {
+						for ( let i = 0; i < file.length; i++ ) {
 							if ( typeof( file[ i ] ) != "undefined" ) {
 								fd.append( k + "[]", file[ i ] );
 								haveFiles = true;
