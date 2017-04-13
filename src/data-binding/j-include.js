@@ -5,6 +5,12 @@ jstack.dataBindingElementCompiler.jInclude = {
 	callback(n,dataBinder,scope){
 		let include = n.getAttribute('j-include');
 		n.removeAttribute('j-include');
+		
+		let tokens = jstack.dataBinder.textTokenizer(include);
+		if(tokens!==false){
+			include = dataBinder.compilerAttrRender(n,tokens,scope);
+		}
+		
 		$(n).empty();
 		let c = dataBinder.templates[include].clone().contents();
 		c.appendTo(n);
