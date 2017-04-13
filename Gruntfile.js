@@ -71,6 +71,8 @@ grunt.initConfig({
 				
 				"src/data-binding/j-template.js",
 				
+				"src/data-binding/j-javascript.js",
+				
 				"src/data-binding/input-default.js",
 				"src/data-binding/for.js",
 				
