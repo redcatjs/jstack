@@ -11,10 +11,23 @@ jstack.dataBindingElementCompiler.jInclude = {
 			include = dataBinder.compilerAttrRender(n,tokens,scope);
 		}
 		
-		$(n).empty();
-		let c = dataBinder.templates[include].clone().contents();
-		c.appendTo(n);
-		dataBinder.compileDom(n,scope);
+		let compile = function(){
+			$(n).empty();
+			let c = dataBinder.templates[include].clone().contents();
+			c.appendTo(n);
+			dataBinder.compileDom(n,scope);			
+		};
+		
+		if(dataBinder.templates[include]){
+			compile();
+		}
+		else{
+			$.ajax(include).then(function(html){
+				dataBinder.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+				compile();
+			});
+		}
+		
 		return false;
 	},
 };
