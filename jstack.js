@@ -2803,7 +2803,7 @@ class dataBinder {
 		
 		let self = this;
 		
-		jstack.dataBindingElementCompiler.each(function(compiler){
+		jstack.dataBindingElementCompiler.forEach(function(compiler){
 			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
@@ -2813,7 +2813,7 @@ class dataBinder {
 			});
 			return breaker;
 		});
-		jstack.dataBindingTextCompiler.each(function(compiler){
+		jstack.dataBindingTextCompiler.forEach(function(compiler){
 			let breaker;
 			jstack.walkTheDOM(dom,function(n){
 				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
@@ -3069,7 +3069,8 @@ class dataBinder {
 jstack.dataBinder = dataBinder;
 
 
-jstack.dataBindingElementCompiler = {};
+jstack.dataBindingElementCompiler = [];
+jstack.dataBindingTextCompiler = [];
 
 $(document.body).on('reset','form',function(){
 	$(this).populateReset();
@@ -3325,7 +3326,7 @@ jstack.modelObservable = modelObservable;
 
 })();
 
-jstack.dataBindingElementCompiler.jTemplate = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
 	},
@@ -3334,14 +3335,14 @@ jstack.dataBindingElementCompiler.jTemplate = {
 		$(n).remove();
 		return false;
 	},
-};
+});
 
 (function(){
 
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
 const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 
-jstack.dataBindingElementCompiler.inputDefault = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
@@ -3397,7 +3398,7 @@ jstack.dataBindingElementCompiler.inputDefault = {
 			}
 		}
 	},
-};
+});
 
 
 })();
@@ -3408,7 +3409,7 @@ const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]
 const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
-jstack.dataBindingElementCompiler.for = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-for');
 	},
@@ -3553,11 +3554,11 @@ jstack.dataBindingElementCompiler.for = {
 		return false;
 		
 	},
-};
+});
 
 })();
 
-jstack.dataBindingElementCompiler.jInclude = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		return n.hasAttribute('j-include');
 	},
@@ -3589,9 +3590,9 @@ jstack.dataBindingElementCompiler.jInclude = {
 		
 		return false;
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.if = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-if');
 	},
@@ -3752,9 +3753,9 @@ jstack.dataBindingElementCompiler.if = {
 		
 		return false;
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.switch = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-switch');
 	},
@@ -3848,9 +3849,9 @@ jstack.dataBindingElementCompiler.switch = {
 		
 		return false;
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.show = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-show');
 	},
@@ -3880,9 +3881,9 @@ jstack.dataBindingElementCompiler.show = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.href = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-href');
 	},
@@ -3911,9 +3912,9 @@ jstack.dataBindingElementCompiler.href = {
 		
 		render();
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.twoPoints = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
 			if(atts[i].name.substr(0,1) === ':') {
@@ -3973,9 +3974,9 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.jData = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
 			if(atts[i].name.substr(0,7) === 'j-data-') {
@@ -4017,9 +4018,9 @@ jstack.dataBindingElementCompiler.jData = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.jOn = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
 			if(atts[i].name.substr(0,5) === 'j-on-') {
@@ -4054,9 +4055,9 @@ jstack.dataBindingElementCompiler.jOn = {
 			el.removeAttribute(k);
 		});
 	},
-};
+});
 
-jstack.dataBindingElementCompiler.inputFile = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
 	},
@@ -4065,14 +4066,14 @@ jstack.dataBindingElementCompiler.inputFile = {
 			dataBinder.inputToModel(this,e.type);
 		});
 	}
-};
+});
 
 (function(){
 
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
 const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 
-jstack.dataBindingElementCompiler.input = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
@@ -4101,13 +4102,12 @@ jstack.dataBindingElementCompiler.input = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});
 
 
 })();
 
-jstack.dataBindingTextCompiler = {};
-jstack.dataBindingTextCompiler.text = {
+jstack.dataBindingTextCompiler.push({
 	match: function(n){
 		return n.textContent;
 	},
@@ -4162,7 +4162,7 @@ jstack.dataBindingTextCompiler.text = {
 		};
 		$el.remove();
 	},
-};
+});
 
 (function(){
 	
