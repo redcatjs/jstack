@@ -84,6 +84,7 @@ class dataBinder {
 				let warn = [jstackException.message, ", expression: "+expression, "element", el];
 				if(el.nodeType==Node.COMMENT_NODE){
 					warn.push($(el).parent().get());
+					warn.push(scope);
 				}
 				console.warn.apply(console,warn);
 			}
