@@ -2627,6 +2627,7 @@ class dataBinder {
 				let warn = [jstackException.message, ", expression: "+expression, "element", el];
 				if(el.nodeType==Node.COMMENT_NODE){
 					warn.push($(el).parent().get());
+					warn.push(scope);
 				}
 				console.warn.apply(console,warn);
 			}
@@ -3333,6 +3334,19 @@ jstack.dataBindingElementCompiler.push({
 	callback(n,dataBinder,scope){
 		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
 		$(n).remove();
+		return false;
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
+	},
+	callback(n,dataBinder,scope){
+		let script = n.innerHTML;
+		$(n).remove();
+		let func = new Function(script);
+		func.call(scope);
 		return false;
 	},
 });
