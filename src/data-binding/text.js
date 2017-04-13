@@ -1,5 +1,4 @@
-jstack.dataBindingTextCompiler = {};
-jstack.dataBindingTextCompiler.text = {
+jstack.dataBindingTextCompiler.push({
 	match: function(n){
 		return n.textContent;
 	},
@@ -54,4 +53,4 @@ jstack.dataBindingTextCompiler.text = {
 		};
 		$el.remove();
 	},
-};
+});

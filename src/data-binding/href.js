@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.href = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-href');
 	},
@@ -27,4 +27,4 @@ jstack.dataBindingElementCompiler.href = {
 		
 		render();
 	},
-};
+});

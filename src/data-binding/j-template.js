@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.jTemplate = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
 	},
@@ -7,4 +7,4 @@ jstack.dataBindingElementCompiler.jTemplate = {
 		$(n).remove();
 		return false;
 	},
-};
+});

@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.jInclude = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		return n.hasAttribute('j-include');
 	},
@@ -30,4 +30,4 @@ jstack.dataBindingElementCompiler.jInclude = {
 		
 		return false;
 	},
-};
+});

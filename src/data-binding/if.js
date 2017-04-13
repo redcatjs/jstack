@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.if = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-if');
 	},
@@ -159,4 +159,4 @@ jstack.dataBindingElementCompiler.if = {
 		
 		return false;
 	},
-};
+});

@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.inputFile = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
 	},
@@ -7,4 +7,4 @@ jstack.dataBindingElementCompiler.inputFile = {
 			dataBinder.inputToModel(this,e.type);
 		});
 	}
-};
+});

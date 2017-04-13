@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.twoPoints = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
 			if(atts[i].name.substr(0,1) === ':') {
@@ -58,4 +58,4 @@ jstack.dataBindingElementCompiler.twoPoints = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});

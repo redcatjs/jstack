@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.jData = {
+jstack.dataBindingElementCompiler.push({
 	match(n){	
 		for(let i = 0, atts = n.attributes, l = atts.length; i < l; i++) {
 			if(atts[i].name.substr(0,7) === 'j-data-') {
@@ -40,4 +40,4 @@ jstack.dataBindingElementCompiler.jData = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});

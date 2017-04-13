@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.show = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-show');
 	},
@@ -28,4 +28,4 @@ jstack.dataBindingElementCompiler.show = {
 		dataBinder.addWatcher(el,render);
 		render();
 	},
-};
+});

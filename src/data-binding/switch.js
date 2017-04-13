@@ -1,4 +1,4 @@
-jstack.dataBindingElementCompiler.switch = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-switch');
 	},
@@ -92,4 +92,4 @@ jstack.dataBindingElementCompiler.switch = {
 		
 		return false;
 	},
-};
+});

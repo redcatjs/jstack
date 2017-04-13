@@ -4,7 +4,7 @@ const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]
 const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
 const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
-jstack.dataBindingElementCompiler.for = {
+jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('j-for');
 	},
@@ -149,6 +149,6 @@ jstack.dataBindingElementCompiler.for = {
 		return false;
 		
 	},
-};
+});
 
 })();
