@@ -1,13 +1,13 @@
-jstack.dotGet = function(data,key,defaultValue){
+jstack.dotGet = function(data,key){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
 	return key.split('.').reduce(function(obj,i){
 		if(typeof(obj)=='object'&&obj!==null){
-			return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
+			return typeof(obj[i])!='undefined'?obj[i]:undefined;
 		}
 		else{
-			return defaultValue;
+			return undefined;
 		}
 	}, data);
 };

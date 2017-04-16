@@ -55,7 +55,8 @@ class dataBinder {
 
 		key += expression;
 
-		return jstack.dotGet(this.model,key,defaultValue);
+		let value = jstack.dotGet(this.model,key);
+		return typeof(value)!='undefined'?value:defaultValue;
 	}
 	static getValueEval(el,expression,scope){
 
