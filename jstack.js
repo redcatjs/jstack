@@ -667,7 +667,9 @@ jstack.flatObservable = function(){
 	for(var i=0,l=arguments.length;i<l;i++){
 		var arg = arguments[i];
 		//arg = JSON.parse(JSON.stringify(arg));
-		arg = $.extend(true,{},arg);
+		if(typeof(arg)=='object'&&arg!==null){
+			arg = $.extend(true,{},arg);
+		}
 		args.push(arg);
 	}
 	return args;
