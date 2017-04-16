@@ -1,3 +1,11 @@
+jstack.dot = function(){
+	if(arguments.length<=2){
+		jstack.dotGet.apply(this,arguments);
+	}
+	else{
+		jstack.dotSet.apply(this,arguments);
+	}
+};
 jstack.dotGet = function(data,key){
 	if(typeof(data)!='object'||data===null){
 		return;
