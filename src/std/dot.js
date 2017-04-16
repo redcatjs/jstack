@@ -1,9 +1,9 @@
 jstack.dot = function(){
 	if(arguments.length<=2){
-		jstack.dotGet.apply(this,arguments);
+		return jstack.dotGet.apply(this,arguments);
 	}
 	else{
-		jstack.dotSet.apply(this,arguments);
+		return jstack.dotSet.apply(this,arguments);
 	}
 };
 jstack.dotGet = function(data,key){
