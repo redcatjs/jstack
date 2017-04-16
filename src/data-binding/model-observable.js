@@ -154,6 +154,15 @@ class modelObserver{
 			this.dataBinder.ready(callback);
 		}
 	}
+	
+	modelDot(){
+		if(arguments.length<=1){
+			jstack.dataBinder.dotGet(arguments[0],this.o);
+		}
+		else{
+			jstack.dataBinder.dotSet(arguments[0],this.o,arguments[1]);
+		}
+	}
 }
 
 let modelObservable = function(obj,dataBinder){
@@ -234,6 +243,13 @@ let modelObservable = function(obj,dataBinder){
 		Object.defineProperty(obj, 'modelSplice', {
 			value: function(){
 				return modelObserverObject.modelSplice.apply(modelObserverObject,arguments);
+			},
+			enumerable: false,
+			writable: true,
+		});
+		Object.defineProperty(obj, 'modelDot', {
+			value: function(){
+				return modelObserverObject.modelDot.apply(modelObserverObject,arguments);
 			},
 			enumerable: false,
 			writable: true,
