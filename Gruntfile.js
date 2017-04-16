@@ -76,10 +76,10 @@ grunt.initConfig({
 				
 				"src/data-binding/input-default.js",
 				"src/data-binding/for.js",
+				"src/data-binding/if.js",
 				
 				"src/data-binding/j-include.js",
 				
-				"src/data-binding/if.js",
 				"src/data-binding/switch.js",
 				"src/data-binding/show.js",
 				"src/data-binding/href.js",
