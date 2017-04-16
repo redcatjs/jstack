@@ -72,13 +72,13 @@ grunt.initConfig({
 				
 				"src/data-binding/j-template.js",
 				
-				"src/data-binding/j-javascript.js",
 				
 				"src/data-binding/input-default.js",
 				"src/data-binding/for.js",
 				"src/data-binding/if.js",
 				
 				"src/data-binding/j-include.js",
+				"src/data-binding/j-javascript.js",
 				
 				"src/data-binding/switch.js",
 				"src/data-binding/show.js",

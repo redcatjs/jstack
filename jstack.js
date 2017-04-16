@@ -2891,27 +2891,50 @@ class dataBinder {
 		
 		let self = this;
 		
-		jstack.dataBindingElementCompiler.forEach(function(compiler){
-			let breaker;
-			jstack.walkTheDOM(dom,function(n){
-				if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					breaker = compiler.callback(n,self,scope);
-					return breaker;
-				}
-			});
-			return breaker;
-		});
-		jstack.dataBindingTextCompiler.forEach(function(compiler){
-			let breaker;
-			jstack.walkTheDOM(dom,function(n){
-				if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					breaker = compiler.callback(n,self,scope);
-					return breaker;
-				}
-			});
-			return breaker;
-		});
 		
+		//jstack.dataBindingElementCompiler.forEach(function(compiler){
+			//let breaker;
+			//jstack.walkTheDOM(dom,function(n){
+				//if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
+					//breaker = compiler.callback(n,self,scope);
+					//return breaker;
+				//}
+			//});
+			//return breaker;
+		//});
+		//jstack.dataBindingTextCompiler.forEach(function(compiler){
+			//let breaker;
+			//jstack.walkTheDOM(dom,function(n){
+				//if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
+					//breaker = compiler.callback(n,self,scope);
+					//return breaker;
+				//}
+			//});
+			//return breaker;
+		//});
+		
+		
+		jstack.walkTheDOM(dom,function(n){
+			let breaker;
+			if(n.nodeType === Node.ELEMENT_NODE){
+				jstack.dataBindingElementCompiler.every(function(compiler){
+					if(compiler.match(n)){
+						breaker = compiler.callback(n,self,scope);
+					}
+					return breaker!==false;
+				});
+			}
+			else if(n.nodeType === Node.TEXT_NODE && n instanceof Text){
+				jstack.dataBindingTextCompiler.every(function(compiler){
+					if(compiler.match(n)){
+						breaker = compiler.callback(n,self,scope);
+					}
+					return breaker!==false;
+				});
+			}
+			return breaker;
+		});
+			
 	}
 	
 	filter(el,value){
@@ -3368,19 +3391,6 @@ jstack.dataBindingElementCompiler.push({
 	},
 });
 
-jstack.dataBindingElementCompiler.push({
-	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
-	},
-	callback(n,dataBinder,scope){
-		let script = n.innerHTML;
-		$(n).remove();
-		let func = new Function(script);
-		func.call(scope);
-		return false;
-	},
-});
-
 (function(){
 
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
@@ -3821,6 +3831,19 @@ jstack.dataBindingElementCompiler.push({
 			});
 		}
 		
+		return false;
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
+	},
+	callback(n,dataBinder,scope){
+		let script = n.innerHTML;
+		$(n).remove();
+		let func = new Function(script);
+		func.call(scope);
 		return false;
 	},
 });
