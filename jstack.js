@@ -3658,9 +3658,9 @@ jstack.dataBindingElementCompiler.push({
 			$(el).detach();
 		}
 		
-		$this.contents().each(function(){
-			dataBinder.compileDom( this, scope );
-		});
+		//$this.contents().each(function(){
+			//dataBinder.compileDom( this, scope );
+		//});
 
 		let lastBlock;
 		if(jelseEl.length){
@@ -3694,7 +3694,7 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					dataBinder.compileDom( div, scope );
+					//dataBinder.compileDom( div, scope );
 					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
@@ -3702,8 +3702,9 @@ jstack.dataBindingElementCompiler.push({
 				}
 				else{
 					newJelseifEl.push(this);
-					dataBinder.compileDom( this, scope );
+					//dataBinder.compileDom( this, scope );
 				}
+				
 			});
 			jelseifEl = $(newJelseifEl);
 
@@ -3728,7 +3729,7 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					dataBinder.compileDom( div, scope );
+					//dataBinder.compileDom( div, scope );
 					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
@@ -3736,12 +3737,13 @@ jstack.dataBindingElementCompiler.push({
 				}
 				else{
 					newJelseEl.push(this);
-					dataBinder.compileDom( this, scope );
+					//dataBinder.compileDom( this, scope );
 				}
 			});
 			jelseEl = $(newJelseEl);
 		}
-
+		
+		
 		let render = function(){
 
 			let data = getData();
@@ -3755,6 +3757,14 @@ jstack.dataBindingElementCompiler.push({
 
 			$this.data('j:if:state',data);
 			if(data){
+				
+				if(!$this.data('j:if:compiled')){
+					$this.data('j:if:compiled',true);
+					$this.contents().each(function(){
+						dataBinder.compileDom( this, scope );
+					});
+				}
+				
 				$this.insertAfter(jif);
 				if(jelseifEl.length){
 					jelseifEl.data('j:if:state',false);
@@ -3776,12 +3786,28 @@ jstack.dataBindingElementCompiler.push({
 					else{
 						let jelseifElMatch = $(jelseifEl[data2]);
 						jelseifElMatch.data('j:if:state',true);
+						
+						if(!jelseifElMatch.data('j:if:compiled')){
+							jelseifElMatch.data('j:if:compiled',true);
+							jelseifElMatch.contents().each(function(){
+								dataBinder.compileDom( this, scope );
+							});
+						}
+						
 						jelseifElMatch.insertAfter(jif);
 					}
 				}
 				if(jelseEl.length){
 					if(data2===false||data2===null){
 						jelseEl.data('j:if:state',true);
+						
+						if(!jelseEl.data('j:if:compiled')){
+							jelseEl.data('j:if:compiled',true);
+							jelseEl.contents().each(function(){
+								dataBinder.compileDom( this, scope );
+							});
+						}
+						
 						jelseEl.insertAfter(jif);
 					}
 					else{
