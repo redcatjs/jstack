@@ -696,6 +696,88 @@ jstack.isMobile = function(userAgent){
 };
 
 })();
+jstack.dot = function(){
+	if(arguments.length<=2){
+		jstack.dotGet.apply(this,arguments);
+	}
+	else{
+		jstack.dotSet.apply(this,arguments);
+	}
+};
+jstack.dotGet = function(data,key){
+	if(typeof(data)!='object'||data===null){
+		return;
+	}
+	return key.split('.').reduce(function(obj,i){
+		if(typeof(obj)=='object'&&obj!==null){
+			return typeof(obj[i])!='undefined'?obj[i]:undefined;
+		}
+		else{
+			return undefined;
+		}
+	}, data);
+};
+jstack.dotSet = function(data,key,value,isDefault,setterCallback){
+	if(typeof(data)!='object'||data===null){
+		return;
+	}
+	key.split('.').reduce(function(obj,k,index,array){
+		if(array.length==index+1){
+			if(isDefault){
+				if(typeof(obj[k])==='undefined'){
+					if(setterCallback){
+						setterCallback(obj,k,value);
+					}
+					else{
+						obj[k] = value;
+					}
+				}
+				else{
+					value = obj[k];
+				}
+			}
+			else{
+				if(setterCallback){
+					setterCallback(obj,k,value);
+				}
+				else{
+					obj[k] = value;
+				}
+			}
+		}
+		else{
+			if(typeof(obj[k])!='object'||obj[k]===null){
+				if(setterCallback){
+					setterCallback(obj,k,{});
+				}
+				else{
+					obj[k] = {};
+				}
+			}
+			return obj[k];
+		}
+	}, data);
+	return value;
+};
+jstack.dotDel = function(data,key,value){
+	if(typeof(data)!='object'||data===null){
+		return;
+	}
+	key.split('.').reduce(function(obj,k,index,array){
+		if(typeof(obj)!='object'){
+			return;
+		}
+		if(array.length==index+1){
+			if(typeof(obj[k])!='undefined'){
+				delete obj[k];
+			}
+		}
+		else{
+			return obj[k];
+		}
+	}, data);
+};
+
 (function(){
 
 
@@ -2040,7 +2122,7 @@ $.fn.jData = function(key){
 			$.attrsToObject( k.substr(7), v, data );
 		});
 		if(key){
-			data = jstack.dataBinder.dotGet(key,data);
+			data = jstack.dotGet(data,key);
 		}
 		return data;
 	}
@@ -2136,7 +2218,7 @@ $.fn.serializeForm = function(){
 	this.find(':input[name]').each(function(){
 		let key = jstack.dataBinder.getScopedInput(this);
 		let val = jstack.dataBinder.getInputVal(this);
-		jstack.dataBinder.dotSet(key,data,val);
+		jstack.dotSet(data,key,val);
 	});
 	return data;
 };
@@ -2598,7 +2680,8 @@ class dataBinder {
 
 		key += expression;
 
-		return dataBinder.dotGet(key,this.model,defaultValue);
+		let value = jstack.dotGet(this.model,key);
+		return typeof(value)!='undefined'?value:defaultValue;
 	}
 	static getValueEval(el,expression,scope){
 
@@ -2671,9 +2754,9 @@ class dataBinder {
 			input.populateInput(value,{preventValEvent:true});
 		}
 		
-		let oldValue = dataBinder.dotGet(key,data);
+		let oldValue = jstack.dotGet(data,key);
 		
-		//value = dataBinder.dotSet(key,data,value);
+		//value = jstack.dotSet(data,key,value);
 		let setterCallback = function(target,k,v){
 			let oldValue = target[k];
 			target[k] = v;
@@ -2685,7 +2768,7 @@ class dataBinder {
 				value:value,
 			});
 		};
-		value = dataBinder.dotSet(key,data,value,false,setterCallback);
+		value = jstack.dotSet(data,key,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		
@@ -2888,79 +2971,6 @@ class dataBinder {
 			tokens.push(text.slice(lastIndex));
 		}
 		return tokens;
-	}
-	static dotGet(key,data,defaultValue){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		return key.split('.').reduce(function(obj,i){
-			if(typeof(obj)=='object'&&obj!==null){
-				return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
-			}
-			else{
-				return defaultValue;
-			}
-		}, data);
-	}
-	static dotSet(key,data,value,isDefault,setterCallback){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(array.length==index+1){
-				if(isDefault){
-					if(typeof(obj[k])==='undefined'){
-						if(setterCallback){
-							setterCallback(obj,k,value);
-						}
-						else{
-							obj[k] = value;
-						}
-					}
-					else{
-						value = obj[k];
-					}
-				}
-				else{
-					if(setterCallback){
-						setterCallback(obj,k,value);
-					}
-					else{
-						obj[k] = value;
-					}
-				}
-			}
-			else{
-				if(typeof(obj[k])!='object'||obj[k]===null){
-					if(setterCallback){
-						setterCallback(obj,k,{});
-					}
-					else{
-						obj[k] = {};
-					}
-				}
-				return obj[k];
-			}
-		}, data);
-		return value;
-	}
-	static dotDel(key,data,value){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(typeof(obj)!='object'){
-				return;
-			}
-			if(array.length==index+1){
-				if(typeof(obj[k])!='undefined'){
-					delete obj[k];
-				}
-			}
-			else{
-				return obj[k];
-			}
-		}, data);
 	}
 	static getKey(key){
 		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
@@ -3236,6 +3246,15 @@ class modelObserver{
 			this.dataBinder.ready(callback);
 		}
 	}
+	
+	modelDot(){
+		if(arguments.length<=1){
+			jstack.dotGet(this.o,arguments[0]);
+		}
+		else{
+			jstack.dotSet(this.o,arguments[0],arguments[1]);
+		}
+	}
 }
 
 let modelObservable = function(obj,dataBinder){
@@ -3320,6 +3339,13 @@ let modelObservable = function(obj,dataBinder){
 			enumerable: false,
 			writable: true,
 		});
+		Object.defineProperty(obj, 'modelDot', {
+			value: function(){
+				return modelObserverObject.modelDot.apply(modelObserverObject,arguments);
+			},
+			enumerable: false,
+			writable: true,
+		});
 	}
 };
 
@@ -3374,7 +3400,7 @@ jstack.dataBindingElementCompiler.push({
 			origin[k] = v;
 		};
 		
-		let modelValue = jstack.dataBinder.dotSet(key,dataBinder.model,val,true,setterCallback);
+		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
 		
 		if(!modelValue){
 			modelValue = '';
@@ -3403,8 +3429,8 @@ jstack.dataBindingElementCompiler.push({
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					//jstack.dataBinder.dotSet(key,dataBinder.model,val);
-					jstack.dataBinder.dotSet(key,dataBinder.model,val,false,setterCallback);
+					//jstack.dotSet(dataBinder.model,key,val);
+					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
 				}
 			}
 			else{
