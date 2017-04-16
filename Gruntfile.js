@@ -19,6 +19,7 @@ grunt.initConfig({
 				"src/std/log.js",
 				"src/std/randomColor.js",
 				"src/std/isMobile.js",
+				"src/std/dot.js",
 				
 				"src/prototype/string.js",
 				"src/prototype/object.js",

@@ -13,7 +13,7 @@ $.fn.jData = function(key){
 			$.attrsToObject( k.substr(7), v, data );
 		});
 		if(key){
-			data = jstack.dataBinder.dotGet(key,data);
+			data = jstack.dotGet(key,data);
 		}
 		return data;
 	}

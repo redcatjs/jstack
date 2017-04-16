@@ -55,7 +55,7 @@ class dataBinder {
 
 		key += expression;
 
-		return dataBinder.dotGet(key,this.model,defaultValue);
+		return jstack.dotGet(key,this.model,defaultValue);
 	}
 	static getValueEval(el,expression,scope){
 
@@ -128,9 +128,9 @@ class dataBinder {
 			input.populateInput(value,{preventValEvent:true});
 		}
 		
-		let oldValue = dataBinder.dotGet(key,data);
+		let oldValue = jstack.dotGet(key,data);
 		
-		//value = dataBinder.dotSet(key,data,value);
+		//value = jstack.dotSet(key,data,value);
 		let setterCallback = function(target,k,v){
 			let oldValue = target[k];
 			target[k] = v;
@@ -142,7 +142,7 @@ class dataBinder {
 				value:value,
 			});
 		};
-		value = dataBinder.dotSet(key,data,value,false,setterCallback);
+		value = jstack.dotSet(key,data,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		
@@ -345,79 +345,6 @@ class dataBinder {
 			tokens.push(text.slice(lastIndex));
 		}
 		return tokens;
-	}
-	static dotGet(key,data,defaultValue){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		return key.split('.').reduce(function(obj,i){
-			if(typeof(obj)=='object'&&obj!==null){
-				return typeof(obj[i])!='undefined'?obj[i]:defaultValue;
-			}
-			else{
-				return defaultValue;
-			}
-		}, data);
-	}
-	static dotSet(key,data,value,isDefault,setterCallback){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(array.length==index+1){
-				if(isDefault){
-					if(typeof(obj[k])==='undefined'){
-						if(setterCallback){
-							setterCallback(obj,k,value);
-						}
-						else{
-							obj[k] = value;
-						}
-					}
-					else{
-						value = obj[k];
-					}
-				}
-				else{
-					if(setterCallback){
-						setterCallback(obj,k,value);
-					}
-					else{
-						obj[k] = value;
-					}
-				}
-			}
-			else{
-				if(typeof(obj[k])!='object'||obj[k]===null){
-					if(setterCallback){
-						setterCallback(obj,k,{});
-					}
-					else{
-						obj[k] = {};
-					}
-				}
-				return obj[k];
-			}
-		}, data);
-		return value;
-	}
-	static dotDel(key,data,value){
-		if(typeof(data)!='object'||data===null){
-			return;
-		}
-		key.split('.').reduce(function(obj,k,index,array){
-			if(typeof(obj)!='object'){
-				return;
-			}
-			if(array.length==index+1){
-				if(typeof(obj[k])!='undefined'){
-					delete obj[k];
-				}
-			}
-			else{
-				return obj[k];
-			}
-		}, data);
 	}
 	static getKey(key){
 		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
