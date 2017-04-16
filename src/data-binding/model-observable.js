@@ -157,10 +157,10 @@ class modelObserver{
 	
 	modelDot(){
 		if(arguments.length<=1){
-			jstack.dotGet(arguments[0],this.o);
+			jstack.dotGet(this.o,arguments[0]);
 		}
 		else{
-			jstack.dotSet(arguments[0],this.o,arguments[1]);
+			jstack.dotSet(this.o,arguments[0],arguments[1]);
 		}
 	}
 }

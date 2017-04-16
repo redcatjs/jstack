@@ -21,7 +21,7 @@ jstack.dataBindingElementCompiler.push({
 			origin[k] = v;
 		};
 		
-		let modelValue = jstack.dotSet(key,dataBinder.model,val,true,setterCallback);
+		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
 		
 		if(!modelValue){
 			modelValue = '';
@@ -50,8 +50,8 @@ jstack.dataBindingElementCompiler.push({
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					//jstack.dotSet(key,dataBinder.model,val);
-					jstack.dotSet(key,dataBinder.model,val,false,setterCallback);
+					//jstack.dotSet(dataBinder.model,key,val);
+					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
 				}
 			}
 			else{

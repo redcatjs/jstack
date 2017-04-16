@@ -55,7 +55,7 @@ class dataBinder {
 
 		key += expression;
 
-		return jstack.dotGet(key,this.model,defaultValue);
+		return jstack.dotGet(this.model,key,defaultValue);
 	}
 	static getValueEval(el,expression,scope){
 
@@ -128,9 +128,9 @@ class dataBinder {
 			input.populateInput(value,{preventValEvent:true});
 		}
 		
-		let oldValue = jstack.dotGet(key,data);
+		let oldValue = jstack.dotGet(data,key);
 		
-		//value = jstack.dotSet(key,data,value);
+		//value = jstack.dotSet(data,key,value);
 		let setterCallback = function(target,k,v){
 			let oldValue = target[k];
 			target[k] = v;
@@ -142,7 +142,7 @@ class dataBinder {
 				value:value,
 			});
 		};
-		value = jstack.dotSet(key,data,value,false,setterCallback);
+		value = jstack.dotSet(data,key,value,false,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		

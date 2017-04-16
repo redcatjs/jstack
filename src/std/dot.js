@@ -1,4 +1,4 @@
-jstack.dotGet = function(key,data,defaultValue){
+jstack.dotGet = function(data,key,defaultValue){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
@@ -11,7 +11,7 @@ jstack.dotGet = function(key,data,defaultValue){
 		}
 	}, data);
 };
-jstack.dotSet = function(key,data,value,isDefault,setterCallback){
+jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
@@ -53,7 +53,7 @@ jstack.dotSet = function(key,data,value,isDefault,setterCallback){
 	}, data);
 	return value;
 };
-jstack.dotDel = function(key,data,value){
+jstack.dotDel = function(data,key,value){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
