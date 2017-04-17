@@ -3535,7 +3535,7 @@ jstack.dataBindingElementCompiler.push({
 			//add
 			let i = 1;
 			data.each(function(v,k){
-				let scopeExtend = $.extend({},dataBinder.model,scope);
+				let scopeExtend = $.extend({},scope);
 				scopeExtend[value] = v;
 				if(key){
 					scopeExtend[key] = k;
