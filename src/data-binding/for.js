@@ -115,14 +115,14 @@ jstack.dataBindingElementCompiler.push({
 					};
 				}
 				else if(row.scope[value]!==v){
-					forStack[k].el.remove(); //remove
+					row.el.remove(); //remove
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
 					};
 				}
 				else{
-					$.extend(row.scope, scopeExtend);
+					row.scope[index] = i;
 				}
 				i++;
 			});
