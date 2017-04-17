@@ -121,7 +121,7 @@ jstack.dataBindingElementCompiler.push({
 						scope:scopeExtend,
 					};
 				}
-				else{
+				else if(index){
 					row.scope[index] = i;
 				}
 				i++;
