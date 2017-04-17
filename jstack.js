@@ -3522,9 +3522,7 @@ jstack.dataBindingElementCompiler.push({
 				
 				jforClose.before(addRow.childNodes);
 				
-				let newScope = $.extend({},dataBinder.model,scope,scopeExtend);
-				
-				dataBinder.compileDom( addRow, newScope );
+				dataBinder.compileDom( addRow, scopeExtend );
 				
 				return addRow;
 			};
@@ -3537,10 +3535,8 @@ jstack.dataBindingElementCompiler.push({
 				addRow.attr('j-for-id',k);
 				
 				jforClose.before(addRow);
-				
-				let newScope = $.extend({},dataBinder.model,scope,scopeExtend);
 
-				dataBinder.compileDom( addRow[0], newScope );
+				dataBinder.compileDom( addRow[0], scopeExtend );
 				
 				return addRow;
 			};
@@ -3562,7 +3558,7 @@ jstack.dataBindingElementCompiler.push({
 			//add
 			let i = 1;
 			data.each(function(v,k){
-				let scopeExtend = {};
+				let scopeExtend = $.extend({},dataBinder.model,scope);
 				scopeExtend[value] = v;
 				if(key){
 					scopeExtend[key] = k;
@@ -3577,7 +3573,7 @@ jstack.dataBindingElementCompiler.push({
 						scope:scopeExtend,
 					};
 				}
-				else if(forStack[k].scope[value]!==v){
+				else if(row.scope[value]!==v){
 					forStack[k].el.remove(); //remove
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
