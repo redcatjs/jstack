@@ -2891,29 +2891,6 @@ class dataBinder {
 		
 		let self = this;
 		
-		
-		//jstack.dataBindingElementCompiler.forEach(function(compiler){
-			//let breaker;
-			//jstack.walkTheDOM(dom,function(n){
-				//if(n.nodeType === Node.ELEMENT_NODE && compiler.match(n)){
-					//breaker = compiler.callback(n,self,scope);
-					//return breaker;
-				//}
-			//});
-			//return breaker;
-		//});
-		//jstack.dataBindingTextCompiler.forEach(function(compiler){
-			//let breaker;
-			//jstack.walkTheDOM(dom,function(n){
-				//if(n.nodeType === Node.TEXT_NODE && n instanceof Text && compiler.match(n)){
-					//breaker = compiler.callback(n,self,scope);
-					//return breaker;
-				//}
-			//});
-			//return breaker;
-		//});
-		
-		
 		jstack.walkTheDOM(dom,function(n){
 			let breaker;
 			if(n.nodeType === Node.ELEMENT_NODE){
@@ -3629,10 +3606,6 @@ jstack.dataBindingElementCompiler.push({
 			
 			$(el).detach();
 		}
-		
-		//$this.contents().each(function(){
-			//dataBinder.compileDom( this, scope );
-		//});
 
 		let lastBlock;
 		if(jelseEl.length){
@@ -3666,15 +3639,12 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					//dataBinder.compileDom( div, scope );
-					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
 				}
 				else{
 					newJelseifEl.push(this);
-					//dataBinder.compileDom( this, scope );
 				}
 				
 			});
@@ -3701,15 +3671,12 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					//dataBinder.compileDom( div, scope );
-					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
 				}
 				else{
 					newJelseEl.push(this);
-					//dataBinder.compileDom( this, scope );
 				}
 			});
 			jelseEl = $(newJelseEl);

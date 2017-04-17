@@ -19,10 +19,6 @@ jstack.dataBindingElementCompiler.push({
 			
 			$(el).detach();
 		}
-		
-		//$this.contents().each(function(){
-			//dataBinder.compileDom( this, scope );
-		//});
 
 		let lastBlock;
 		if(jelseEl.length){
@@ -56,15 +52,12 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					//dataBinder.compileDom( div, scope );
-					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
 				}
 				else{
 					newJelseifEl.push(this);
-					//dataBinder.compileDom( this, scope );
 				}
 				
 			});
@@ -91,15 +84,12 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
-					//dataBinder.compileDom( div, scope );
-					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
 				}
 				else{
 					newJelseEl.push(this);
-					//dataBinder.compileDom( this, scope );
 				}
 			});
 			jelseEl = $(newJelseEl);
