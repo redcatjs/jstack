@@ -30,6 +30,7 @@ grunt.initConfig({
 				
 				"src/dom/traverseDom.js",
 				"src/dom/walkTheDom.js",
+				"src/dom/copyAttributes.js",
 				
 				"src/jquery/arrayCompare.js",
 				"src/jquery/attrStartsWith.js",
