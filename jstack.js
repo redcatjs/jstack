@@ -1158,31 +1158,24 @@ jstack.traverseDom = function(node, func, asc){
 
 let walkTheDOM = function(node, func){
 	if(func(node)===false){
-		return;
+		return false;
 	}
-	let children = $.extend({},node.childNodes);
-	for(let i = 0; i < children.length; i++){
-		if(!children[i]) continue;
-		walkTheDOM(children[i], func);
-	}
-};
 
-/*
-let staticWalkTheDOM = function(node, func){
-	if(func(node)===false){
-		return;
-	}
-	let children = node.childNodes;
-	for(let i = 0, l = children.length; i < l; i++){
-		if(!children[i]) continue;
-		staticWalkTheDOM(children[i], func);
-	}
+	Object.values(node.childNodes).forEach(function(n){
+		walkTheDOM(n, func);
+	});
 };
-*/
 
 jstack.walkTheDOM = walkTheDOM;
 
 })();
+
+jstack.copyAttributes = function(from,to){
+	for(let i = 0, attrs = from.attributes, l = attrs.length; i < l; i++) {
+		let attr = attrs[i];
+		to.setAttribute(attr.name,attr.value);
+	}
+};
 
 $.arrayCompare = function (a, b) {
 	return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
@@ -3103,7 +3096,6 @@ $(document.body).on('reset','form',function(){
 	$(this).populateReset();
 });
 
-
 })();
 
 (function(){
@@ -3369,90 +3361,6 @@ jstack.modelObservable = modelObservable;
 
 })();
 
-jstack.dataBindingElementCompiler.push({
-	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
-	},
-	callback(n,dataBinder,scope){
-		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
-		$(n).remove();
-		return false;
-	},
-});
-
-(function(){
-
-const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
-const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
-
-jstack.dataBindingElementCompiler.push({
-	match(n){
-		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
-	},
-	callback(el,dataBinder,scope){
-		let $el = $(el);
-
-		let currentData;
-
-		//default to model					
-		let key = jstack.dataBinder.getScopedInput(el);
-		let val = jstack.dataBinder.getInputVal(el);
-		
-		let setterCallback = function(target,k,v){
-			let origin = jstack.getObserverTarget(target);
-			origin[k] = jstack.getObserver(target).factory(k,v);
-			//target[k] = v;
-		};
-		
-		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
-		if(!modelValue){
-			modelValue = '';
-		}
-		
-		let tagName = el.tagName.toLowerCase();
-		if(tagName=='select'||tagName=='j-select'){
-			$el.contents().each(function(){
-				dataBinder.compileDom(this, scope);
-			});
-		}
-		
-		//model to default dom value
-		if(modelValue!==val){
-			let nodeName = el.tagName.toLowerCase();
-			if(nodeName=='select'){
-				let found;
-				$el.find('option').each(function(){
-					if(this.hasAttribute('value')){
-						if(this.value==modelValue){
-							found = true;
-							return false;
-						}
-					}
-					else{
-						if($(this).text()==modelValue){
-							found = true;
-							return false;
-						}
-					}
-				});
-				if(found){
-					$el.populateInput(modelValue,{preventValEvent:true});
-				}
-				else{
-					//jstack.dotSet(dataBinder.model,key,val);
-					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
-				}
-			}
-			else{
-				$el.populateInput(modelValue,{preventValEvent:true});
-			}
-		}
-	},
-});
-
-
-})();
-
 (function(){
 
 const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
@@ -3516,6 +3424,8 @@ jstack.dataBindingElementCompiler.push({
 					addRow.appendChild(elements[i]);
 				}
 				
+				jstack.copyAttributes(el,addRow);
+				
 				jforClose.before(addRow.childNodes);
 				
 				dataBinder.compileDom( addRow, scopeExtend );
@@ -3531,7 +3441,7 @@ jstack.dataBindingElementCompiler.push({
 				addRow.attr('j-for-id',k);
 				
 				jforClose.before(addRow);
-
+				
 				dataBinder.compileDom( addRow[0], scopeExtend );
 				
 				return addRow;
@@ -3623,9 +3533,12 @@ jstack.dataBindingElementCompiler.push({
 			let div = document.createElement('div');
 			div.appendChild( document.importNode(el.content, true) );
 			
+			jstack.copyAttributes(el,div);
+			
 			$this = $(div);
 			
 			$(el).detach();
+			el = div;
 		}
 
 		let lastBlock;
@@ -3660,6 +3573,8 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
+					jstack.copyAttributes(el,div);
+					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
@@ -3692,6 +3607,8 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
+					jstack.copyAttributes(el,div);
+					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
@@ -3720,9 +3637,7 @@ jstack.dataBindingElementCompiler.push({
 				
 				if(!$this.data('j:if:compiled')){
 					$this.data('j:if:compiled',true);
-					$this.contents().each(function(){
-						dataBinder.compileDom( this, scope );
-					});
+					dataBinder.compileDom( el, scope );
 				}
 				
 				$this.insertAfter(jif);
@@ -3749,9 +3664,7 @@ jstack.dataBindingElementCompiler.push({
 						
 						if(!jelseifElMatch.data('j:if:compiled')){
 							jelseifElMatch.data('j:if:compiled',true);
-							jelseifElMatch.contents().each(function(){
-								dataBinder.compileDom( this, scope );
-							});
+							dataBinder.compileDom( jelseifElMatch.get(0), scope );
 						}
 						
 						jelseifElMatch.insertAfter(jif);
@@ -3763,9 +3676,7 @@ jstack.dataBindingElementCompiler.push({
 						
 						if(!jelseEl.data('j:if:compiled')){
 							jelseEl.data('j:if:compiled',true);
-							jelseEl.contents().each(function(){
-								dataBinder.compileDom( this, scope );
-							});
+							dataBinder.compileDom( jelseEl.get(0), scope );
 						}
 						
 						jelseEl.insertAfter(jif);
@@ -3781,53 +3692,6 @@ jstack.dataBindingElementCompiler.push({
 		dataBinder.addWatcher(jif[0],render);
 		render();
 		
-		return false;
-	},
-});
-
-jstack.dataBindingElementCompiler.push({
-	match(n){	
-		return n.hasAttribute('j-include');
-	},
-	callback(n,dataBinder,scope){
-		let include = n.getAttribute('j-include');
-		n.removeAttribute('j-include');
-		
-		let tokens = jstack.dataBinder.textTokenizer(include);
-		if(tokens!==false){
-			include = dataBinder.compilerAttrRender(n,tokens,scope);
-		}
-		
-		let compile = function(){
-			$(n).empty();
-			let c = dataBinder.templates[include].clone().contents();
-			c.appendTo(n);
-			dataBinder.compileDom(n,scope);			
-		};
-		
-		if(dataBinder.templates[include]){
-			compile();
-		}
-		else{
-			$.ajax(include).then(function(html){
-				dataBinder.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
-				compile();
-			});
-		}
-		
-		return false;
-	},
-});
-
-jstack.dataBindingElementCompiler.push({
-	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
-	},
-	callback(n,dataBinder,scope){
-		let script = n.innerHTML;
-		$(n).remove();
-		let func = new Function(script);
-		func.call(scope);
 		return false;
 	},
 });
@@ -3930,64 +3794,59 @@ jstack.dataBindingElementCompiler.push({
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		return n.hasAttribute('j-show');
+		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
 	},
-	callback(el,dataBinder,scope){
-		let $this = $(el);
-
-		let myvar = el.getAttribute('j-show');
-		el.removeAttribute('j-show');
-		let currentData;
-		let getData = function(){
-			return Boolean(jstack.dataBinder.getValueEval(el,myvar,scope));
-		};
-
-		let render = function(){
-			let data = getData();
-			if(currentData===data) return;
-			currentData = data;
-
-			if(data){
-				$this.show();
-			}
-			else{
-				$this.hide();
-			}
-		};
-		
-		dataBinder.addWatcher(el,render);
-		render();
+	callback(n,dataBinder,scope){
+		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
+		$(n).remove();
+		return false;
 	},
 });
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		return n.hasAttribute('j-href');
+		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
 	},
 	callback(n,dataBinder,scope){
-		let original = n.getAttribute('j-href');
-		n.removeAttribute('j-href');
+		let script = n.innerHTML;
+		$(n).remove();
+		let func = new Function(script);
+		func.call(scope);
+		return false;
+	},
+});
 
-		let tokens = jstack.dataBinder.textTokenizer(original);
-		if(tokens===false){
-			n.setAttribute('href',jstack.route.baseLocation + "#" + original);
-			return;
+jstack.dataBindingElementCompiler.push({
+	match(n){	
+		return n.hasAttribute('j-include');
+	},
+	callback(n,dataBinder,scope){
+		let include = n.getAttribute('j-include');
+		n.removeAttribute('j-include');
+		
+		let tokens = jstack.dataBinder.textTokenizer(include);
+		if(tokens!==false){
+			include = dataBinder.compilerAttrRender(n,tokens,scope);
 		}
-
-		let currentData;
-		let getData = function(){
-			return dataBinder.compilerAttrRender(n,tokens,scope);
-		};
-		let render = function(){
-			let data = getData();
-			if(currentData===data) return;
-			currentData = data;
-			n.setAttribute('href',jstack.route.baseLocation + "#" + data);
+		
+		let compile = function(){
+			$(n).empty();
+			let c = dataBinder.templates[include].clone().contents();
+			c.appendTo(n);
+			dataBinder.compileDom(n,scope);			
 		};
 		
-		dataBinder.addWatcher(n,render);
+		if(dataBinder.templates[include]){
+			compile();
+		}
+		else{
+			$.ajax(include).then(function(html){
+				dataBinder.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+				compile();
+			});
+		}
 		
-		render();
+		return false;
 	},
 });
 
@@ -4049,6 +3908,69 @@ jstack.dataBindingElementCompiler.push({
 		};
 		
 		dataBinder.addWatcher(el,render);
+		render();
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-show');
+	},
+	callback(el,dataBinder,scope){
+		let $this = $(el);
+
+		let myvar = el.getAttribute('j-show');
+		el.removeAttribute('j-show');
+		let currentData;
+		let getData = function(){
+			return Boolean(jstack.dataBinder.getValueEval(el,myvar,scope));
+		};
+
+		let render = function(){
+			let data = getData();
+			if(currentData===data) return;
+			currentData = data;
+
+			if(data){
+				$this.show();
+			}
+			else{
+				$this.hide();
+			}
+		};
+		
+		dataBinder.addWatcher(el,render);
+		render();
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-href');
+	},
+	callback(n,dataBinder,scope){
+		let original = n.getAttribute('j-href');
+		n.removeAttribute('j-href');
+
+		let tokens = jstack.dataBinder.textTokenizer(original);
+		if(tokens===false){
+			n.setAttribute('href',jstack.route.baseLocation + "#" + original);
+			return;
+		}
+
+		let currentData;
+		let getData = function(){
+			return dataBinder.compilerAttrRender(n,tokens,scope);
+		};
+		let render = function(){
+			let data = getData();
+			if(currentData===data) return;
+			currentData = data;
+			n.setAttribute('href',jstack.route.baseLocation + "#" + data);
+		};
+		
+		dataBinder.addWatcher(n,render);
+		
 		render();
 	},
 });
@@ -4133,6 +4055,81 @@ jstack.dataBindingElementCompiler.push({
 		});
 	},
 });
+
+(function(){
+
+const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
+const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
+	},
+	callback(el,dataBinder,scope){
+		
+		let $el = $(el);
+
+		let tagName = el.tagName.toLowerCase();
+		if(tagName=='select'||tagName=='j-select'){
+			$el.contents().each(function(){
+				dataBinder.compileDom(this, scope);
+			});
+		}
+		
+		let currentData;
+
+		//default to model					
+		let key = jstack.dataBinder.getScopedInput(el);
+		let val = jstack.dataBinder.getInputVal(el);
+		
+		let setterCallback = function(target,k,v){
+			let origin = jstack.getObserverTarget(target);
+			origin[k] = jstack.getObserver(target).factory(k,v);
+			//target[k] = v;
+		};
+		
+		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
+		if(!modelValue){
+			modelValue = '';
+		}
+		
+		
+		//model to default dom value
+		if(modelValue!==val){
+			let nodeName = el.tagName.toLowerCase();
+			if(nodeName=='select'){
+				let found;
+				$el.find('option').each(function(){
+					if(this.hasAttribute('value')){
+						if(this.value==modelValue){
+							found = true;
+							return false;
+						}
+					}
+					else{
+						if($(this).text()==modelValue){
+							found = true;
+							return false;
+						}
+					}
+				});
+				if(found){
+					$el.populateInput(modelValue,{preventValEvent:true});
+				}
+				else{
+					//jstack.dotSet(dataBinder.model,key,val);
+					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
+				}
+			}
+			else{
+				$el.populateInput(modelValue,{preventValEvent:true});
+			}
+		}
+	},
+});
+
+
+})();
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
