@@ -8,8 +8,16 @@ jstack.dataBindingElementCompiler.push({
 		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
 	},
 	callback(el,dataBinder,scope){
+		
 		let $el = $(el);
 
+		let tagName = el.tagName.toLowerCase();
+		if(tagName=='select'||tagName=='j-select'){
+			$el.contents().each(function(){
+				dataBinder.compileDom(this, scope);
+			});
+		}
+		
 		let currentData;
 
 		//default to model					
@@ -27,12 +35,6 @@ jstack.dataBindingElementCompiler.push({
 			modelValue = '';
 		}
 		
-		let tagName = el.tagName.toLowerCase();
-		if(tagName=='select'||tagName=='j-select'){
-			$el.contents().each(function(){
-				dataBinder.compileDom(this, scope);
-			});
-		}
 		
 		//model to default dom value
 		if(modelValue!==val){
