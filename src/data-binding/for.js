@@ -95,10 +95,12 @@ jstack.dataBindingElementCompiler.push({
 				});
 				return;
 			}
+			
+			let method = data instanceof Array?'forEach':'each';
 						
 			//add
 			let i = 1;
-			data.each(function(v,k){
+			data[method](function(v,k){
 				let scopeExtend = $.extend({},scope);
 				scopeExtend[value] = v;
 				if(key){
