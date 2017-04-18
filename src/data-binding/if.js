@@ -18,6 +18,7 @@ jstack.dataBindingElementCompiler.push({
 			$this = $(div);
 			
 			$(el).detach();
+			el = div;
 		}
 
 		let lastBlock;
@@ -112,9 +113,7 @@ jstack.dataBindingElementCompiler.push({
 				
 				if(!$this.data('j:if:compiled')){
 					$this.data('j:if:compiled',true);
-					$this.contents().each(function(){
-						dataBinder.compileDom( this, scope );
-					});
+					dataBinder.compileDom( el, scope );
 				}
 				
 				$this.insertAfter(jif);
@@ -141,9 +140,7 @@ jstack.dataBindingElementCompiler.push({
 						
 						if(!jelseifElMatch.data('j:if:compiled')){
 							jelseifElMatch.data('j:if:compiled',true);
-							jelseifElMatch.contents().each(function(){
-								dataBinder.compileDom( this, scope );
-							});
+							dataBinder.compileDom( jelseifElMatch.get(0), scope );
 						}
 						
 						jelseifElMatch.insertAfter(jif);
@@ -155,9 +152,7 @@ jstack.dataBindingElementCompiler.push({
 						
 						if(!jelseEl.data('j:if:compiled')){
 							jelseEl.data('j:if:compiled',true);
-							jelseEl.contents().each(function(){
-								dataBinder.compileDom( this, scope );
-							});
+							dataBinder.compileDom( jelseEl.get(0), scope );
 						}
 						
 						jelseEl.insertAfter(jif);
