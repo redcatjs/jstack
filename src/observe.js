@@ -148,6 +148,10 @@ let observable = function(obj,options,parentProxy,parentKey){
 		}
 	}
 	
+	if(options.factoryProxy){
+		proxy = options.factoryProxy(proxy);
+	}
+	
 	return proxy;
 };
 
