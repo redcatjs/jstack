@@ -1,6 +1,7 @@
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
+		let tagName = n.tagName.toLowerCase();
+		return (tagName=='script'||tagName=='template')&&n.getAttribute('type')=='text/j-javascript';
 	},
 	callback(n,dataBinder,scope){
 		let script = n.innerHTML;
