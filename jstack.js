@@ -3794,9 +3794,21 @@ jstack.dataBindingElementCompiler.push({
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-template'&&n.id;
+		let tagName = n.tagName.toLowerCase();
+		return (tagName=='script'||tagName=='template')&&n.getAttribute('type')=='text/j-template'&&n.id;
 	},
 	callback(n,dataBinder,scope){
+		
+		if(n.tagName.toLowerCase()=='template'){
+			let elements = document.importNode(n.content, true);
+			let div = document.createElement('div');
+			for(let i = 0, l = elements.length; i<l; i++){
+				div.appendChild(elements[i]);
+			}
+			jstack.copyAttributes(n,div);
+			n = div;
+		}
+		
 		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
 		$(n).remove();
 		return false;
@@ -3805,10 +3817,23 @@ jstack.dataBindingElementCompiler.push({
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		return n.tagName.toLowerCase()=='script'&&n.type=='text/j-javascript';
+		let tagName = n.tagName.toLowerCase();
+		return (tagName=='script'||tagName=='template')&&n.getAttribute('type')=='text/j-javascript';
 	},
 	callback(n,dataBinder,scope){
-		let script = n.innerHTML;
+		let script;
+		
+		if(n.tagName.toLowerCase()=='template'){
+			let childNodes = document.importNode(n.content, true).childNodes;
+			script = '';
+			for(let i = 0, l = childNodes.length; i<l; i++){
+				script += childNodes[i].nodeValue;
+			}
+		}
+		else{
+			script = n.innerHTML;
+		}
+		
 		$(n).remove();
 		let func = new Function(script);
 		func.call(scope);
