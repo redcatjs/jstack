@@ -22,9 +22,17 @@ jstack.dataBindingElementCompiler.push({
 		};
 		
 		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
-		
 		if(!modelValue){
 			modelValue = '';
+		}
+		
+		let r;
+		let tagName = el.tagName.toLowerCase();
+		if(tagName=='select'||tagName=='j-select'){
+			r = false;
+			$el.contents().each(function(){
+				dataBinder.compileDom(this, scope);
+			});
 		}
 		
 		//model to default dom value
@@ -58,6 +66,8 @@ jstack.dataBindingElementCompiler.push({
 				$el.populateInput(modelValue,{preventValEvent:true});
 			}
 		}
+		
+		return r;
 	},
 });
 
