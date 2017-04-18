@@ -1156,12 +1156,11 @@ jstack.traverseDom = function(node, func, asc){
 (function(){
 
 
-
 let walkTheDOM = function(node, func){
 	if(func(node)===false){
 		return;
 	}
-	let children = node.childNodes;
+	let children = $.extend({},node.childNodes);
 	for(let i = 0; i < children.length; i++){
 		if(!children[i]) continue;
 		walkTheDOM(children[i], func);
