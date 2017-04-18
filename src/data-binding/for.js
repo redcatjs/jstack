@@ -78,7 +78,7 @@ jstack.dataBindingElementCompiler.push({
 				addRow.attr('j-for-id',k);
 				
 				jforClose.before(addRow);
-
+				
 				dataBinder.compileDom( addRow[0], scopeExtend );
 				
 				return addRow;
