@@ -15,6 +15,8 @@ jstack.dataBindingElementCompiler.push({
 			let div = document.createElement('div');
 			div.appendChild( document.importNode(el.content, true) );
 			
+			jstack.copyAttributes(el,div);
+			
 			$this = $(div);
 			
 			$(el).detach();
@@ -53,6 +55,8 @@ jstack.dataBindingElementCompiler.push({
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
 					
+					jstack.copyAttributes(el,div);
+					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
@@ -84,6 +88,8 @@ jstack.dataBindingElementCompiler.push({
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
+					
+					jstack.copyAttributes(el,div);
 					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);

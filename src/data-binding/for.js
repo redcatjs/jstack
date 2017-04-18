@@ -61,6 +61,8 @@ jstack.dataBindingElementCompiler.push({
 					addRow.appendChild(elements[i]);
 				}
 				
+				jstack.copyAttributes(el,addRow);
+				
 				jforClose.before(addRow.childNodes);
 				
 				dataBinder.compileDom( addRow, scopeExtend );
