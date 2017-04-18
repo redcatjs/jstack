@@ -58,15 +58,25 @@ let observable = function(obj,options,parentProxy,parentKey){
 		}
 	};
 	
+	let proxy;
+	
+	let factory = function(key,value){
+		if(typeof(value)=='object'&&value!==null){
+			value = observable(value, options, proxy, key);
+		}
+		return value;
+	};
+	
 	observer = {
 		namespaces:{},
 		parentProxy:parentProxy,
 		parentKey:parentKey,
 		notify: notify,
 		proxyTarget: obj,
+		factory: factory,
 	};
 	
-	let proxy = new Proxy(obj,{
+	proxy = new Proxy(obj,{
 		get: function (target, key) {
 			if(key===prefix){
 				return observer;
@@ -77,9 +87,7 @@ let observable = function(obj,options,parentProxy,parentKey){
 			
 			let oldValue = target[key];
 			
-			if(typeof(value)=='object'&&value!==null){
-				value = observable(value, options, proxy, key);
-			}
+			value = factory(key,value);
 			
 			target[key] = value;
 			
@@ -141,10 +149,7 @@ let observable = function(obj,options,parentProxy,parentKey){
 			if(!obj.hasOwnProperty(k)){
 				continue;
 			}
-			let v = obj[k];
-			if(typeof(v)=='object'&&v!==null){
-				obj[k] = observable( v, options, proxy, k );
-			}
+			obj[k] = factory(k,obj[k]);
 		}
 	}
 	
@@ -239,10 +244,14 @@ let getObserverTarget = function(obj){
 	}
 	return original;
 };
+let getObserver = function(obj){
+	return obj[prefix];
+};
 
 jstack.observable = observable;
 jstack.observe = observe;
 jstack.unobserve = unobserve;
 jstack.getObserverTarget = getObserverTarget;
+jstack.getObserver = getObserver;
 
 })();
