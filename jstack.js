@@ -71,15 +71,25 @@ let observable = function(obj,options,parentProxy,parentKey){
 		}
 	};
 	
+	let proxy;
+	
+	let factory = function(key,value){
+		if(typeof(value)=='object'&&value!==null){
+			value = observable(value, options, proxy, key);
+		}
+		return value;
+	};
+	
 	observer = {
 		namespaces:{},
 		parentProxy:parentProxy,
 		parentKey:parentKey,
 		notify: notify,
 		proxyTarget: obj,
+		factory: factory,
 	};
 	
-	let proxy = new Proxy(obj,{
+	proxy = new Proxy(obj,{
 		get: function (target, key) {
 			if(key===prefix){
 				return observer;
@@ -90,9 +100,7 @@ let observable = function(obj,options,parentProxy,parentKey){
 			
 			let oldValue = target[key];
 			
-			if(typeof(value)=='object'&&value!==null){
-				value = observable(value, options, proxy, key);
-			}
+			value = factory(key,value);
 			
 			target[key] = value;
 			
@@ -154,11 +162,12 @@ let observable = function(obj,options,parentProxy,parentKey){
 			if(!obj.hasOwnProperty(k)){
 				continue;
 			}
-			let v = obj[k];
-			if(typeof(v)=='object'&&v!==null){
-				obj[k] = observable( v, options, proxy, k );
-			}
+			obj[k] = factory(k,obj[k]);
 		}
+	}
+	
+	if(options.factoryProxy){
+		proxy = options.factoryProxy(proxy);
 	}
 	
 	return proxy;
@@ -248,11 +257,15 @@ let getObserverTarget = function(obj){
 	}
 	return original;
 };
+let getObserver = function(obj){
+	return obj[prefix];
+};
 
 jstack.observable = observable;
 jstack.observe = observe;
 jstack.unobserve = unobserve;
 jstack.getObserverTarget = getObserverTarget;
+jstack.getObserver = getObserver;
 
 })();
 
@@ -2639,7 +2652,7 @@ class dataBinder {
 		this.templates = {};
 		
 		model = model.observable({
-			factory: function(obj){
+			factoryProxy: function(obj){
 				jstack.modelObservable(obj,self);
 				return obj;
 			},
@@ -3388,7 +3401,8 @@ jstack.dataBindingElementCompiler.push({
 		
 		let setterCallback = function(target,k,v){
 			let origin = jstack.getObserverTarget(target);
-			origin[k] = v;
+			origin[k] = jstack.getObserver(target).factory(k,v);
+			//target[k] = v;
 		};
 		
 		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
@@ -3396,10 +3410,8 @@ jstack.dataBindingElementCompiler.push({
 			modelValue = '';
 		}
 		
-		let r;
 		let tagName = el.tagName.toLowerCase();
 		if(tagName=='select'||tagName=='j-select'){
-			r = false;
 			$el.contents().each(function(){
 				dataBinder.compileDom(this, scope);
 			});
@@ -3436,8 +3448,6 @@ jstack.dataBindingElementCompiler.push({
 				$el.populateInput(modelValue,{preventValEvent:true});
 			}
 		}
-		
-		return r;
 	},
 });
 
