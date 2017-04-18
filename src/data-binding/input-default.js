@@ -18,7 +18,8 @@ jstack.dataBindingElementCompiler.push({
 		
 		let setterCallback = function(target,k,v){
 			let origin = jstack.getObserverTarget(target);
-			origin[k] = v;
+			origin[k] = jstack.getObserver(target).factory(k,v);
+			//target[k] = v;
 		};
 		
 		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
@@ -26,10 +27,8 @@ jstack.dataBindingElementCompiler.push({
 			modelValue = '';
 		}
 		
-		let r;
 		let tagName = el.tagName.toLowerCase();
 		if(tagName=='select'||tagName=='j-select'){
-			r = false;
 			$el.contents().each(function(){
 				dataBinder.compileDom(this, scope);
 			});
@@ -66,8 +65,6 @@ jstack.dataBindingElementCompiler.push({
 				$el.populateInput(modelValue,{preventValEvent:true});
 			}
 		}
-		
-		return r;
 	},
 });
 
