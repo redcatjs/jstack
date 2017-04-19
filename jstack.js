@@ -2637,14 +2637,16 @@ jstack.routeMVC = function(path,obj){
 
 (function(){
 
+jstack.templates = {};
+jstack.registerTemplate = function(id, html){
+	jstack.templates[id] = $('<html><rootnode>'+html+'</rootnode></html>');
+};
+
 class dataBinder {
 	
 	constructor(model,view,controller){
 		
 		let self = this;
-			
-		
-		this.templates = {};
 		
 		model = model.observable({
 			factoryProxy: function(obj){
@@ -3812,7 +3814,7 @@ jstack.dataBindingElementCompiler.push({
 			n = div;
 		}
 		
-		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
+		jstack.registerTemplate(n.id,n.innerHTML);
 		$(n).remove();
 		return false;
 	},
@@ -3859,17 +3861,17 @@ jstack.dataBindingElementCompiler.push({
 		
 		let compile = function(){
 			$(n).empty();
-			let c = dataBinder.templates[include].clone().contents();
+			let c = jstack.templates[include].clone().contents();
 			c.appendTo(n);
 			dataBinder.compileDom(n,scope);			
 		};
 		
-		if(dataBinder.templates[include]){
+		if(jstack.templates[include]){
 			compile();
 		}
 		else{
 			$.ajax(include).then(function(html){
-				dataBinder.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+				jstack.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
 				compile();
 			});
 		}
