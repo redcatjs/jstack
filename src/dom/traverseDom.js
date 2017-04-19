@@ -6,15 +6,14 @@ jstack.traverseDomBreak = {
 	ALL:14,
 };
 jstack.traverseDom = function(node, func, asc){
-	var result;
+	let result;
 	if(!asc){
 		result = func(node);
 	}
 	if(asc || ! (result&jstack.traverseDomBreak.DESC) ){
-		var children = node.childNodes;
-		for(var i = 0; i < children.length; i++){
-			if(!children[i]) continue;
-			var adjResult = this.traverseDom(children[i], func);
+		let children = Object.values(node.childNodes);
+		for(let i = 0; i < children.length; i++){
+			let adjResult = this.traverseDom(children[i], func);
 			if(adjResult&jstack.traverseDomBreak.ASC){
 				result = result|adjResult;
 			}
