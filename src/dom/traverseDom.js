@@ -5,15 +5,18 @@ jstack.traverseDomBreak = {
 	BOTH:6,
 	ALL:14,
 };
-jstack.traverseDom = function(node, func, asc){
+jstack.traverseDom = function(node, func, asc, wholeRest){
 	let result;
 	if(!asc){
 		result = func(node);
 	}
 	if(asc || ! (result&jstack.traverseDomBreak.DESC) ){
 		let children = Object.values(node.childNodes);
-		for(let i = 0; i < children.length; i++){
-			let adjResult = this.traverseDom(children[i], func);
+		if(!wholeRest){
+			wholeRest = children;
+		}
+		while(children.length){
+			let adjResult = this.traverseDom(children.shift(), func, undefined, wholeRest);
 			if(adjResult&jstack.traverseDomBreak.ASC){
 				result = result|adjResult;
 			}
@@ -23,7 +26,7 @@ jstack.traverseDom = function(node, func, asc){
 		}
 	}
 	if(asc && !(result&jstack.traverseDomBreak.ASC) ){
-		result = func(node);
+		result = func(node, children, wholeRest);
 	}
 	return result;
 };
