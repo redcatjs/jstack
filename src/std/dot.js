@@ -32,6 +32,7 @@ jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 					}
 					else{
 						obj[k] = value;
+						value = obj[k];
 					}
 				}
 				else{
