@@ -15,7 +15,7 @@ jstack.dataBindingElementCompiler.push({
 			n = div;
 		}
 		
-		dataBinder.templates[n.id] = $('<html><rootnode>'+n.innerHTML+'</rootnode></html>');
+		jstack.registerTemplate(n.id,n.innerHTML);
 		$(n).remove();
 		return false;
 	},

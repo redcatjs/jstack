@@ -1,13 +1,15 @@
 (function(){
 
+jstack.templates = {};
+jstack.registerTemplate = function(id, html){
+	jstack.templates[id] = $('<html><rootnode>'+html+'</rootnode></html>');
+};
+
 class dataBinder {
 	
 	constructor(model,view,controller){
 		
 		let self = this;
-			
-		
-		this.templates = {};
 		
 		model = model.observable({
 			factoryProxy: function(obj){

@@ -13,17 +13,17 @@ jstack.dataBindingElementCompiler.push({
 		
 		let compile = function(){
 			$(n).empty();
-			let c = dataBinder.templates[include].clone().contents();
+			let c = jstack.templates[include].clone().contents();
 			c.appendTo(n);
 			dataBinder.compileDom(n,scope);			
 		};
 		
-		if(dataBinder.templates[include]){
+		if(jstack.templates[include]){
 			compile();
 		}
 		else{
 			$.ajax(include).then(function(html){
-				dataBinder.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+				jstack.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
 				compile();
 			});
 		}
