@@ -4190,18 +4190,11 @@ jstack.dataBindingElementCompiler.push({
 	callback(el,dataBinder,scope){
 		let $el = $(el);
 
-		let currentData;
-
-		let getData = function(){
-			let defaultValue = jstack.dataBinder.getInputVal(el);
-			let key = jstack.dataBinder.getKey( el.getAttribute('name') );
-			return dataBinder.getValue(el,key,defaultValue);
-		};
+		let key = jstack.dataBinder.getKey( el.getAttribute('name') );
 
 		let render = function(){
-			let data = getData();
-			if(currentData===data) return;
-			currentData = data;
+			let data = dataBinder.getValue(el,key);
+			if(jstack.dataBinder.getInputVal(el)===data) return;
 
 			if($el.data('j:populate:prevent')) return;
 			
