@@ -3469,7 +3469,7 @@ jstack.dataBindingElementCompiler.push({
 			
 			if(!data){
 				forStack.each(function(n){
-					n.remove();
+					n.el.remove();
 				});
 				return;
 			}
