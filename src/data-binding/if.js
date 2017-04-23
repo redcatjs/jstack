@@ -60,6 +60,8 @@ jstack.dataBindingElementCompiler.push({
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
+					
+					$(this).detach();
 				}
 				else{
 					newJelseifEl.push(this);
@@ -94,6 +96,8 @@ jstack.dataBindingElementCompiler.push({
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
+					
+					$(this).detach();
 				}
 				else{
 					newJelseEl.push(this);
