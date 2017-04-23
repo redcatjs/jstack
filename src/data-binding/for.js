@@ -53,19 +53,21 @@ jstack.dataBindingElementCompiler.push({
 		let buildNewRow;
 		
 		if(isTemplate){
+			$(el).detach();
 			let content = el.content;
 			buildNewRow = function(k, jforClose, scopeExtend){
-				let elements = document.importNode(content, true);
 				let addRow = document.createElement('div');
-				for(let i = 0, l = elements.length; i<l; i++){
-					addRow.appendChild(elements[i]);
-				}
+				addRow.appendChild( document.importNode(content, true) );
 				
 				jstack.copyAttributes(el,addRow);
 				
-				jforClose.before(addRow.childNodes);
+				let contents = $(addRow).contents();
 				
-				dataBinder.compileDom( addRow, scopeExtend );
+				jforClose.before(contents);
+				
+				contents.each(function(){
+					dataBinder.compileDom( this, scopeExtend );
+				});
 				
 				return addRow;
 			};
