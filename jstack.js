@@ -3427,19 +3427,21 @@ jstack.dataBindingElementCompiler.push({
 		let buildNewRow;
 		
 		if(isTemplate){
+			$(el).detach();
 			let content = el.content;
 			buildNewRow = function(k, jforClose, scopeExtend){
-				let elements = document.importNode(content, true);
 				let addRow = document.createElement('div');
-				for(let i = 0, l = elements.length; i<l; i++){
-					addRow.appendChild(elements[i]);
-				}
+				addRow.appendChild( document.importNode(content, true) );
 				
 				jstack.copyAttributes(el,addRow);
 				
-				jforClose.before(addRow.childNodes);
+				let contents = $(addRow).contents();
 				
-				dataBinder.compileDom( addRow, scopeExtend );
+				jforClose.before(contents);
+				
+				contents.each(function(){
+					dataBinder.compileDom( this, scopeExtend );
+				});
 				
 				return addRow;
 			};
@@ -3543,7 +3545,7 @@ jstack.dataBindingElementCompiler.push({
 			
 			let div = document.createElement('div');
 			div.appendChild( document.importNode(el.content, true) );
-			
+			$(div).data('j:is:template',true);
 			jstack.copyAttributes(el,div);
 			
 			$this = $(div);
@@ -3583,12 +3585,14 @@ jstack.dataBindingElementCompiler.push({
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
-					
+					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
 					$( div ).contents().each(function(){
 						newJelseifEl.push(this);
 					});
+					
+					$(this).detach();
 				}
 				else{
 					newJelseifEl.push(this);
@@ -3617,12 +3621,14 @@ jstack.dataBindingElementCompiler.push({
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
-					
+					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
 					$( div ).contents().each(function(){
 						newJelseEl.push(this);
 					});
+					
+					$(this).detach();
 				}
 				else{
 					newJelseEl.push(this);
@@ -3631,6 +3637,7 @@ jstack.dataBindingElementCompiler.push({
 			jelseEl = $(newJelseEl);
 		}
 		
+		let jIfCompiled;
 		
 		let render = function(){
 
@@ -3643,21 +3650,21 @@ jstack.dataBindingElementCompiler.push({
 			currentData = data;
 			currentData2 = data2;
 
-			$this.data('j:if:state',data);
 			if(data){
 				
-				if(!$this.data('j:if:compiled')){
-					$this.data('j:if:compiled',true);
+				if(!jIfCompiled){
+					jIfCompiled = true;
 					dataBinder.compileDom( el, scope );
+					if($this.data('j:is:template')){
+						$this = $this.contents();
+					}
 				}
 				
 				$this.insertAfter(jif);
 				if(jelseifEl.length){
-					jelseifEl.data('j:if:state',false);
 					jelseifEl.detach();
 				}
 				if(jelseEl.length){
-					jelseEl.data('j:if:state',false);
 					jelseEl.detach();
 				}
 			}
@@ -3665,17 +3672,20 @@ jstack.dataBindingElementCompiler.push({
 				$this.detach();
 
 				if(jelseifEl.length){
-					jelseifEl.data('j:if:state',false);
 					if(data2===false){
 						jelseifEl.detach();
 					}
 					else{
 						let jelseifElMatch = $(jelseifEl[data2]);
-						jelseifElMatch.data('j:if:state',true);
 						
 						if(!jelseifElMatch.data('j:if:compiled')){
 							jelseifElMatch.data('j:if:compiled',true);
+							
 							dataBinder.compileDom( jelseifElMatch.get(0), scope );
+							if(jelseifElMatch.data('j:is:template')){
+								jelseifElMatch = jelseifElMatch.contents();
+								jelseifEl[data2] = jelseifElMatch;
+							}
 						}
 						
 						jelseifElMatch.insertAfter(jif);
@@ -3683,17 +3693,21 @@ jstack.dataBindingElementCompiler.push({
 				}
 				if(jelseEl.length){
 					if(data2===false||data2===null){
-						jelseEl.data('j:if:state',true);
 						
 						if(!jelseEl.data('j:if:compiled')){
 							jelseEl.data('j:if:compiled',true);
 							dataBinder.compileDom( jelseEl.get(0), scope );
+							
+							if(jelseEl.data('j:is:template')){
+								jelseEl = jelseEl.contents();
+							}
+							
 						}
+						
 						
 						jelseEl.insertAfter(jif);
 					}
 					else{
-						jelseEl.data('j:if:state',false);
 						jelseEl.detach();
 					}
 				}
