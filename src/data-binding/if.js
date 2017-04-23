@@ -14,7 +14,7 @@ jstack.dataBindingElementCompiler.push({
 			
 			let div = document.createElement('div');
 			div.appendChild( document.importNode(el.content, true) );
-			
+			$(div).data('j:is:template',true);
 			jstack.copyAttributes(el,div);
 			
 			$this = $(div);
@@ -54,7 +54,7 @@ jstack.dataBindingElementCompiler.push({
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
-					
+					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
 					$( div ).contents().each(function(){
@@ -90,7 +90,7 @@ jstack.dataBindingElementCompiler.push({
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
-					
+					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
 					$( div ).contents().each(function(){
@@ -124,6 +124,9 @@ jstack.dataBindingElementCompiler.push({
 				if(!jIfCompiled){
 					jIfCompiled = true;
 					dataBinder.compileDom( el, scope );
+					if($this.data('j:is:template')){
+						$this = $this.contents();
+					}
 				}
 				
 				$this.insertAfter(jif);
@@ -148,6 +151,10 @@ jstack.dataBindingElementCompiler.push({
 							jelseifElMatch.data('j:if:compiled',true);
 							
 							dataBinder.compileDom( jelseifElMatch.get(0), scope );
+							if(jelseifElMatch.data('j:is:template')){
+								jelseifElMatch = jelseifElMatch.contents();
+								jelseifEl[data2] = jelseifElMatch;
+							}
 						}
 						
 						jelseifElMatch.insertAfter(jif);
@@ -159,7 +166,13 @@ jstack.dataBindingElementCompiler.push({
 						if(!jelseEl.data('j:if:compiled')){
 							jelseEl.data('j:if:compiled',true);
 							dataBinder.compileDom( jelseEl.get(0), scope );
+							
+							if(jelseEl.data('j:is:template')){
+								jelseEl = jelseEl.contents();
+							}
+							
 						}
+						
 						
 						jelseEl.insertAfter(jif);
 					}
