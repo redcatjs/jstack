@@ -1865,8 +1865,7 @@ jQuery.fn.serializeArrayWithEmpty = function() {
     }
 
     function encode(pair) {
-      //switch ($('[name="' + pair.name + '"]', $form).attr("type")) { //surikat
-      switch ($('[name="' + pair.name + '"]', $form)[0].type) {
+      switch ($('[name="' + pair.name + '"]', $form).attr("type")) {
         case "checkbox":
           return pair.value === "on" ? true : pair.value;
         default:
@@ -1931,6 +1930,7 @@ jQuery.fn.serializeArrayWithEmpty = function() {
 
   return FormSerializer;
 }));
+
 //from https://github.com/jayedul/html-minifier-prettifier
 $.prettifyHTML = function(el){
 	el = $(el);
