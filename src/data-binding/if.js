@@ -106,6 +106,7 @@ jstack.dataBindingElementCompiler.push({
 			jelseEl = $(newJelseEl);
 		}
 		
+		let jIfCompiled;
 		
 		let render = function(){
 
@@ -118,21 +119,18 @@ jstack.dataBindingElementCompiler.push({
 			currentData = data;
 			currentData2 = data2;
 
-			$this.data('j:if:state',data);
 			if(data){
 				
-				if(!$this.data('j:if:compiled')){
-					$this.data('j:if:compiled',true);
+				if(!jIfCompiled){
+					jIfCompiled = true;
 					dataBinder.compileDom( el, scope );
 				}
 				
 				$this.insertAfter(jif);
 				if(jelseifEl.length){
-					jelseifEl.data('j:if:state',false);
 					jelseifEl.detach();
 				}
 				if(jelseEl.length){
-					jelseEl.data('j:if:state',false);
 					jelseEl.detach();
 				}
 			}
@@ -140,16 +138,15 @@ jstack.dataBindingElementCompiler.push({
 				$this.detach();
 
 				if(jelseifEl.length){
-					jelseifEl.data('j:if:state',false);
 					if(data2===false){
 						jelseifEl.detach();
 					}
 					else{
 						let jelseifElMatch = $(jelseifEl[data2]);
-						jelseifElMatch.data('j:if:state',true);
 						
 						if(!jelseifElMatch.data('j:if:compiled')){
 							jelseifElMatch.data('j:if:compiled',true);
+							
 							dataBinder.compileDom( jelseifElMatch.get(0), scope );
 						}
 						
@@ -158,7 +155,6 @@ jstack.dataBindingElementCompiler.push({
 				}
 				if(jelseEl.length){
 					if(data2===false||data2===null){
-						jelseEl.data('j:if:state',true);
 						
 						if(!jelseEl.data('j:if:compiled')){
 							jelseEl.data('j:if:compiled',true);
@@ -168,7 +164,6 @@ jstack.dataBindingElementCompiler.push({
 						jelseEl.insertAfter(jif);
 					}
 					else{
-						jelseEl.data('j:if:state',false);
 						jelseEl.detach();
 					}
 				}
