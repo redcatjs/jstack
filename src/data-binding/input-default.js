@@ -63,8 +63,8 @@ jstack.dataBindingElementCompiler.push({
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					//jstack.dotSet(dataBinder.model,key,val);
-					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
+					jstack.dotSet(dataBinder.model,key,val);
+					//jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
 				}
 			}
 			else{
