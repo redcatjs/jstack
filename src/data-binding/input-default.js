@@ -24,13 +24,17 @@ jstack.dataBindingElementCompiler.push({
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
+		/*
 		let setterCallback = function(target,k,v){
 			let origin = jstack.getObserverTarget(target);
 			origin[k] = jstack.getObserver(target).factory(k,v);
-			//target[k] = v;
 		};
+		*/
 		
-		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
+		//let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
+		
+		let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
+		
 		if(!modelValue){
 			modelValue = '';
 		}

@@ -18,11 +18,7 @@ class dataBinder {
 			},
 		});
 		
-		model.observe(function(change){
-			//console.log('j:model:update',change);
-			self.update();
-		},'jstack.model',true);
-		
+		//this.launchModelObserver();
 		
 		
 		this.model = model;
@@ -37,6 +33,14 @@ class dataBinder {
 		
 		this.watchers = new WeakMap();
 		
+	}
+	
+	launchModelObserver(){
+		let self = this;
+		this.model.observe(function(change){
+			//console.log('j:model:update',change);
+			self.update();
+		},'jstack.model',true);
 	}
 	
 	ready(callback){
@@ -180,21 +184,21 @@ class dataBinder {
 		let self = this;
 		let w = this.watchers;
 		
-		//let now = new Date().getTime();
-		//console.log('runWatchers START');
-		//let c = 0;
+		let now = new Date().getTime();
+		console.log('runWatchers START');
+		let c = 0;
 		
 		jstack.walkTheDOM( this.view, function(n){
 			let watchers = w.get(n);
 			if(watchers){
 				for(let i = 0, l = watchers.length; i < l; i++){
 					watchers[i]();
-					//c++;
+					c++;
 				}
 			}
 		});
 		
-		//console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
+		console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
 
 	update(){

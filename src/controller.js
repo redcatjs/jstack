@@ -67,6 +67,8 @@ let constructor = function(controllerSet,element,hash){
 			el.html( html );
 		}
 		
+		this.dataBinder.launchModelObserver();
+		
 		let domReady = $.Deferred();
 		
 		this.dataBinder.ready(function(){
