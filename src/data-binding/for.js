@@ -52,8 +52,8 @@ jstack.dataBindingElementCompiler.push({
 		
 		let buildNewRow;
 		
+		$(el).detach();
 		if(isTemplate){
-			$(el).detach();
 			let content = el.content;
 			buildNewRow = function(k, jforClose, scopeExtend){
 				let addRow = document.createElement('div');
