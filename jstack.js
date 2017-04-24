@@ -1162,18 +1162,25 @@ jstack.traverseDom = function(node, func, asc, wholeRest){
 (function(){
 
 
-let walkTheDOM = function(node, func){
+let walkTheDOM = function(node, func, nocache){
 	if(func(node)===false){
 		return false;
 	}
 	
-	let children = [];
+	let children;
 	let childNodes = node.childNodes;
-	for(let i = 0, l = childNodes.length; i<l ;i++){
-		children.push(childNodes[i]);
+	if(nocache){
+		children = childNodes;
 	}
+	else{
+		children = [];
+		for(let i = 0, l = childNodes.length; i<l ;i++){
+			children.push(childNodes[i]);
+		}
+	}
+	
 	children.forEach(function(n){
-		walkTheDOM(n, func);
+		walkTheDOM(n, func, nocache);
 	});
 };
 
@@ -2841,7 +2848,7 @@ class dataBinder {
 					//c++;
 				}
 			}
-		});
+		},true);
 		
 		//console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
