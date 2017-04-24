@@ -196,7 +196,7 @@ class dataBinder {
 					//c++;
 				}
 			}
-		});
+		},true);
 		
 		//console.log('runWatchers END',c,(((new Date().getTime())-now)/1000)+'s');
 	}
