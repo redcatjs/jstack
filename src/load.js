@@ -1,27 +1,13 @@
 (function(){
 	
 let mutationObserver = new MutationObserver(function(mutations){
-	mutations.each(function(mutation,i){
-		mutation.addedNodes.each(function(node,ii){
-			
-			jstack.walkTheDOM(node,function(n){
-				if(!document.body.contains(n) || n.nodeType!=Node.ELEMENT_NODE) return false;
-				let $n = $(n);
-				if($n.data('j:load:state')){
-					return;
-				}
-				$n.data('j:load:state',true);
-				jstack.trigger(n,'load');
-			});
-			
-		});
-
-		mutation.removedNodes.each(function(node,ii){
-			jstack.walkTheDOM(node,function(n){
-				if(n.nodeType!==Node.ELEMENT_NODE || !$(n).data('j:load:state')){
-					return false;
-				}
-				jstack.trigger(n,'unload');
+	jstack._onStack.each(function(callbacks,selector){
+		$(selector).not(':data("j:loaded")').each(function(){
+			let n = this;
+			let $n = $(this);
+			$n.data('j:loaded',true);
+			callbacks.forEach(function(callback){
+				callback.call(n);
 			});
 		});
 	});
@@ -36,72 +22,19 @@ mutationObserver.observe(document.body, {
 	characterDataOldValue: false,
 });
 
-jstack._eventStack = {};
+jstack._onStack = {};
 
-jstack.trigger = function(n,eventName){
-	let $n = $(n);
-	let callbacks = $n.data('j:event:'+eventName);
-	if(callbacks){
-		callbacks.forEach(function(callback){
-			callback.call(n);
-		});
+jstack.onLoad = function(selector,callback){
+	if(typeof(jstack._onStack[selector])=='undefined'){
+		jstack._onStack[selector] = [];
 	}
-	if(jstack._eventStack[eventName]){
-		jstack._eventStack.each(function(callbacks,selector){
-			if($n.is(selector)){
-				callbacks.forEach(function(callback){
-					callback.call(n);
-				});
-			}
-		});
-	}
-};
-jstack.on = function(eventName,selector,callback){
-	if(!jstack._eventStack[eventName]){
-		jstack._eventStack[eventName] = {};
-	}
-	if(typeof(selector)=='string'){
-		if(typeof(jstack._eventStack[selector])=='undefined'){
-			jstack._eventStack[selector] = [];
-		}
-		jstack._eventStack[selector].push(callback);
-	}
-	else{
-		let el = $(selector);
-		let callbacks = el.data('j:event:'+eventName);
-		if(!callbacks){
-			callbacks = [];
-			el.data('j:event:'+eventName,callbacks);
-		}
-		callbacks.push(callback);
-	}
+	jstack._onStack[selector].push(callback);
 };
 
 
-jstack.loader = function(selector,handler,unloader){
-	jstack.on('load',selector,function(){
-		handler.call(this);
-	});
-	if(typeof(unloader)=='function'){
-		jstack.on('unload',selector,function(){
-			unloader.call(this);
-		});
-	}
-	$(selector).each(function(){
-		handler.call(this);
-	});
-};
-
-
-$.fn.onLoad = function(callback){
-	return this.each(function(){
-		jstack.on('load',this,callback);
-	});
-};
-$.fn.onUnload = function(callback){
-	return this.each(function(){
-		jstack.on('unload',this,callback);
-	});
+jstack.loader = function(selector,handler){
+	jstack.onLoad(selector,handler);
+	$(selector).each(handler);
 };
 
 
