@@ -338,6 +338,8 @@ let constructor = function(controllerSet,element,hash){
 			el.html( html );
 		}
 		
+		this.dataBinder.launchModelObserver();
+		
 		let domReady = $.Deferred();
 		
 		this.dataBinder.ready(function(){
@@ -2661,11 +2663,7 @@ class dataBinder {
 			},
 		});
 		
-		model.observe(function(change){
-			//console.log('j:model:update',change);
-			self.update();
-		},'jstack.model',true);
-		
+		//this.launchModelObserver();
 		
 		
 		this.model = model;
@@ -2680,6 +2678,14 @@ class dataBinder {
 		
 		this.watchers = new WeakMap();
 		
+	}
+	
+	launchModelObserver(){
+		let self = this;
+		this.model.observe(function(change){
+			//console.log('j:model:update',change);
+			self.update();
+		},'jstack.model',true);
 	}
 	
 	ready(callback){
@@ -3426,8 +3432,8 @@ jstack.dataBindingElementCompiler.push({
 		
 		let buildNewRow;
 		
+		$(el).detach();
 		if(isTemplate){
-			$(el).detach();
 			let content = el.content;
 			buildNewRow = function(k, jforClose, scopeExtend){
 				let addRow = document.createElement('div');
@@ -3540,7 +3546,6 @@ jstack.dataBindingElementCompiler.push({
 
 		let jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
 		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
-
 		if(el.tagName.toLowerCase()=='template'){
 			
 			let div = document.createElement('div');
@@ -3580,7 +3585,6 @@ jstack.dataBindingElementCompiler.push({
 			let newJelseifEl = [];
 			jelseifEl.each(function(){
 				myvar2.push( this.getAttribute('j-else-if') );
-				this.removeAttribute('j-else-if');
 				if(this.tagName.toLowerCase()=='template'){
 					
 					let div = document.createElement('div');
@@ -3616,11 +3620,11 @@ jstack.dataBindingElementCompiler.push({
 		if(jelseEl.length){
 			let newJelseEl = [];
 			jelseEl.each(function(){
-				this.removeAttribute('j-else');
 				if(this.tagName.toLowerCase()=='template'){
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
+					
 					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
@@ -3694,8 +3698,8 @@ jstack.dataBindingElementCompiler.push({
 				if(jelseEl.length){
 					if(data2===false||data2===null){
 						
-						if(!jelseEl.data('j:if:compiled')){
-							jelseEl.data('j:if:compiled',true);
+						if(!jelseEl.data('j:is:compiled')){
+							jelseEl.data('j:is:compiled', true);
 							dataBinder.compileDom( jelseEl.get(0), scope );
 							
 							if(jelseEl.data('j:is:template')){
@@ -3717,6 +3721,27 @@ jstack.dataBindingElementCompiler.push({
 		dataBinder.addWatcher(jif[0],render);
 		render();
 		
+		return false;
+	},
+});
+
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-else-if');
+	},
+	callback(n,dataBinder,scope){
+		n.removeAttribute('j-else-if');
+		return false;
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-else');
+	},
+	callback(n,dataBinder,scope){
+		n.removeAttribute('j-else');
 		return false;
 	},
 });
@@ -3859,9 +3884,11 @@ jstack.dataBindingElementCompiler.push({
 			script = n.innerHTML;
 		}
 		
+		let func = new Function('element',script);
+		func.call(scope,n);
+		
 		$(n).remove();
-		let func = new Function(script);
-		func.call(scope);
+		
 		return false;
 	},
 });
@@ -4132,13 +4159,8 @@ jstack.dataBindingElementCompiler.push({
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		let setterCallback = function(target,k,v){
-			let origin = jstack.getObserverTarget(target);
-			origin[k] = jstack.getObserver(target).factory(k,v);
-			//target[k] = v;
-		};
+		let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
 		
-		let modelValue = jstack.dotSet(dataBinder.model,key,val,true,setterCallback);
 		if(!modelValue){
 			modelValue = '';
 		}
@@ -4167,8 +4189,7 @@ jstack.dataBindingElementCompiler.push({
 					$el.populateInput(modelValue,{preventValEvent:true});
 				}
 				else{
-					//jstack.dotSet(dataBinder.model,key,val);
-					jstack.dotSet(dataBinder.model,key,val,false,setterCallback);
+					jstack.dotSet(dataBinder.model,key,val);
 				}
 			}
 			else{
