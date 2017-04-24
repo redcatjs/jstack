@@ -9,7 +9,6 @@ jstack.dataBindingElementCompiler.push({
 
 		let jelseifEl = $this.nextUntil('[j-if]','[j-else-if]');
 		let jelseEl = $this.nextUntil('[j-if]','[j-else]');
-
 		if(el.tagName.toLowerCase()=='template'){
 			
 			let div = document.createElement('div');
@@ -49,7 +48,6 @@ jstack.dataBindingElementCompiler.push({
 			let newJelseifEl = [];
 			jelseifEl.each(function(){
 				myvar2.push( this.getAttribute('j-else-if') );
-				this.removeAttribute('j-else-if');
 				if(this.tagName.toLowerCase()=='template'){
 					
 					let div = document.createElement('div');
@@ -85,11 +83,11 @@ jstack.dataBindingElementCompiler.push({
 		if(jelseEl.length){
 			let newJelseEl = [];
 			jelseEl.each(function(){
-				this.removeAttribute('j-else');
 				if(this.tagName.toLowerCase()=='template'){
 					
 					let div = document.createElement('div');
 					div.appendChild( document.importNode(this.content, true) );
+					
 					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
@@ -163,8 +161,8 @@ jstack.dataBindingElementCompiler.push({
 				if(jelseEl.length){
 					if(data2===false||data2===null){
 						
-						if(!jelseEl.data('j:if:compiled')){
-							jelseEl.data('j:if:compiled',true);
+						if(!jelseEl.data('j:is:compiled')){
+							jelseEl.data('j:is:compiled', true);
 							dataBinder.compileDom( jelseEl.get(0), scope );
 							
 							if(jelseEl.data('j:is:template')){
@@ -186,6 +184,27 @@ jstack.dataBindingElementCompiler.push({
 		dataBinder.addWatcher(jif[0],render);
 		render();
 		
+		return false;
+	},
+});
+
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-else-if');
+	},
+	callback(n,dataBinder,scope){
+		n.removeAttribute('j-else-if');
+		return false;
+	},
+});
+
+jstack.dataBindingElementCompiler.push({
+	match(n){
+		return n.hasAttribute('j-else');
+	},
+	callback(n,dataBinder,scope){
+		n.removeAttribute('j-else');
 		return false;
 	},
 });
