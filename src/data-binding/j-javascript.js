@@ -17,9 +17,11 @@ jstack.dataBindingElementCompiler.push({
 			script = n.innerHTML;
 		}
 		
+		let func = new Function('element',script);
+		func.call(scope,n);
+		
 		$(n).remove();
-		let func = new Function(script);
-		func.call(scope);
+		
 		return false;
 	},
 });
