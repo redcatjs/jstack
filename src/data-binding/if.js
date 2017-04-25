@@ -55,9 +55,7 @@ jstack.dataBindingElementCompiler.push({
 					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
-					$( div ).contents().each(function(){
-						newJelseifEl.push(this);
-					});
+					newJelseifEl.push(div);
 					
 					$(this).detach();
 				}
@@ -91,9 +89,7 @@ jstack.dataBindingElementCompiler.push({
 					$(div).data('j:is:template',true);
 					jstack.copyAttributes(el,div);
 					
-					$( div ).contents().each(function(){
-						newJelseEl.push(this);
-					});
+					newJelseEl.push(div);
 					
 					$(this).detach();
 				}
