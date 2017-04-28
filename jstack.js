@@ -3048,18 +3048,15 @@ class dataBinder {
 					case 'radio':
 						let form;
 						let p = el.parentNode;
-						while(p){
-							if(p.tagName&&p.tagName.toLowerCase()=='form'){
+						while(true){
+							if(p.tagName&&p.tagName.toLowerCase()=='form' || !p.parentNode){
 								form = p;
 								break;
 							}
 							p = p.parentNode;
 						}
-						if(form){
-							let checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
-							return checked.length?checked.val():'';
-						}
-						return '';
+						let checked = $(form).find('[name="'+el.getAttribute('name')+'"]:checked');
+						return checked.val();
 					break;
 					case 'file':
 						return el.files;
