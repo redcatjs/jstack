@@ -2890,13 +2890,9 @@ class dataBinder {
 			e.stopPropagation();
 			
 			if(this.type=='file') return;
-			if(e.type=='input'&&(this.nodeName.toLowerCase()=='select'||this.type=='checkbox'||this.type=='radio'))
-				return;
 			let el = this;
 			
-			setTimeout(function(){
-				self.inputToModel(el,e.type,value);
-			});
+			self.inputToModel(el,e.type,value);
 			
 		});
 		
