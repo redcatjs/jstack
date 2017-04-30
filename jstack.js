@@ -4522,36 +4522,44 @@ jstack.loader('[j-component]',function(){
 
 (function(){
 
+let getViewReady = function(el){
+	el = $(el);
+	let ready = el.data('jViewReady');
+	if(!ready){
+		ready = $.Deferred();
+		el.data('jViewReady',ready);
+	}
+	return ready;
+};
+
 jstack.mvc = function(config){
 
-	var target = $(config.target);
-	var controller = config.controller;
+	let target = $(config.target);
+	let controller = config.controller || config.view;
+	
+	let controllerPath = jstack.config.controllersPath+controller;
 
-	var controllerPath = jstack.config.controllersPath+config.controller;
+	let controllerReady = $.Deferred();
+	let processor;
 
-	var controllerReady = $.Deferred();
-	var controllerReady = $.Deferred();
-	var processor;
-
-	if(jstack.controllers[config.controller]){
+	if(jstack.controllers[controller]){
 		controllerReady.resolve();
 	}
 	else{
-		//$js.onExists(controllerPath,controllerReady.resolve,controllerReady.resolve);
 		$js(controllerPath,controllerReady.resolve);
 	}
-	var viewReady = jstack.getTemplate(config.view+'.jml');
+	let viewReady = jstack.getTemplate(config.view+'.jml');
 
-	var ready = $.Deferred();
-
+	let ready = getViewReady(target);
+	
 	controllerReady.then(function(){
-		var ctrlReady = jstack.controller(config.controller, target, config.hash);
+		let ctrlReady = jstack.controller(controller, target, config.hash);
 		$.when(viewReady, ctrlReady).then(function(view,ctrl){
 			if(config.clear){
 				$(config.clear).contents().not(target).remove();
 			}
-			var html = view[0];
-			var domReady = ctrl.render(html);
+			let html = view[0];
+			let domReady = ctrl.render(html);
 			if(domReady){
 				domReady.then(function(){
 					ready.resolve(target,ctrl);
@@ -4566,58 +4574,9 @@ jstack.mvc = function(config){
 
 	return ready.promise();
 };
-var getViewReady = function(el){
-	if(typeof(arguments[0])=='string'){
-		var selector = '[j-view="'+arguments[0]+'"]';
-		if(typeof(arguments[1])=='object'){
-			el = $(arguments[1]).find(selector);
-		}
-		else{
-			el = $(selector);
-		}
-	}
-
-	el = $(el);
-	var ready = el.data('jViewReady');
-	if(!ready){
-		ready = $.Deferred();
-		el.data('jViewReady',ready);
-	}
-	return ready;
-};
 jstack.viewReady = function(el){
 	return getViewReady(el).promise();
 };
-jstack.loader('[j-view]:not([j-view-loaded])',function(){
-	
-	//console.log('j-view',this);
-	
-	this.setAttribute('j-view-loaded','true');
-
-	var view = this.getAttribute('j-view');
-
-	var controller;
-	if(this.hasAttribute('j-controller')){
-		controller = this.getAttribute('j-controller');
-	}
-	else{
-		controller = view;
-	}
-
-	var ready = getViewReady(this);
-
-	var mvc = jstack.mvc({
-		view:view,
-		controller:controller,
-		target:this,
-	});
-	
-	mvc.then(function(){
-		//setTimeout(function(){
-			ready.resolve();
-		//});
-	});
-});
 
 })();
 
