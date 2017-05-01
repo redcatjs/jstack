@@ -10,7 +10,7 @@ jstack.Component = class {
 	}
 	dependenciesData(){}
 	template(){
-		return this.templateString;
+		return this.templateUrlLoaded;
 	}
 	build(element,hash){		
 		let self = this;
@@ -132,7 +132,7 @@ jstack.Component = class {
 			let templateReady = $.Deferred();
 			dependenciesStack.push(templateReady);
 			jstack.getTemplate( templateUrl+'.jml' ).then( function(html){
-				controller.templateString = html;
+				controller.templateUrlLoaded = html;
 				templateReady.resolve();
 			} );
 		}
