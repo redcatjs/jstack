@@ -120,13 +120,17 @@ jstack.Component = class {
 			break;
 		}
 		
+		controller.build(element,hash);
+		
 
 		let ready = $.Deferred();
 		
 		let dependenciesStack = [];
 		
 		let dependencies = typeof(controller.dependencies)=='function'?controller.dependencies():controller.dependencies;
-		if(dependencies.length){		
+		let dependenciesData = typeof(controller.dependenciesData)=='function'?controller.dependenciesData():controller.dependenciesData;
+		
+		if(dependencies.length){
 			let dependenciesJsReady = $.Deferred();
 			$js(dependencies,function(){
 				dependenciesJsReady.resolve();
@@ -145,12 +149,11 @@ jstack.Component = class {
 				templateReady.resolve();
 			} );
 		}
+		
 		$.when.apply($, dependenciesStack).then(function(){
 			
-			controller.build(element,hash);
 			
 			let dependenciesDataReady = [];
-			let dependenciesData = controller.dependenciesData();
 			if(dependenciesData&&dependenciesData.length){
 				let dependenciesDataRun = [];
 				for(let i = 0, l = dependenciesData.length; i < l; i++){
