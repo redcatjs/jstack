@@ -10,53 +10,39 @@ let getViewReady = function(el){
 	return ready;
 };
 
-jstack.mvc = function(config){
-
-	let target = $(config.target);
-	let view = config.view;
-	let controller = config.controller || view;
+jstack.load = function(target,config){
 	
-	let controllerPath = jstack.config.controllersPath+controller;
-
-	let controllerReady = $.Deferred();
-	let processor;
-
-	if(jstack.controllers[controller]){
-		controllerReady.resolve();
-	}
-	else{
-		$js(controllerPath,controllerReady.resolve);
-	}
-	
-	let viewReady;
-	if(view){
-		viewReady = jstack.getTemplate(view+'.jml');
-	}
-	else{
-		viewReady = $.Deferred();
-	}
-
-	let ready = getViewReady(target);
-	
-	controllerReady.then(function(){
-		let ctrlReady = jstack.controller(controller, target, config.hash);
-		if(!view){
-			viewReady.resolve( [ jstack.controllers[controller].template ] );
+	const jsReady = $.Deferred();
+	if(config.componentUrl){
+		const resolveComponentUrl = function(){
+			jsReady.resolve( jstack.controllers[config.componentUrl] );
+		};
+		if(jstack.controllers[config.componentUrl]){
+			resolveComponentUrl();
 		}
-		$.when(viewReady, ctrlReady).then(function(view,ctrl){
+		else{
+			$js( jstack.config.controllersPath+config.componentUrl, resolveComponentUrl);
+		}
+	}
+	else if (config.component){
+		jsReady.resolve( config.component );
+	}
+	
+	
+	
+	const ready = getViewReady(target);
+	const templateReady = $.Deferred();
+	
+	jsReady.then(function(componentClass){
+		let component = jstack.Component.factory(componentClass, target, config.hash);
+		component.dependenciesReady.then(function(){
 			if(config.clear){
 				$(config.clear).contents().not(target).remove();
 			}
-			let html = view[0];
-			let domReady = ctrl.render(html);
-			if(domReady){
-				domReady.then(function(){
-					ready.resolve(target,ctrl);
-				});
-			}
-			else{
-				ready.resolve(target,ctrl);
-			}
+			let domReady = component.render();
+			domReady.then(function(){
+				ready.resolve(target,component);
+			});
 		});
 
 	});

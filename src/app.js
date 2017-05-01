@@ -13,11 +13,9 @@
 		
 		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			var promise = jstack.mvc({
-				view:path,
-				controller:path,
+			var promise = jstack.load($('<div/>').appendTo(el),{
+				component:path,
 				hash:hash,
-				target:$('<div/>').appendTo(el),
 				clear:el[0],
 			});
 			return promise;

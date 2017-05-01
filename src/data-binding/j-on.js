@@ -18,12 +18,9 @@ jstack.dataBindingElementCompiler.push({
 				jOnList.push(k);
 				let eventName = k.substr(5);
 				$el.on(eventName,function(e){
-					if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-						throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-					}
-					var method = controller.methods[v];
-					if(typeof(method)!='function'){
-						return;
+					let method = controller[v];
+					if(!method){
+						throw new Error('Call to undefined method "'+v+'" by '+k);
 					}
 					return method.call(controller,e,this);
 				});
