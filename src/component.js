@@ -108,7 +108,6 @@ jstack.Component = class {
 		}
 		
 		let controller;
-		
 		switch(typeof(controllerClass)){
 			case 'string':
 				controllerClass = jstack.controllers[controllerClass];
@@ -126,7 +125,7 @@ jstack.Component = class {
 		
 		let dependenciesStack = [];
 		
-		let dependencies = controller.dependencies();
+		let dependencies = typeof(controller.dependencies)=='function'?controller.dependencies():controller.dependencies;
 		if(dependencies.length){		
 			let dependenciesJsReady = $.Deferred();
 			$js(dependencies,function(){
