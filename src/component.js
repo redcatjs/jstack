@@ -71,7 +71,8 @@ jstack.Component = class {
 		el.data('jModel',this.data);
 		el[0].setAttribute('j-controller','');
 		
-		let html = this.dataBinder.compileHTML(this.template());
+		let template = typeof(this.template)=='function'?this.template():this.template;
+		let html = this.dataBinder.compileHTML(template);
 		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
