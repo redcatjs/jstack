@@ -106,11 +106,20 @@ jstack.Component = class {
 			}
 		}
 		
-		if(typeof(controllerClass)=='string'){
-			controllerClass = jstack.controllers[controllerClass];
+		let controller;
+		
+		switch(typeof(controllerClass)){
+			case 'string':
+				controllerClass = jstack.controllers[controllerClass];
+			case 'function':
+				controller = new controllerClass();
+			break;
+			case 'object':
+				controller = new jstack.Component();
+				$.extend(controller, controllerClass);
+			break;
 		}
 		
-		let controller = new controllerClass();
 
 		let ready = $.Deferred();
 		
