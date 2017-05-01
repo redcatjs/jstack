@@ -1,41 +1,56 @@
 (function(){
+
+let getViewReady = function(el){
+	el = $(el);
+	let ready = el.data('jViewReady');
+	if(!ready){
+		ready = $.Deferred();
+		el.data('jViewReady',ready);
+	}
+	return ready;
+};
+
+jstack.load = function(target,config){
 	
-let mutationObserver = new MutationObserver(function(mutations){
-	jstack._onStack.each(function(callbacks,selector){
-		$(selector).not(':data("j:loaded")').each(function(){
-			let n = this;
-			let $n = $(this);
-			$n.data('j:loaded',true);
-			callbacks.forEach(function(callback){
-				callback.call(n);
+	const jsReady = $.Deferred();
+	if(config.componentUrl){
+		const resolveComponentUrl = function(){
+			jsReady.resolve( jstack.controllers[config.componentUrl] );
+		};
+		if(jstack.controllers[config.componentUrl]){
+			resolveComponentUrl();
+		}
+		else{
+			$js( jstack.config.controllersPath+config.componentUrl, resolveComponentUrl);
+		}
+	}
+	else if (config.component){
+		jsReady.resolve( config.component );
+	}
+	
+	
+	
+	const ready = getViewReady(target);
+	const templateReady = $.Deferred();
+	
+	jsReady.then(function(componentClass){
+		let component = jstack.Component.factory(componentClass, target, config.hash);
+		component.dependenciesReady.then(function(){
+			if(config.clear){
+				$(config.clear).contents().not(target).remove();
+			}
+			let domReady = component.render();
+			domReady.then(function(){
+				ready.resolve(target,component);
 			});
 		});
+
 	});
-});
 
-mutationObserver.observe(document.body, {
-	subtree: true,
-	childList: true,
-	characterData: true,
-	attributes: false,
-	attributeOldValue: false,
-	characterDataOldValue: false,
-});
-
-jstack._onStack = {};
-
-jstack.onLoad = function(selector,callback){
-	if(typeof(jstack._onStack[selector])=='undefined'){
-		jstack._onStack[selector] = [];
-	}
-	jstack._onStack[selector].push(callback);
+	return ready.promise();
 };
-
-
-jstack.loader = function(selector,handler){
-	jstack.onLoad(selector,handler);
-	$(selector).each(handler);
+jstack.viewReady = function(el){
+	return getViewReady(el).promise();
 };
-
 
 })();

@@ -9,7 +9,7 @@ grunt.initConfig({
 			src: [
 				"src/core.js",
 				"src/observe.js",
-				"src/controller.js",
+				"src/component.js",
 				"src/url.js",
 				"src/uniqid.js",
 				
@@ -66,7 +66,7 @@ grunt.initConfig({
 				"src/template/getTemplate.js",
 				
 				"src/route.js",
-				"src/routeMVC.js",
+				"src/routeComponent.js",
 				
 				"src/data-binding/data-binder.js",
 				"src/data-binding/model-observable.js",
@@ -91,10 +91,10 @@ grunt.initConfig({
 				"src/data-binding/input.js",
 				"src/data-binding/text.js",
 				
-				"src/load.js",
-				"src/component.js",
+				"src/onLoad.js",
+				"src/domComponent.js",
 				"src/ajax.js",
-				"src/mvc.js",
+				"src/load.js",
 				"src/app.js",
 			],
 			dest: 'jstack.js'
