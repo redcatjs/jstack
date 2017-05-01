@@ -270,66 +270,80 @@ jstack.getObserver = getObserver;
 })();
 
 (function(){
-let constructor = function(controllerSet,element,hash){			
-	let self = this;
+jstack.Component = class {
+	constructor(){
+		
+	}
+	domReady(){}
+	setData(){}
+	dependencies(){
+		return [];
+	}
+	dependenciesData(){}
+	template(){
+		return this.templateUrlLoaded;
+	}
+	build(element,hash){		
+		let self = this;
 	
-	
-	let data = element.data('jModel') || {};
-	if(element[0].hasAttribute('j-view-inherit')){
-		let parent = element.parent().closest('[j-controller]');
-		if(parent.length){
-			let inheritProp = element[0].getAttribute('j-view-inherit');
-			let parentData = parent.data('jModel') || {};
-			if(inheritProp){
-				data[inheritProp] = parentData;
-			}
-			else{
-				data = $.extend({},parentData,data);
+		let data = element.data('jModel') || {};
+		if(element[0].hasAttribute('j-view-inherit')){
+			let parent = element.parent().closest('[j-controller]');
+			if(parent.length){
+				let inheritProp = element[0].getAttribute('j-view-inherit');
+				let parentData = parent.data('jModel') || {};
+				if(inheritProp){
+					data[inheritProp] = parentData;
+				}
+				else{
+					data = $.extend({},parentData,data);
+				}
 			}
 		}
+		
+		this.element = element;
+		this.hash = hash;
+		this.data = data;
+		element.data('jController',this);
+		
+		
+		this.setDataArguments = [];			
+		
+		
 	}
 	
-	let defaults = {
-		domReady: function(){},
-		setData: function(){},
-	};
-	$.extend(true,this,defaults,controllerSet);
-	
-	this.element = element;
-	this.hash = hash;
-	this.data = data;
-	element.data('jController',this);
-	
-	
-	this.startDataObserver = function(){
-		
-		self.dataBinder = new jstack.dataBinder(self.data,self.element[0],self);
-		
-		self.data = self.dataBinder.model;
-		self.dataBinder.eventListener();
-		
-	};
-	
-	this.setDataArguments = [];
-	this.setDataCall = function(){
+	setDataCall(){
 		let r = this.setData.apply( this, this.setDataArguments );
 		if(r==false){
 			this.noRender = true;
 		}
-		else if($.type(r)=='object'&&r!==ctrl.data){
+		else if($.type(r)=='object'&&r!==this.data){
 			$.extend(this.data,r);
 		}
 		this.startDataObserver();
-	};			
+	}
 	
-	this.render = function(html){
-		if(this.noRender) return;
+	startDataObserver(){		
+		this.dataBinder = new jstack.dataBinder(this.data,this.element[0],this);	
+		this.data = this.dataBinder.model;
+		this.dataBinder.eventListener();
+	}
+	
+	render(){
+		let domReady = $.Deferred();
 		
+		if(this.noRender){
+			domReady.resolve();
+			return domReady;
+		}
+		
+		let self = this;
 		let el = this.element;
 		el.data('jModel',this.data);
-		el[0].setAttribute('j-controller',this.name);
+		el[0].setAttribute('j-controller','');
 		
-		html = self.dataBinder.compileHTML(html);
+		let template = typeof(this.template)=='function'?this.template():this.template;
+		let html = this.dataBinder.compileHTML(template);
 		
 		if(Boolean(el[0].getAttribute('j-view-append'))){
 			el.append( html );
@@ -340,7 +354,6 @@ let constructor = function(controllerSet,element,hash){
 		
 		this.dataBinder.launchModelObserver();
 		
-		let domReady = $.Deferred();
 		
 		this.dataBinder.ready(function(){
 			self.domReady();
@@ -348,96 +361,68 @@ let constructor = function(controllerSet,element,hash){
 		});
 		
 		return domReady;
-	};
-	
-};
-
-jstack.controller = function(controller, element, hash){
-	
-	if(typeof(controller)=='object'){
-		
-		if(controller.extend){
-			if(!controller.dependencies){
-				controller.dependencies = [];
-			}
-			let extend = $.Deferred();
-			controller.dependencies.push(extend);
-			let controllerPath = jstack.config.controllersPath+controller.extend;
-			$js.require(controllerPath);
-			$js(controllerPath,function(){
-				jstack.controllers[controller.extend].each(function(v,k){
-					switch(k){
-						case 'dependencies':
-							if(v instanceof Array){
-								v.forEach(function(dep){
-									controller.dependencies.push(dep);
-								});
-							}
-						break;
-						default:
-							if(typeof(controller[k])=='undefined'){						
-								controller[k] = v;
-							}
-						break;
-					}
-				});
-				//console.log('extended',controller.name);
-				extend.resolve();
-			});
-		}		
-		if(controller.mixins){
-			for(let i = 0, l = mixins.length;i<l;i++){
-				mixins[i].each(function(v,k){
-					if(typeof(controller[k])=='undefined'){
-						controller[k] = v;
-					}
-				});
-			}
-		}
-		
-		jstack.controllers[controller.name] = controller;
-		return jstack.controllers[controller.name];
 	}
 	
-	if(typeof(hash)=='undefined'){
-		let parent = element.parent().closest('[j-controller]');
-		if(parent.length){
-			let controllerData = parent.data('jController');
-			if(controllerData){
-				hash = controllerData.hash;
-			}
-		}
+	static factory(controllerClass, element, hash){
+		
 		if(typeof(hash)=='undefined'){
-			hash = window.location.hash.ltrim('#');
-		}
-	}
-	
-	
-	let controllerSet = jstack.controllers[controller] || jstack.controller($.extend(true,{name:controller},jstack.config.defaultController));
-	
-	let name = controllerSet.name;
-	let ready = $.Deferred();
-	
-	let dependencies = [];
-	
-	if(controllerSet.dependencies&&controllerSet.dependencies.length){		
-		let dependenciesJsReady = $.Deferred();
-		$js(controllerSet.dependencies,function(){
-			dependenciesJsReady.resolve();
-		});
-		dependencies.push(dependenciesJsReady);
-	}
-	
-	$.when.apply($, dependencies).then(function(){
-		
-		let controller = new constructor(controllerSet,element,hash);
-		
-		let dependenciesDataReady = [];
-		let dependenciesData = controller.dependenciesData;
-		if(dependenciesData){
-			if(typeof(dependenciesData)=='function'){
-				controller.dependenciesData = dependenciesData = controller.dependenciesData();
+			let parent = element.parent().closest('[j-controller]');
+			if(parent.length){
+				let controllerData = parent.data('jController');
+				if(controllerData){
+					hash = controllerData.hash;
+				}
 			}
+			if(typeof(hash)=='undefined'){
+				hash = window.location.hash.ltrim('#');
+			}
+		}
+		
+		let controller;
+		
+		switch(typeof(controllerClass)){
+			case 'string':
+				controllerClass = jstack.controllers[controllerClass];
+			case 'function':
+				controller = new controllerClass();
+			break;
+			case 'object':
+				controller = new jstack.Component();
+				$.extend(controller, controllerClass);
+			break;
+		}
+		
+
+		let ready = $.Deferred();
+		
+		let dependenciesStack = [];
+		
+		let dependencies = controller.dependencies();
+		if(dependencies.length){		
+			let dependenciesJsReady = $.Deferred();
+			$js(dependencies,function(){
+				dependenciesJsReady.resolve();
+			});
+			dependenciesStack.push(dependenciesJsReady);
+		}
+		if(controller.templateUrl){
+			let templateUrl = controller.templateUrl;
+			if(typeof(templateUrl)=='function'){
+				templateUrl = templateUrl.call(controller);
+			}
+			let templateReady = $.Deferred();
+			dependenciesStack.push(templateReady);
+			jstack.getTemplate( templateUrl+'.jml' ).then( function(html){
+				controller.templateUrlLoaded = html;
+				templateReady.resolve();
+			} );
+		}
+		$.when.apply($, dependenciesStack).then(function(){
+			
+			controller.build(element,hash);
+			
+			let dependenciesDataReady = [];
+			let dependenciesData = controller.dependenciesData();
 			if(dependenciesData&&dependenciesData.length){
 				let dependenciesDataRun = [];
 				for(let i = 0, l = dependenciesData.length; i < l; i++){
@@ -474,18 +459,20 @@ jstack.controller = function(controller, element, hash){
 				});
 				dependenciesDataReady.push(resolveDeferred);
 			}
-		}
-		
-		$.when.apply($, dependenciesDataReady).then(function(){
-			controller.setDataCall();
-			ready.resolve(controller);
+			
+			$.when.apply($, dependenciesDataReady).then(function(){
+				controller.setDataCall();
+				ready.resolve();
+			});
+			
 		});
 		
-	});
+		controller.dependenciesReady = ready.promise();
+		
+		return controller;
+	}
 	
-	return ready.promise();
 };
-
 })();
 
 jstack.url = (function(){
@@ -2635,17 +2622,14 @@ jstack.route = ( function( w, url ) {
 
 } )( window, jstack.url );
 
-jstack.routeMVC = function(path,obj){
+jstack.routeComponent = function(path,component){
 	return jstack.route(path,function(path,params,hash){
 		let container = $('[j-app]');
-		if(typeof(obj)=='string')
-			obj = {view:obj};
 		container.empty();
-		return jstack.mvc({
-			view:obj.view,
-			controller:obj.controller || obj.view,
+		return jstack.load($('<div/>').appendTo(container),{
+			component:typeof(component)=='function'?component:null,
+			componentUrl:typeof(component)=='string'?component:null,
 			hash:hash,
-			target:$('<div/>').appendTo(container),
 		});
 	});
 };
@@ -4112,12 +4096,9 @@ jstack.dataBindingElementCompiler.push({
 				jOnList.push(k);
 				let eventName = k.substr(5);
 				$el.on(eventName,function(e){
-					if(typeof(controller.methods)!='object'||typeof(controller.methods[v])!='function'){
-						throw new Error('Call to undefined method "'+v+'" by '+k+' and expected in controller '+controller.name);
-					}
-					var method = controller.methods[v];
-					if(typeof(method)!='function'){
-						return;
+					let method = controller[v];
+					if(!method){
+						throw new Error('Call to undefined method "'+v+'" by '+k);
 					}
 					return method.call(controller,e,this);
 				});
@@ -4532,42 +4513,39 @@ let getViewReady = function(el){
 	return ready;
 };
 
-jstack.mvc = function(config){
-
-	let target = $(config.target);
-	let controller = config.controller || config.view;
+jstack.load = function(target,config){
 	
-	let controllerPath = jstack.config.controllersPath+controller;
-
-	let controllerReady = $.Deferred();
-	let processor;
-
-	if(jstack.controllers[controller]){
-		controllerReady.resolve();
+	const jsReady = $.Deferred();
+	if(config.componentUrl){
+		const resolveComponentUrl = function(){
+			jsReady.resolve( jstack.controllers[config.componentUrl] );
+		};
+		if(jstack.controllers[config.componentUrl]){
+			resolveComponentUrl();
+		}
+		else{
+			$js( jstack.config.controllersPath+config.componentUrl, resolveComponentUrl);
+		}
 	}
-	else{
-		$js(controllerPath,controllerReady.resolve);
+	else if (config.component){
+		jsReady.resolve( config.component );
 	}
-	let viewReady = jstack.getTemplate(config.view+'.jml');
-
-	let ready = getViewReady(target);
 	
-	controllerReady.then(function(){
-		let ctrlReady = jstack.controller(controller, target, config.hash);
-		$.when(viewReady, ctrlReady).then(function(view,ctrl){
+	
+	
+	const ready = getViewReady(target);
+	const templateReady = $.Deferred();
+	
+	jsReady.then(function(componentClass){
+		let component = jstack.Component.factory(componentClass, target, config.hash);
+		component.dependenciesReady.then(function(){
 			if(config.clear){
 				$(config.clear).contents().not(target).remove();
 			}
-			let html = view[0];
-			let domReady = ctrl.render(html);
-			if(domReady){
-				domReady.then(function(){
-					ready.resolve(target,ctrl);
-				});
-			}
-			else{
-				ready.resolve(target,ctrl);
-			}
+			let domReady = component.render();
+			domReady.then(function(){
+				ready.resolve(target,component);
+			});
 		});
 
 	});
@@ -4595,11 +4573,9 @@ jstack.viewReady = function(el){
 		
 		jstack.route('*', function(path, params, hash){
 			path = jstack.url.getPath(path);
-			var promise = jstack.mvc({
-				view:path,
-				controller:path,
+			var promise = jstack.load($('<div/>').appendTo(el),{
+				component:path,
 				hash:hash,
-				target:$('<div/>').appendTo(el),
 				clear:el[0],
 			});
 			return promise;
