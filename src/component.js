@@ -10,7 +10,7 @@ jstack.Component = class {
 	}
 	dependenciesData(){}
 	template(){
-		return this.template;
+		return this.templateString;
 	}
 	build(element,hash){		
 		let self = this;
@@ -92,7 +92,6 @@ jstack.Component = class {
 	}
 	
 	static factory(controllerClass, element, hash){
-		let self = this;
 		
 		if(typeof(hash)=='undefined'){
 			let parent = element.parent().closest('[j-controller]');
@@ -125,15 +124,15 @@ jstack.Component = class {
 			});
 			dependenciesStack.push(dependenciesJsReady);
 		}
-		if(this.templateUrl){
-			let templateUrl = this.templateUrl;
+		if(controller.templateUrl){
+			let templateUrl = controller.templateUrl;
 			if(typeof(templateUrl)=='function'){
-				templateUrl = templateUrl.call(this);
+				templateUrl = templateUrl.call(controller);
 			}
 			let templateReady = $.Deferred();
 			dependenciesStack.push(templateReady);
-			jstack.getTemplate( jstack.config.templatesPath+templateUrl+'.jml' ).then( function(html){
-				self.template = html;
+			jstack.getTemplate( templateUrl+'.jml' ).then( function(html){
+				controller.templateString = html;
 				templateReady.resolve();
 			} );
 		}
