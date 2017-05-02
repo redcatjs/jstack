@@ -16,7 +16,7 @@ let mutationObserver = new MutationObserver(function(mutations){
 mutationObserver.observe(document.body, {
 	subtree: true,
 	childList: true,
-	characterData: true,
+	characterData: false,
 	attributes: false,
 	attributeOldValue: false,
 	characterDataOldValue: false,
