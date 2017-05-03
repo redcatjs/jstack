@@ -52,7 +52,6 @@ grunt.initConfig({
 				"src/jquery/populate.js",
 				"src/jquery/outerHTML.js",
 				"src/jquery/hasAttr.js",
-				"src/jquery/jComponentReady.js",
 				"src/jquery/jquery-serialize-object.js",
 				"src/jquery/prettifyHTML.js",
 				"src/jquery/replaceTagName.js",
