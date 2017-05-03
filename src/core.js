@@ -1,11 +1,10 @@
 jstackClass = function(){
 	this.config = {
-		templatesPath: 'view-js/',
-		controllersPath: 'controller-js/',
-		defaultController: {},
+		templatesPath: 'app/',
+		controllersPath: 'app/',
 		debug: $js.dev,
 	};
-	this.controllers = {};
+	this.components = {};
 };
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
