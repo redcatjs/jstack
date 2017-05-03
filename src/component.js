@@ -182,19 +182,18 @@ jstack.Component = class {
 		let html;
 		if(typeof(template)=='string'){
 			html = this.dataBinder.compileHTML(template);
+			if(Boolean($el[0].getAttribute('j-view-append'))){
+				$el.append( html );
+			}
+			else{
+				$el.html( html );
+			}
 		}
 		else{
 			html = template;
 			html.each(function(){
 				self.dataBinder.compile(this);
 			});
-		}
-
-		if(Boolean($el[0].getAttribute('j-view-append'))){
-			$el.append( html );
-		}
-		else{
-			$el.html( html );
 		}
 		
 		this.dataBinder.launchModelObserver();
