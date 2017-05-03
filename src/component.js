@@ -144,7 +144,7 @@ jstack.Component = class {
 	dependenciesData(){}
 	
 	template(){
-		return this.templateUrlLoaded || this.element.html();
+		return this.templateUrlLoaded || this.element.contents();
 	}
 	
 	setDataCall(){
@@ -179,7 +179,17 @@ jstack.Component = class {
 		
 		let template = typeof(this.template)=='function'?this.template():this.template;
 		
-		let html = this.dataBinder.compileHTML(template);
+		let html;
+		if(typeof(template)=='string'){
+			html = this.dataBinder.compileHTML(template);
+		}
+		else{
+			html = template;
+			html.each(function(){
+				self.dataBinder.compile(this);
+			});
+		}
+
 		if(Boolean($el[0].getAttribute('j-view-append'))){
 			$el.append( html );
 		}
