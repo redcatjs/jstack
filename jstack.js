@@ -1,16 +1,16 @@
 jstackClass = function(){
 	this.config = {
-		templatesPath: 'view-js/',
-		controllersPath: 'controller-js/',
-		defaultController: {},
+		templatesPath: 'app/',
+		controllersPath: 'app/',
 		debug: $js.dev,
 	};
-	this.controllers = {};
+	this.components = {};
 };
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
 jstack = new jstackClass();
+
 (function(){
 
 let prefix = '__JSTACK__OBSERVABLE__';
@@ -415,7 +415,7 @@ jstack.Component = class {
 	dependenciesData(){}
 	
 	template(){
-		return this.templateUrlLoaded || this.element.html();
+		return this.templateUrlLoaded || this.element.contents();
 	}
 	
 	setDataCall(){
@@ -450,7 +450,17 @@ jstack.Component = class {
 		
 		let template = typeof(this.template)=='function'?this.template():this.template;
 		
-		let html = this.dataBinder.compileHTML(template);
+		let html;
+		if(typeof(template)=='string'){
+			html = this.dataBinder.compileHTML(template);
+		}
+		else{
+			html = template;
+			html.each(function(){
+				self.dataBinder.compile(this);
+			});
+		}
+
 		if(Boolean($el[0].getAttribute('j-view-append'))){
 			$el.append( html );
 		}
@@ -482,6 +492,14 @@ jstack.Component = class {
 			case 'string':
 				componentClass = jstack.components[componentClass];
 			case 'function':
+				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
+					let lightComponent = componentClass;
+					componentClass = class extends jstack.Component{
+						domReady(){
+							lightComponent(this.element,this.options);
+						}
+					};
+				}
 				component = newInstance(componentClass);
 			break;
 			case 'object':
