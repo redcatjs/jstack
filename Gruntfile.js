@@ -20,6 +20,7 @@ grunt.initConfig({
 				"src/std/randomColor.js",
 				"src/std/isMobile.js",
 				"src/std/dot.js",
+				"src/std/string.js",
 				
 				"src/prototype/string.js",
 				"src/prototype/object.js",
@@ -66,6 +67,7 @@ grunt.initConfig({
 				"src/template/getTemplate.js",
 				
 				"src/route.js",
+				"src/router.js",
 				"src/routeComponent.js",
 				
 				"src/data-binding/data-binder.js",
@@ -84,15 +86,15 @@ grunt.initConfig({
 				
 				"src/data-binding/show.js",
 				"src/data-binding/href.js",
-				"src/data-binding/j-data.js",
 				"src/data-binding/j-on.js",
 				"src/data-binding/input-default.js",
 				"src/data-binding/input-file.js",
 				"src/data-binding/input.js",
 				"src/data-binding/text.js",
+				"src/data-binding/directive.js",
 				
 				"src/onLoad.js",
-				"src/domComponent.js",
+				"src/directive.js",
 				"src/ajax.js",
 				"src/load.js",
 				"src/app.js",
