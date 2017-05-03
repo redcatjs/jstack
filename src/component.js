@@ -22,16 +22,7 @@ jstack.Component = class {
 		let hash = route.hash;
 		
 		if(typeof(hash)=='undefined'){
-			let parent = $el.parent().closest('[j-controller]');
-			if(parent.length){
-				let controllerData = parent.data('jController');
-				if(controllerData){
-					hash = controllerData.hash;
-				}
-			}
-			if(typeof(hash)=='undefined'){
-				hash = window.location.hash.ltrim('#');
-			}
+			hash = window.location.hash.ltrim('#');
 		}
 		
 		let data = this.data;
