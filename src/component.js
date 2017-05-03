@@ -1,9 +1,16 @@
 (function(){
 jstack.Component = class {
 	constructor(element,options,config){
-		this.element = $(element);
+		let $el = $(element);
+		
+		this.element = $el;
 		this.options = options || {};
 		this.config = config || {};
+		
+		let data = config.data || $el.data('jModel') || {};
+		this.data = data;
+		$el.data('jModel',this.data);
+		$el.data('jController',this);
 	}
 	build(){
 		
@@ -27,10 +34,9 @@ jstack.Component = class {
 			}
 		}
 		
-	
-		let data = this.config.data || $el.data('jModel') || {};
+		let data = this.data;
 		if($el[0].hasAttribute('j-view-inherit')){
-			let parent = $el.parent().closest('[j-controller]');
+			let parent = $el.parent().closest(':data(jModel)');
 			if(parent.length){
 				let inheritProp = $el[0].getAttribute('j-view-inherit');
 				let parentData = parent.data('jModel') || {};
@@ -45,8 +51,6 @@ jstack.Component = class {
 		
 		this.hash = hash;
 		this.route = route;
-		this.data = data;
-		$el.data('jController',this);
 		
 		this.setDataArguments = [];
 		
@@ -174,8 +178,6 @@ jstack.Component = class {
 		
 		let self = this;
 		let $el = this.element;
-		$el.data('jModel',this.data);
-		$el[0].setAttribute('j-controller','');
 		
 		let template = typeof(this.template)=='function'?this.template():this.template;
 		
