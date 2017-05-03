@@ -55,7 +55,6 @@ grunt.initConfig({
 				"src/jquery/jquery-serialize-object.js",
 				"src/jquery/prettifyHTML.js",
 				"src/jquery/replaceTagName.js",
-				"src/jquery/jModel.js",
 				"src/jquery/comment.js",
 				"src/jquery/jData.js",
 				"src/jquery/xhrPool.js",
