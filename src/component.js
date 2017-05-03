@@ -211,6 +211,14 @@ jstack.Component = class {
 			case 'string':
 				componentClass = jstack.components[componentClass];
 			case 'function':
+				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
+					let lightComponent = componentClass;
+					componentClass = class extends jstack.Component{
+						domReady(){
+							lightComponent(this.element,this.options);
+						}
+					};
+				}
 				component = newInstance(componentClass);
 			break;
 			case 'object':
