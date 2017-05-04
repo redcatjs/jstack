@@ -452,6 +452,7 @@ jstack.Component = class {
 			else{
 				$el.html( html );
 			}
+			jstack.triggerLoaded($el);
 		}
 		else{
 			html = template;
@@ -4311,48 +4312,6 @@ jstack.dataBindingElementCompiler.push({
 })();
 
 (function(){
-	
-let mutationObserver = new MutationObserver(function(mutations){
-	jstack._onStack.each(function(callbacks,selector){
-		$(selector).not(':data("j:loaded")').each(function(){
-			let n = this;
-			let $n = $(this);
-			$n.data('j:loaded',true);
-			callbacks.forEach(function(callback){
-				callback.call(n);
-			});
-		});
-	});
-});
-
-mutationObserver.observe(document.body, {
-	subtree: true,
-	childList: true,
-	characterData: false,
-	attributes: false,
-	attributeOldValue: false,
-	characterDataOldValue: false,
-});
-
-jstack._onStack = {};
-
-jstack.onLoad = function(selector,callback){
-	if(typeof(jstack._onStack[selector])=='undefined'){
-		jstack._onStack[selector] = [];
-	}
-	jstack._onStack[selector].push(callback);
-};
-
-
-jstack.loader = function(selector,handler){
-	jstack.onLoad(selector,handler);
-	$(selector).each(handler);
-};
-
-
-})();
-
-(function(){
 
 let directives = {};
 
@@ -4366,11 +4325,35 @@ jstack.directive = function(name, className){
 
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
-	let controllerClass = directives[name];
-	return jstack.Component.factory(controllerClass, el, options, config);
+	let componentClass = directives[name];
+	return jstack.Component.factory(componentClass, el, options, config);
 };
 jstack.__directives = directives;
 
+
+})();
+
+(function(){
+
+let onLoadStack = {};
+
+jstack.onLoad = function(selector, callback){
+	if(!onLoadStack[selector]){
+		onLoadStack[selector] = [];
+	}
+	onLoadStack[selector].push(callback);
+};
+
+jstack.triggerLoaded = function(el){
+	onLoadStack.each(function(callbacks,selector){
+		$(selector,el).each(function(){
+			let self = this;
+			callbacks.forEach(function(callback){
+				callback.call(self);
+			});
+		});
+	});
+};
 
 })();
 
