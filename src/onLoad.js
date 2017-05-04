@@ -1,6 +1,6 @@
 (function(){
-	
-let mutationObserver = new MutationObserver(function(mutations){
+
+let loadMutationsPerform = function(){
 	jstack._onStack.each(function(callbacks,selector){
 		$(selector).not(':data("j:loaded")').each(function(){
 			let n = this;
@@ -11,6 +11,39 @@ let mutationObserver = new MutationObserver(function(mutations){
 			});
 		});
 	});
+};
+
+let updateDeferQueued = false;
+let updateDeferInProgress = false;
+let updateTimeout;
+let loadMutations = function(){
+	if(updateDeferQueued){
+		return;
+	}
+	if(updateDeferInProgress){
+		updateDeferQueued = true;
+	}
+	else{
+		updateDeferInProgress = true;
+		if(updateTimeout){
+			clearTimeout(updateTimeout);
+		}
+		updateTimeout = setTimeout(function(){
+			console.log('loadMutationsPerform');
+			loadMutationsPerform();
+			let updateDeferQueuedState = updateDeferQueued;
+			updateDeferInProgress = false;
+			updateDeferQueued = false;
+			if(updateDeferQueuedState){
+				loadMutations();
+			}
+		},500);
+	}
+
+};
+
+let mutationObserver = new MutationObserver(function(mutations){
+	loadMutations();
 });
 
 mutationObserver.observe(document.body, {
