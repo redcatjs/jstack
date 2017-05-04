@@ -189,12 +189,13 @@ jstack.Component = class {
 			});
 		}
 		jstack.triggerLoaded($el);
+
+		$.when.apply($,this.dataBinder.waiters).then(function(){
 		
-		this.dataBinder.launchModelObserver();
-		
-		$.when.apply($,this.dataBinder.waitFor).then(function(){
+			self.dataBinder.launchModelObserver();
 			self.domReady();
 			domReady.resolve();
+			
 		});
 		
 		return domReady;
