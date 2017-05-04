@@ -181,7 +181,6 @@ jstack.Component = class {
 			else{
 				$el.html( html );
 			}
-			jstack.triggerLoaded($el);
 		}
 		else{
 			html = template;
@@ -189,10 +188,11 @@ jstack.Component = class {
 				self.dataBinder.compile(this);
 			});
 		}
+		jstack.triggerLoaded($el);
 		
 		this.dataBinder.launchModelObserver();
 		
-		this.dataBinder.ready(function(){
+		$.when.apply($,this.dataBinder.waitFor).then(function(){
 			self.domReady();
 			domReady.resolve();
 		});

@@ -59,6 +59,8 @@ jstack.dataBindingElementCompiler.push({
 		
 		obj = jstack.runDirective(n, tagName, options, config);
 		
+		dataBinder.waitFor(obj.ready);
+		
 		return false;
 		
 	},

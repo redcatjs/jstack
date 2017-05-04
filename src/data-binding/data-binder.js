@@ -33,6 +33,11 @@ class dataBinder {
 		
 		this.watchers = new WeakMap();
 		
+		this.waiters = [];
+	}
+	
+	waitFor(promise){
+		this.waiters.push(promise);
 	}
 	
 	launchModelObserver(){
