@@ -272,36 +272,23 @@ jstack.getObserver = getObserver;
 (function(){
 jstack.Component = class {
 	constructor(element,options,config){
-		this.element = $(element);
+		let $el = $(element);
+		
+		this.element = $el;
 		this.options = options || {};
 		this.config = config || {};
-	}
-	build(){
 		
-		let self = this;
-		
-		let $el = this.element;
+		let data = config.data || $el.data('jModel') || {};
 		
 		let route = this.config.route || {};
 		let hash = route.hash;
 		
 		if(typeof(hash)=='undefined'){
-			let parent = $el.parent().closest('[j-controller]');
-			if(parent.length){
-				let controllerData = parent.data('jController');
-				if(controllerData){
-					hash = controllerData.hash;
-				}
-			}
-			if(typeof(hash)=='undefined'){
-				hash = window.location.hash.ltrim('#');
-			}
+			hash = window.location.hash.ltrim('#');
 		}
 		
-	
-		let data = this.config.data || $el.data('jModel') || {};
 		if($el[0].hasAttribute('j-view-inherit')){
-			let parent = $el.parent().closest('[j-controller]');
+			let parent = $el.parent().closest(':data(jModel)');
 			if(parent.length){
 				let inheritProp = $el[0].getAttribute('j-view-inherit');
 				let parentData = parent.data('jModel') || {};
@@ -313,11 +300,19 @@ jstack.Component = class {
 				}
 			}
 		}
-		
+		this.data = data;
 		this.hash = hash;
 		this.route = route;
-		this.data = data;
+		
+		$el.data('jModel',data);
 		$el.data('jController',this);
+		
+	}
+	build(){
+		
+		let self = this;
+		
+		let $el = this.element;
 		
 		this.setDataArguments = [];
 		
@@ -445,8 +440,6 @@ jstack.Component = class {
 		
 		let self = this;
 		let $el = this.element;
-		$el.data('jModel',this.data);
-		$el[0].setAttribute('j-controller','');
 		
 		let template = typeof(this.template)=='function'?this.template():this.template;
 		
@@ -1753,35 +1746,6 @@ $.fn.outerHTML = function(){
 $.fn.hasAttr = function(attr){
 	return this[0].hasAttribute(attr);
 };
-$.fn.jComponentReady = function(callback){
-	var self = this;
-	var defer = $.Deferred();
-	if(callback){
-		defer.then(function(){
-			self.each(function(){
-				callback.call(this);
-			});
-		});
-	}
-	var check = function(){
-		var ok = true;
-		self.each(function(){
-			if(!$(this).data('j.component.loaded')){
-				ok = false;
-				return false;
-			}
-		});
-		if(ok){
-			defer.resolve();
-		}
-	};
-	this.on('j:component:loaded',function(){
-		check();
-	});
-	check();	
-	return defer.promise();
-};
-
 /**
  * jQuery serializeObject
  * @copyright 2014, macek <paulmacek@gmail.com>
@@ -2021,48 +1985,6 @@ $.fn.replaceTagName = function(replaceWith) {
 	}
 	return $(tags);
 };
-(function(){
-
-let getController = function(p){
-	let controller;
-	
-	while(p){
-		if(p.hasAttribute&&p.hasAttribute('j-controller')){
-			controller = p;
-			break;
-		}
-		p = p.parentNode;
-	}
-	
-
-	if(!controller){
-		controller = document.body;
-		controller.setAttribute('j-controller','')
-		$(controller).data('jModel',{});
-	}
-
-	return controller;
-};
-
-$.fn.jModel = function(key,defaultValue){
-	if(this.length<=1){
-		var r = $(getController(this[0])).data('jModel');
-		if(typeof(key)!='undefined'){
-			return typeof(r[key])=='undefined'?defaultValue:r[key];
-		}
-		return r;
-	}
-	else{
-		var data = [];
-		this.each(function(){
-			data.push($(this).jModel(key,defaultValue));
-		});
-		return data;
-	}
-};
-
-})();
-
 $.fn.findComments = function(tag){
 	var arr = [];
 	this.each(function(){
