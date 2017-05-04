@@ -8,15 +8,6 @@ jstack.Component = class {
 		this.config = config || {};
 		
 		let data = config.data || $el.data('jModel') || {};
-		this.data = data;
-		$el.data('jModel',this.data);
-		$el.data('jController',this);
-	}
-	build(){
-		
-		let self = this;
-		
-		let $el = this.element;
 		
 		let route = this.config.route || {};
 		let hash = route.hash;
@@ -25,7 +16,6 @@ jstack.Component = class {
 			hash = window.location.hash.ltrim('#');
 		}
 		
-		let data = this.data;
 		if($el[0].hasAttribute('j-view-inherit')){
 			let parent = $el.parent().closest(':data(jModel)');
 			if(parent.length){
@@ -39,9 +29,19 @@ jstack.Component = class {
 				}
 			}
 		}
-		
+		this.data = data;
 		this.hash = hash;
 		this.route = route;
+		
+		$el.data('jModel',data);
+		$el.data('jController',this);
+		
+	}
+	build(){
+		
+		let self = this;
+		
+		let $el = this.element;
 		
 		this.setDataArguments = [];
 		
