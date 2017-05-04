@@ -89,9 +89,9 @@ grunt.initConfig({
 				"src/data-binding/input.js",
 				"src/data-binding/text.js",
 				"src/data-binding/directive.js",
-				
-				"src/onLoad.js",
+
 				"src/directive.js",
+				"src/onLoad.js",
 				"src/ajax.js",
 				"src/load.js",
 				"src/app.js",

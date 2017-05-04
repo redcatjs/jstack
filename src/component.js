@@ -181,6 +181,7 @@ jstack.Component = class {
 			else{
 				$el.html( html );
 			}
+			jstack.triggerLoaded($el);
 		}
 		else{
 			html = template;
