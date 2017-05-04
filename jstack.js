@@ -452,7 +452,6 @@ jstack.Component = class {
 			else{
 				$el.html( html );
 			}
-			jstack.triggerLoaded($el);
 		}
 		else{
 			html = template;
@@ -460,12 +459,14 @@ jstack.Component = class {
 				self.dataBinder.compile(this);
 			});
 		}
+		jstack.triggerLoaded($el);
+
+		$.when.apply($,this.dataBinder.waiters).then(function(){
 		
-		this.dataBinder.launchModelObserver();
-		
-		this.dataBinder.ready(function(){
+			self.dataBinder.launchModelObserver();
 			self.domReady();
 			domReady.resolve();
+			
 		});
 		
 		return domReady;
@@ -2677,6 +2678,11 @@ class dataBinder {
 		
 		this.watchers = new WeakMap();
 		
+		this.waiters = [];
+	}
+	
+	waitFor(promise){
+		this.waiters.push(promise);
 	}
 	
 	launchModelObserver(){
@@ -4303,6 +4309,8 @@ jstack.dataBindingElementCompiler.push({
 		};
 		
 		obj = jstack.runDirective(n, tagName, options, config);
+		
+		dataBinder.waitFor(obj.ready);
 		
 		return false;
 		
