@@ -12,8 +12,8 @@ jstack.directive = function(name, className){
 
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
-	let controllerClass = directives[name];
-	return jstack.Component.factory(controllerClass, el, options, config);
+	let componentClass = directives[name];
+	return jstack.Component.factory(componentClass, el, options, config);
 };
 jstack.__directives = directives;
 
