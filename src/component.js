@@ -213,9 +213,7 @@ jstack.Component = class {
 		let component;
 		switch(typeof(componentClass)){
 			case 'string':
-				//console.log(componentClass);
 				let componentUrl = jstack.config.controllersPath+componentClass+'.js';
-				//console.log($js.modules);
 				componentClass = $js.modules[componentUrl];
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
