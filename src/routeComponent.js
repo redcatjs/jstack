@@ -3,8 +3,7 @@ jstack.routeComponent = function(path,component){
 		let container = $('[j-app]');
 		container.empty();
 		return jstack.load($('<div/>').appendTo(container),{
-			component:typeof(component)=='function'?component:null,
-			componentUrl:typeof(component)=='string'?component:null,
+			component:component,
 			hash:hash,
 		});
 	});
