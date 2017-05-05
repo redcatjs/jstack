@@ -36,12 +36,8 @@ jstack.Component = class {
 		$el.data('jModel',data);
 		$el.data('jController',this);
 		
-	}
-	build(){
-		
+		//build
 		let self = this;
-		
-		let $el = this.element;
 		
 		this.setDataArguments = [];
 		
@@ -220,7 +216,6 @@ jstack.Component = class {
 				$.extend(component, componentClass);
 			break;
 		}
-		component.build();
 		
 		return component;
 	}
