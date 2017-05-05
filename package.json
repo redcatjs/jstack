@@ -3,7 +3,9 @@
   "version": "2.6.0",
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
-  "dependencies": {},
+  "dependencies": {
+    "requirejs": "^2.3.3"
+  },
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",

@@ -2,7 +2,7 @@
 	"name": "jstack",
 	"main": "jstack.js",
 	"dependencies": {
-		"js": "latest",
+		"requirejs": "latest",
 		"jquery": "latest"
 	},
 	"homepage": "https://github.com/redcatjs/jstack",

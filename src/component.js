@@ -55,7 +55,7 @@ jstack.Component = class {
 		
 		if(dependencies&&dependencies.length){
 			let dependenciesJsReady = $.Deferred();
-			$js(dependencies,function(){
+			require(dependencies, function(){
 				dependenciesJsReady.resolve();
 			});
 			dependenciesStack.push(dependenciesJsReady);
@@ -214,7 +214,7 @@ jstack.Component = class {
 		switch(typeof(componentClass)){
 			case 'string':
 				let componentUrl = jstack.config.controllersPath+componentClass+'.js';
-				componentClass = $js.modules[componentUrl];
+				componentClass = require(componentUrl);
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
 					let lightComponent = componentClass;

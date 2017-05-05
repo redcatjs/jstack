@@ -14,17 +14,10 @@ jstack.load = function(target,config){
 	
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
-		let componentUrl = jstack.config.controllersPath+config.component+'.js';
-		
-		
-		if($js.modules[componentUrl]){
-			jsReady.resolve( $js.modules[componentUrl] );
-		}
-		else{
-			$js( jstack.config.controllersPath+config.component, function(){
-				jsReady.resolve( $js.modules[componentUrl] );
-			});
-		}
+		let componentUrl = jstack.config.controllersPath+config.component;
+		require( [ componentUrl ], function( module ){
+			jsReady.resolve( module );
+		});
 	}
 	else{
 		jsReady.resolve( config.component );
