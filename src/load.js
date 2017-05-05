@@ -14,14 +14,16 @@ jstack.load = function(target,config){
 	
 	const jsReady = $.Deferred();
 	if(config.componentUrl){
-		const resolveComponentUrl = function(){
-			jsReady.resolve( jstack.components[config.componentUrl] );
-		};
-		if(jstack.components[config.componentUrl]){
-			resolveComponentUrl();
+		let componentUrl = jstack.config.controllersPath+config.componentUrl;
+		let module = $js.module(componentUrl);
+		if(module){
+			jsReady.resolve( module );
 		}
 		else{
-			$js( jstack.config.controllersPath+config.componentUrl, resolveComponentUrl);
+			$js( jstack.config.controllersPath+config.componentUrl, function(){
+				let module = $js.module(componentUrl);
+				jsReady.resolve( module );
+			});
 		}
 	}
 	else if (config.component){

@@ -4,7 +4,6 @@ jstackClass = function(){
 		controllersPath: 'app/',
 		debug: $js.dev,
 	};
-	this.components = {};
 };
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
