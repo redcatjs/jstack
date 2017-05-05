@@ -50,7 +50,7 @@ jstack.Component = class {
 		
 		let dependenciesStack = [];
 		
-		let dependenciesData = typeof(this.dependenciesData)=='function'?this.dependenciesData():this.dependenciesData;
+		let getData = typeof(this.getData)=='function'?this.getData():this.getData;
 		
 		if(this.templateUrl){
 			let templateUrl = this.templateUrl;
@@ -68,11 +68,11 @@ jstack.Component = class {
 		$.when.apply($, dependenciesStack).then(function(){
 			
 			
-			let dependenciesDataReady = [];
-			if(dependenciesData&&dependenciesData.length){
-				let dependenciesDataRun = [];
-				for(let i = 0, l = dependenciesData.length; i < l; i++){
-					let dependencyData = dependenciesData[i];
+			let getDataReady = [];
+			if(getData&&getData.length){
+				let getDataRun = [];
+				for(let i = 0, l = getData.length; i < l; i++){
+					let dependencyData = getData[i];
 					if(typeof(dependencyData)=='function'){
 						dependencyData = dependencyData.call(this);
 					}
@@ -96,17 +96,17 @@ jstack.Component = class {
 					}
 						
 
-					dependenciesDataRun.push(dependencyData);
+					getDataRun.push(dependencyData);
 				}
-				let resolveDeferred = $.when.apply($, dependenciesDataRun).then(function(){
+				let resolveDeferred = $.when.apply($, getDataRun).then(function(){
 					for(let i = 0, l = arguments.length; i < l; i++){
 						self.setDataArguments.push(arguments[i]);
 					}
 				});
-				dependenciesDataReady.push(resolveDeferred);
+				getDataReady.push(resolveDeferred);
 			}
 			
-			$.when.apply($, dependenciesDataReady).then(function(){
+			$.when.apply($, getDataReady).then(function(){
 				self.setDataCall();
 				dependenciesReady.resolve();
 			});
@@ -125,7 +125,7 @@ jstack.Component = class {
 	}
 	domReady(){}
 	setData(){}
-	dependenciesData(){}
+	getData(){}
 	
 	template(){
 		return this.templateUrlLoaded || this.element.contents();
