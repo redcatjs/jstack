@@ -4,7 +4,6 @@ jstackClass = function(){
 		controllersPath: 'app/',
 		debug: $js.dev,
 	};
-	this.components = {};
 };
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
@@ -484,7 +483,8 @@ jstack.Component = class {
 		let component;
 		switch(typeof(componentClass)){
 			case 'string':
-				componentClass = jstack.components[componentClass];
+				let componentUrl = jstack.config.controllersPath+config.componentClass;
+				componentClass = $js.module(componentUrl);
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
 					let lightComponent = componentClass;
@@ -2598,10 +2598,11 @@ const loadRoute = function($el,route){
 		
 	//});
 	
+	let component = route.component;
 	jstack.route(route.path, function(path, params, hash){
-		
 		return jstack.load( $('<div/>').appendTo($el), {
-			component: route.component,
+			component:typeof(component)=='function'?component:null,
+			componentUrl:typeof(component)=='string'?component:null,
 			route:{
 				path: jstack.url.getPath(path),
 				hash: hash,
@@ -4514,14 +4515,16 @@ jstack.load = function(target,config){
 	
 	const jsReady = $.Deferred();
 	if(config.componentUrl){
-		const resolveComponentUrl = function(){
-			jsReady.resolve( jstack.components[config.componentUrl] );
-		};
-		if(jstack.components[config.componentUrl]){
-			resolveComponentUrl();
+		let componentUrl = jstack.config.controllersPath+config.componentUrl;
+		let module = $js.module(componentUrl);
+		if(module){
+			jsReady.resolve( module );
 		}
 		else{
-			$js( jstack.config.controllersPath+config.componentUrl, resolveComponentUrl);
+			$js( jstack.config.controllersPath+config.componentUrl, function(){
+				let module = $js.module(componentUrl);
+				jsReady.resolve( module );
+			});
 		}
 	}
 	else if (config.component){
