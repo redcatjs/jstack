@@ -50,16 +50,8 @@ jstack.Component = class {
 		
 		let dependenciesStack = [];
 		
-		let dependencies = typeof(this.dependencies)=='function'?this.dependencies():this.dependencies;
 		let dependenciesData = typeof(this.dependenciesData)=='function'?this.dependenciesData():this.dependenciesData;
 		
-		if(dependencies&&dependencies.length){
-			let dependenciesJsReady = $.Deferred();
-			require(dependencies, function(){
-				dependenciesJsReady.resolve();
-			});
-			dependenciesStack.push(dependenciesJsReady);
-		}
 		if(this.templateUrl){
 			let templateUrl = this.templateUrl;
 			if(typeof(templateUrl)=='function'){
@@ -133,9 +125,6 @@ jstack.Component = class {
 	}
 	domReady(){}
 	setData(){}
-	dependencies(){
-		return [];
-	}
 	dependenciesData(){}
 	
 	template(){
