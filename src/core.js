@@ -2,7 +2,7 @@ jstackClass = function(){
 	this.config = {
 		templatesPath: 'app/',
 		controllersPath: 'app/',
-		debug: APP_DEV_MODE,
+		debug: window.APP_DEV_MODE || false,
 	};
 };
 jstackClass.prototype.extend = function(c,parent){
