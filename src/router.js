@@ -4,10 +4,11 @@ const loadRoute = function($el,route){
 		
 	//});
 	
+	let component = route.component;
 	jstack.route(route.path, function(path, params, hash){
-		
 		return jstack.load( $('<div/>').appendTo($el), {
-			component: route.component,
+			component:typeof(component)=='function'?component:null,
+			componentUrl:typeof(component)=='string'?component:null,
 			route:{
 				path: jstack.url.getPath(path),
 				hash: hash,
