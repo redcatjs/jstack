@@ -15,16 +15,18 @@ jstack.load = function(target,config){
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component+'.js';
+		
+		
 		if($js.modules[componentUrl]){
 			jsReady.resolve( $js.modules[componentUrl] );
 		}
 		else{
-			$js( componentUrl, function(){
+			$js( jstack.config.controllersPath+config.component, function(){
 				jsReady.resolve( $js.modules[componentUrl] );
 			});
 		}
 	}
-	else if (config.component){
+	else{
 		jsReady.resolve( config.component );
 	}
 	

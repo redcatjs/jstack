@@ -2601,8 +2601,7 @@ const loadRoute = function($el,route){
 	let component = route.component;
 	jstack.route(route.path, function(path, params, hash){
 		return jstack.load( $('<div/>').appendTo($el), {
-			component:typeof(component)=='function'?component:null,
-			componentUrl:typeof(component)=='string'?component:null,
+			component:component,
 			route:{
 				path: jstack.url.getPath(path),
 				hash: hash,
@@ -4515,16 +4514,18 @@ jstack.load = function(target,config){
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component+'.js';
+		
+		
 		if($js.modules[componentUrl]){
 			jsReady.resolve( $js.modules[componentUrl] );
 		}
 		else{
-			$js( componentUrl, function(){
+			$js( jstack.config.controllersPath+config.component, function(){
 				jsReady.resolve( $js.modules[componentUrl] );
 			});
 		}
 	}
-	else if (config.component){
+	else{
 		jsReady.resolve( config.component );
 	}
 	
