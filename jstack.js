@@ -483,8 +483,8 @@ jstack.Component = class {
 		let component;
 		switch(typeof(componentClass)){
 			case 'string':
-				let componentUrl = jstack.config.controllersPath+config.componentClass;
-				componentClass = $js.module(componentUrl);
+				let componentUrl = jstack.config.controllersPath+componentClass+'.js';
+				componentClass = $js.modules[componentUrl];
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
 					let lightComponent = componentClass;
@@ -2637,8 +2637,7 @@ jstack.routeComponent = function(path,component){
 		let container = $('[j-app]');
 		container.empty();
 		return jstack.load($('<div/>').appendTo(container),{
-			component:typeof(component)=='function'?component:null,
-			componentUrl:typeof(component)=='string'?component:null,
+			component:component,
 			hash:hash,
 		});
 	});
@@ -4514,16 +4513,14 @@ let getViewReady = function(el){
 jstack.load = function(target,config){
 	
 	const jsReady = $.Deferred();
-	if(config.componentUrl){
-		let componentUrl = jstack.config.controllersPath+config.componentUrl;
-		let module = $js.module(componentUrl);
-		if(module){
-			jsReady.resolve( module );
+	if(typeof(config.component)=='string'){
+		let componentUrl = jstack.config.controllersPath+config.component+'.js';
+		if($js.modules[componentUrl]){
+			jsReady.resolve( $js.modules[componentUrl] );
 		}
 		else{
-			$js( jstack.config.controllersPath+config.componentUrl, function(){
-				let module = $js.module(componentUrl);
-				jsReady.resolve( module );
+			$js( componentUrl, function(){
+				jsReady.resolve( $js.modules[componentUrl] );
 			});
 		}
 	}
