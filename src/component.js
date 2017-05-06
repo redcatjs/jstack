@@ -1,4 +1,3 @@
-(function(){
 jstack.Component = class {
 	constructor(element,options,config){
 		let $el = $(element);
@@ -221,4 +220,3 @@ jstack.Component = class {
 	}
 	
 };
-})();

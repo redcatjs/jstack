@@ -1,5 +1,3 @@
-(function(){
-
 class modelObserver{
 	constructor(o,dataBinder){
 		this.o = o;
@@ -258,5 +256,3 @@ let modelObservable = function(obj,dataBinder){
 };
 
 jstack.modelObservable = modelObservable;
-
-})();

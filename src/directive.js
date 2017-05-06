@@ -1,21 +1,16 @@
-(function(){
-
-let directives = {};
+var jstackDirectives = {};
 
 jstack.directive = function(name, className){
 	name = jstack.snakeCase(name);
 	if(typeof(className)!=='undefined'){
-		directives[name] = className;
+		jstackDirectives[name] = className;
 	}
-	return directives[name];
+	return jstackDirectives[name];
 };
 
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
-	let componentClass = directives[name];
+	let componentClass = jstackDirectives[name];
 	return jstack.Component.factory(componentClass, el, options, config);
 };
-jstack.__directives = directives;
-
-
-})();
+jstack.__directives = jstackDirectives;

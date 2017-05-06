@@ -1,7 +1,4 @@
-(function(){
-
-
-let walkTheDOM = function(node, func, nocache){
+var walkTheDOM = function(node, func, nocache){
 	if(func(node)===false){
 		return false;
 	}
@@ -24,5 +21,3 @@ let walkTheDOM = function(node, func, nocache){
 };
 
 jstack.walkTheDOM = walkTheDOM;
-
-})();

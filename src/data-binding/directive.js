@@ -1,5 +1,3 @@
-(function(){
-
 jstack.dataBindingElementCompiler.push({
 	match(n){
 		const tagName = n.hasAttribute('is')?n.getAttribute('is'):n.tagName.toLowerCase();
@@ -65,5 +63,3 @@ jstack.dataBindingElementCompiler.push({
 		
 	},
 });
-
-})();

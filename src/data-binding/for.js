@@ -1,8 +1,6 @@
-(function(){
-
-const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
 jstack.dataBindingElementCompiler.push({
 	match(n){
@@ -20,7 +18,7 @@ jstack.dataBindingElementCompiler.push({
 		attrFor = attrFor.trim();
 		let index, key, value, myvar;
 
-		let m = reg1.exec(attrFor);
+		let m = REGEX_FOR_1.exec(attrFor);
 		if (m != null){
 			index = m[2].trim();
 			key = m[4].trim();
@@ -28,14 +26,14 @@ jstack.dataBindingElementCompiler.push({
 			myvar = m[11].trim();
 		}
 		else{
-			let m = reg2.exec(attrFor);
+			let m = REGEX_FOR_2.exec(attrFor);
 			if (m != null){
 				key = m[2].trim();
 				value = m[4];
 				myvar = m[9].trim();
 			}
 			else{
-				let m = reg3.exec(attrFor);
+				let m = REGEX_FOR_3.exec(attrFor);
 				if (m != null){
 					value = m[1];
 					myvar = m[5].trim();
@@ -152,5 +150,3 @@ jstack.dataBindingElementCompiler.push({
 		
 	},
 });
-
-})();

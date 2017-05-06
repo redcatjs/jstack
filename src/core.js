@@ -1,4 +1,4 @@
-jstackClass = function(){
+var jstackClass = function(){
 	this.config = {
 		templatesPath: 'app/',
 		controllersPath: 'app/',
@@ -8,4 +8,4 @@ jstackClass = function(){
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
-jstack = new jstackClass();
+var jstack = new jstackClass();

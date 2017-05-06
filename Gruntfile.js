@@ -6,7 +6,9 @@ grunt.initConfig({
 
 	concat: {
 		dist: {
-			src: [
+			src: [				
+				"src/wrap-header.js",
+				
 				"src/core.js",
 				"src/observe.js",
 				"src/component.js",
@@ -95,6 +97,8 @@ grunt.initConfig({
 				"src/ajax.js",
 				"src/load.js",
 				"src/app.js",
+				
+				"src/wrap-footer.js",
 			],
 			dest: 'jstack.js'
 		}

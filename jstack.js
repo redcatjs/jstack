@@ -1,4 +1,6 @@
-jstackClass = function(){
+define([],function(){
+
+var jstackClass = function(){
 	this.config = {
 		templatesPath: 'app/',
 		controllersPath: 'app/',
@@ -8,7 +10,7 @@ jstackClass = function(){
 jstackClass.prototype.extend = function(c,parent){
 	c.prototype = Object.create(parent.prototype);
 };
-jstack = new jstackClass();
+var jstack = new jstackClass();
 
 (function(){
 
@@ -268,7 +270,6 @@ jstack.getObserver = getObserver;
 
 })();
 
-(function(){
 jstack.Component = class {
 	constructor(element,options,config){
 		let $el = $(element);
@@ -491,7 +492,6 @@ jstack.Component = class {
 	}
 	
 };
-})();
 
 jstack.url = (function(){
 	var Url = function(){};
@@ -1171,10 +1171,7 @@ jstack.traverseDom = function(node, func, asc, wholeRest){
 	return result;
 };
 
-(function(){
-
-
-let walkTheDOM = function(node, func, nocache){
+var walkTheDOM = function(node, func, nocache){
 	if(func(node)===false){
 		return false;
 	}
@@ -1197,8 +1194,6 @@ let walkTheDOM = function(node, func, nocache){
 };
 
 jstack.walkTheDOM = walkTheDOM;
-
-})();
 
 jstack.copyAttributes = function(from,to){
 	for(let i = 0, attrs = from.attributes, l = attrs.length; i < l; i++) {
@@ -2626,7 +2621,9 @@ jstack.routeComponent = function(path,component){
 	});
 };
 
-(function(){
+const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
+const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
+
 
 jstack.templates = {};
 jstack.registerTemplate = function(id, html){
@@ -3094,10 +3091,6 @@ $(document.body).on('reset','form',function(){
 	$(this).populateReset();
 });
 
-})();
-
-(function(){
-
 class modelObserver{
 	constructor(o,dataBinder){
 		this.o = o;
@@ -3357,13 +3350,9 @@ let modelObservable = function(obj,dataBinder){
 
 jstack.modelObservable = modelObservable;
 
-})();
-
-(function(){
-
-const reg1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-const reg2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
-const reg3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_1 = new RegExp('(\\()(.*)(,)(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_2 = new RegExp('(\\()(.*)(,)(.*)(\\))(\\s+)(in)(\\s+)(.*)',["i"]);
+const REGEX_FOR_3 = new RegExp('(.*)(\\s+)(in)(\\s+)(.*)',["i"]);
 	
 jstack.dataBindingElementCompiler.push({
 	match(n){
@@ -3381,7 +3370,7 @@ jstack.dataBindingElementCompiler.push({
 		attrFor = attrFor.trim();
 		let index, key, value, myvar;
 
-		let m = reg1.exec(attrFor);
+		let m = REGEX_FOR_1.exec(attrFor);
 		if (m != null){
 			index = m[2].trim();
 			key = m[4].trim();
@@ -3389,14 +3378,14 @@ jstack.dataBindingElementCompiler.push({
 			myvar = m[11].trim();
 		}
 		else{
-			let m = reg2.exec(attrFor);
+			let m = REGEX_FOR_2.exec(attrFor);
 			if (m != null){
 				key = m[2].trim();
 				value = m[4];
 				myvar = m[9].trim();
 			}
 			else{
-				let m = reg3.exec(attrFor);
+				let m = REGEX_FOR_3.exec(attrFor);
 				if (m != null){
 					value = m[1];
 					myvar = m[5].trim();
@@ -3513,8 +3502,6 @@ jstack.dataBindingElementCompiler.push({
 		
 	},
 });
-
-})();
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
@@ -4063,11 +4050,6 @@ jstack.dataBindingElementCompiler.push({
 	},
 });
 
-(function(){
-
-const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
-const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
-
 jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&inputPseudoNodeNamesExtended[n.tagName.toLowerCase()]&&n.type!='file';
@@ -4129,9 +4111,6 @@ jstack.dataBindingElementCompiler.push({
 	},
 });
 
-
-})();
-
 jstack.dataBindingElementCompiler.push({
 	match(n){
 		return n.hasAttribute('name')&&n.tagName.toLowerCase()=='input'&&n.type=='file';
@@ -4142,11 +4121,6 @@ jstack.dataBindingElementCompiler.push({
 		});
 	}
 });
-
-(function(){
-
-const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
-const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
@@ -4171,9 +4145,6 @@ jstack.dataBindingElementCompiler.push({
 		render();
 	},
 });
-
-
-})();
 
 jstack.dataBindingTextCompiler.push({
 	match: function(n){
@@ -4231,8 +4202,6 @@ jstack.dataBindingTextCompiler.push({
 		$el.remove();
 	},
 });
-
-(function(){
 
 jstack.dataBindingElementCompiler.push({
 	match(n){
@@ -4300,29 +4269,22 @@ jstack.dataBindingElementCompiler.push({
 	},
 });
 
-})();
-
-(function(){
-
-let directives = {};
+var jstackDirectives = {};
 
 jstack.directive = function(name, className){
 	name = jstack.snakeCase(name);
 	if(typeof(className)!=='undefined'){
-		directives[name] = className;
+		jstackDirectives[name] = className;
 	}
-	return directives[name];
+	return jstackDirectives[name];
 };
 
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
-	let componentClass = directives[name];
+	let componentClass = jstackDirectives[name];
 	return jstack.Component.factory(componentClass, el, options, config);
 };
-jstack.__directives = directives;
-
-
-})();
+jstack.__directives = jstackDirectives;
 
 (function(){
 
@@ -4562,3 +4524,7 @@ jstack.viewReady = function(el){
 	}
 	
 }());
+
+	window.jstack = jstack;
+	return jstack;
+});
