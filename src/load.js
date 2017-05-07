@@ -12,6 +12,12 @@ let getViewReady = function(el){
 
 jstack.load = function(target,config,options){
 	
+	if(typeof(config)=='string'){
+		config = {
+			component: config,
+		};
+	}
+	
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component;
