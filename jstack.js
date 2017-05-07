@@ -4455,7 +4455,13 @@ let getViewReady = function(el){
 	return ready;
 };
 
-jstack.load = function(target,config){
+jstack.load = function(target,config,options){
+	
+	if(typeof(config)=='string'){
+		config = {
+			component: config,
+		};
+	}
 	
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
@@ -4477,7 +4483,7 @@ jstack.load = function(target,config){
 			$(config.clear).contents().not(target).remove();
 		}
 		
-		let component = jstack.Component.factory(componentClass, target, {}, {
+		let component = jstack.Component.factory(componentClass, target, (options || {}), {
 			route : config.route,
 		});
 		component.ready.then(function(){
