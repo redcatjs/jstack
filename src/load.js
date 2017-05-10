@@ -21,7 +21,7 @@ jstack.load = function(target,config,options){
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component;
-		require( [ componentUrl ], function( module ){
+		requirejs( [ componentUrl ], function( module ){
 			jsReady.resolve( module );
 		});
 	}

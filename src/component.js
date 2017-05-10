@@ -198,7 +198,7 @@ jstack.Component = class {
 		switch(typeof(componentClass)){
 			case 'string':
 				let componentUrl = jstack.config.controllersPath+componentClass+'.js';
-				componentClass = require(componentUrl);
+				componentClass = requirejs(componentUrl);
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
 					let lightComponent = componentClass;
