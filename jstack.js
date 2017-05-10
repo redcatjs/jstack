@@ -480,7 +480,7 @@ jstack.Component = class {
 		switch(typeof(componentClass)){
 			case 'string':
 				let componentUrl = jstack.config.controllersPath+componentClass+'.js';
-				componentClass = require(componentUrl);
+				componentClass = requirejs(componentUrl);
 			case 'function':
 				if(!(componentClass.prototype instanceof jstack.Component)){ //light component syntax
 					let lightComponent = componentClass;
@@ -4454,7 +4454,7 @@ jstack.load = function(target,config,options){
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component;
-		require( [ componentUrl ], function( module ){
+		requirejs( [ componentUrl ], function( module ){
 			jsReady.resolve( module );
 		});
 	}
