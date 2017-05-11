@@ -21,9 +21,18 @@ jstack.load = function(target,config,options){
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
 		let componentUrl = jstack.config.controllersPath+config.component;
-		requirejs( [ componentUrl ], function( module ){
-			jsReady.resolve( module );
-		});
+		if(jstack.componentRegistry[config.component]){
+			
+			jsReady.resolve( jstack.componentRegistry[config.component] );
+			
+		}
+		else{
+		
+			requirejs( [ componentUrl ], function( module ){
+				jsReady.resolve( module );
+			});
+			
+		}
 	}
 	else{
 		jsReady.resolve( config.component );
