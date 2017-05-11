@@ -1,6 +1,6 @@
 {
   "name": "@redcatjs/jstack",
-  "version": "2.6.0",
+  "version": "12.5.0",
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
   "dependencies": {
