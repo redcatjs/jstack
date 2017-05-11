@@ -5,6 +5,8 @@ const loadRoute = function($el,route){
 	//});
 	
 	let component = route.component;
+	jstack.componentRegistry[route.path] = component;
+	
 	jstack.route(route.path, function(path, params, hash){
 		return jstack.load( $('<div/>').appendTo($el), {
 			component:component,
@@ -24,9 +26,19 @@ const Router = function(config){
 	let $el = $(config.el);
 	let routes  = config.routes;
 	
-	routes.each(function(route){
-		loadRoute($el,route);
-	});
+	if(route instanceof Array){
+		routes.forEach(function(route){
+			loadRoute($el,route);
+		});
+	}
+	else{
+		routes.each(function(component,path){
+			loadRoute($el,{
+				path:path,
+				component:component,
+			});
+		});
+	}
 	
 	this.run = function(){
 		jstack.route.start();
