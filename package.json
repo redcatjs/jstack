@@ -4,7 +4,7 @@
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
   "dependencies": {
-    "requirejs": "^2.3.3"
+    
   },
   "devDependencies": {
     "grunt": "^1.0.1",
