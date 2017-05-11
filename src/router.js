@@ -26,7 +26,7 @@ const Router = function(config){
 	let $el = $(config.el);
 	let routes  = config.routes;
 	
-	if(route instanceof Array){
+	if(routes instanceof Array){
 		routes.forEach(function(route){
 			loadRoute($el,route);
 		});

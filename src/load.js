@@ -10,6 +10,8 @@ let getViewReady = function(el){
 	return ready;
 };
 
+jstack.componentRegistry = {};
+
 jstack.load = function(target,config,options){
 	
 	if(typeof(config)=='string'){

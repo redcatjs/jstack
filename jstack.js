@@ -15,7 +15,6 @@ var jstackClass = function(){
 		templatesPath: 'app/',
 		controllersPath: 'app/',
 		debug: window.APP_DEV_MODE || false,
-		componentRegistry: {},
 	};
 };
 jstackClass.prototype.extend = function(c,parent){
@@ -2588,7 +2587,7 @@ const Router = function(config){
 	let $el = $(config.el);
 	let routes  = config.routes;
 	
-	if(route instanceof Array){
+	if(routes instanceof Array){
 		routes.forEach(function(route){
 			loadRoute($el,route);
 		});
@@ -4455,6 +4454,8 @@ let getViewReady = function(el){
 	}
 	return ready;
 };
+
+jstack.componentRegistry = {};
 
 jstack.load = function(target,config,options){
 	

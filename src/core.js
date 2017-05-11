@@ -3,7 +3,6 @@ var jstackClass = function(){
 		templatesPath: 'app/',
 		controllersPath: 'app/',
 		debug: window.APP_DEV_MODE || false,
-		componentRegistry: {},
 	};
 };
 jstackClass.prototype.extend = function(c,parent){
