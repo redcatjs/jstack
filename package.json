@@ -1,11 +1,9 @@
 {
   "name": "@redcatjs/jstack",
-  "version": "12.5.2",
+  "version": "13.0.0",
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
-  "dependencies": {
-    
-  },
+  "dependencies": {},
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
