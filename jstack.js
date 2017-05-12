@@ -420,7 +420,7 @@ jstack.Component = class {
 	}
 	
 	startDataObserver(){		
-		this.dataBinder = new jstack.dataBinder(this.data,this.element[0],this);	
+		this.dataBinder = new jstack.dataBinder(this.data,this.element[0],this,this.config.noscope);
 		this.data = this.dataBinder.model;
 		this.dataBinder.eventListener();
 	}
@@ -2632,19 +2632,22 @@ jstack.registerTemplate = function(id, html){
 
 class dataBinder {
 	
-	constructor(model,view,controller){
-		
+	constructor(model,view,controller,noscope){
+		this.build(model,view,controller,noscope);
+	}
+	
+	build(model,view,controller,noscope){
 		let self = this;
 		
-		model = model.observable({
-			factoryProxy: function(obj){
-				jstack.modelObservable(obj,self);
-				return obj;
-			},
-		});
-		
-		//this.launchModelObserver();
-		
+		this.noscope = noscope;
+		if(!noscope){
+			model = model.observable({
+				factoryProxy: function(obj){
+					jstack.modelObservable(obj,self);
+					return obj;
+				},
+			});	
+		}
 		
 		this.model = model;
 		this.view = view;
@@ -2653,8 +2656,6 @@ class dataBinder {
 		this.updateDeferQueued = false;
 		this.updateDeferInProgress = false;
 		this.updateDeferStateObserver = $.Deferred();
-		
-		this.noChildListNodeNames = {area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, menuitem:1, meta:1, param:1, source:1, track:1, wbr:1, script:1, style:1, textarea:1, title:1, math:1, svg:1, canvas:1};
 		
 		this.watchers = new WeakMap();
 		
@@ -2666,11 +2667,13 @@ class dataBinder {
 	}
 	
 	launchModelObserver(){
-		let self = this;
-		this.model.observe(function(change){
-			//console.log('j:model:update',change);
-			self.update();
-		},'jstack.model',true);
+		if(!this.noscope){
+			let self = this;
+			this.model.observe(function(change){
+				//console.log('j:model:update',change);
+				self.update();
+			},'jstack.model',true);
+		}
 	}
 	
 	ready(callback){
@@ -4282,6 +4285,7 @@ jstack.directive = function(name, className){
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
 	let componentClass = jstackDirectives[name];
+	config.noscope = true;
 	return jstack.Component.factory(componentClass, el, options, config);
 };
 jstack.__directives = jstackDirectives;
