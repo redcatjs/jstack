@@ -11,6 +11,7 @@ jstack.directive = function(name, className){
 jstack.runDirective = function(el,name,options,config){
 	name = jstack.snakeCase(name);
 	let componentClass = jstackDirectives[name];
+	config.noscope = true;
 	return jstack.Component.factory(componentClass, el, options, config);
 };
 jstack.__directives = jstackDirectives;

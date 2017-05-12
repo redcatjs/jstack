@@ -138,7 +138,7 @@ jstack.Component = class {
 	}
 	
 	startDataObserver(){		
-		this.dataBinder = new jstack.dataBinder(this.data,this.element[0],this);	
+		this.dataBinder = new jstack.dataBinder(this.data,this.element[0],this,this.config.noscope);
 		this.data = this.dataBinder.model;
 		this.dataBinder.eventListener();
 	}
