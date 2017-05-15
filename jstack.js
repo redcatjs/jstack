@@ -4474,18 +4474,25 @@ jstack.load = function(target,config,options){
 	
 	const jsReady = $.Deferred();
 	if(typeof(config.component)=='string'){
-		let componentUrl = jstack.config.controllersPath+config.component;
-		if(jstack.componentRegistry[config.component]){
-			
-			jsReady.resolve( jstack.componentRegistry[config.component] );
-			
+		let componentPath = config.component;
+		let componentUrl = jstack.config.controllersPath+componentPath;
+		if(jstack.componentRegistry[componentPath]){
+			jsReady.resolve( jstack.componentRegistry[componentPath] );
 		}
-		else{
-		
+		else if(typeof requirejs == 'function'){
 			requirejs( [ componentUrl ], function( module ){
 				jsReady.resolve( module );
 			});
-			
+		}
+		else{
+			$.getScript( componentUrl+'.js', function(){
+				if(jstack.componentRegistry[componentPath]){
+					jsReady.resolve( jstack.componentRegistry[componentPath] );
+				}
+				else{
+					throw new Error('missing component '+componentPath);
+				}
+			});
 		}
 	}
 	else{
