@@ -13,7 +13,7 @@ jstack.dataBindingElementCompiler.push({
 		
 		let compile = function(){
 			$(n).empty();
-			let c = jstack.templates[include].clone().contents();
+			let c = $('<html><rootnode>'+jstack.templates[include]+'</rootnode></html>').clone().contents();
 			c.appendTo(n);
 			dataBinder.compileDom(n,scope);			
 		};
@@ -22,8 +22,7 @@ jstack.dataBindingElementCompiler.push({
 			compile();
 		}
 		else{
-			$.ajax(include).then(function(html){
-				jstack.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+			jstack.getTemplate(include).then(function(html){
 				compile();
 			});
 		}

@@ -64,7 +64,7 @@ grunt.initConfig({
 				"src/jquery/selectRange.js",
 				"src/jquery/serializeForm.js",
 				
-				"src/template/getTemplate.js",
+				"src/templates.js",
 				
 				"src/route.js",
 				"src/router.js",

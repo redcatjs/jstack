@@ -2175,13 +2175,21 @@ $.fn.serializeForm = function(){
 };
 
 (function(){
-	var templates = {};
-	var requests = {};
-	jstack.getTemplate = function( templatePath, absolute ) {
+	let templates = {};
+	let requests = {};
+	let registerTemplate = function(id, html){
+		templates[id] = html;
+	};
+	let getTemplate = function( templatePath, absolute ) {
 		if(!absolute){
 			templatePath = jstack.config.templatesPath+templatePath;
 		}
-		if ( !requests[ templatePath ] ) {
+		if(templates[ templatePath ]){
+			if ( !requests[ templatePath ] ) {
+				requests[ templatePath ] = $.Deferred().resolve(templates[ templatePath ]);
+			}
+		}
+		else if ( !requests[ templatePath ] ) {
 			var url = templatePath;
 			if ( jstack.config.debug ) {
 				var ts = ( new Date().getTime() ).toString();
@@ -2193,13 +2201,15 @@ $.fn.serializeForm = function(){
 				url:url,
 				cache:true,
 			}).then(function(html){
-				templates[ templatePath ] = html;
+				registerTemplate(templatePath, html);
 				requests[ templatePath ].resolve( html, templatePath );				
 			});
 		}
 		return requests[ templatePath ].promise();
 	};
-
+	jstack.templates = templates;
+	jstack.registerTemplate = registerTemplate;
+	jstack.getTemplate = getTemplate;
 })();
 
 jstack.route = ( function( w, url ) {
@@ -2623,12 +2633,6 @@ jstack.routeComponent = function(path,component){
 
 const inputPseudoNodeNamesExtended = {input:1 ,select:1, textarea:1, button:1, 'j-input':1, 'j-select':1};
 const inputPseudoNodeNames = {input:1 ,select:1, textarea:1};
-
-
-jstack.templates = {};
-jstack.registerTemplate = function(id, html){
-	jstack.templates[id] = $('<html><rootnode>'+html+'</rootnode></html>');
-};
 
 class dataBinder {
 	
@@ -3875,7 +3879,7 @@ jstack.dataBindingElementCompiler.push({
 		
 		let compile = function(){
 			$(n).empty();
-			let c = jstack.templates[include].clone().contents();
+			let c = $('<html><rootnode>'+jstack.templates[include]+'</rootnode></html>').clone().contents();
 			c.appendTo(n);
 			dataBinder.compileDom(n,scope);			
 		};
@@ -3884,8 +3888,7 @@ jstack.dataBindingElementCompiler.push({
 			compile();
 		}
 		else{
-			$.ajax(include).then(function(html){
-				jstack.templates[include] = $('<html><rootnode>'+html+'</rootnode></html>');
+			jstack.getTemplate(include).then(function(html){
 				compile();
 			});
 		}
