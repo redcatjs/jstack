@@ -5,7 +5,12 @@ const loadRoute = function($el,route){
 	//});
 	
 	let component = route.component;
-	jstack.componentRegistry[route.path] = component;
+	
+	if(typeof component == 'object'){
+		component = component.default;
+	}
+	
+	jstack.registerComponent(route.path, component);
 	
 	jstack.route(route.path, function(path, params, hash){
 		return jstack.load( $('<div/>').appendTo($el), {

@@ -11,6 +11,12 @@ let getViewReady = function(el){
 };
 
 jstack.componentRegistry = {};
+jstack.registerComponent = function(name,component){
+	if(typeof component == 'object'){
+		component = component.default;
+	}
+	jstack.componentRegistry[name] = component;
+};
 
 jstack.load = function(target,config,options){
 	
