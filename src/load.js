@@ -12,7 +12,7 @@ let getViewReady = function(el){
 
 jstack.componentRegistry = {};
 jstack.registerComponent = function(name,component){
-	if(typeof component == 'object'){
+	if(typeof component == 'object' && component.__esModule){
 		component = component.default;
 	}
 	jstack.componentRegistry[name] = component;
@@ -27,6 +27,11 @@ jstack.load = function(target,config,options){
 	}
 	
 	const jsReady = $.Deferred();
+
+	if(typeof config.component=='object' && config.component.__esModule	){
+		config.component = config.component.default;
+	}
+	
 	if(typeof(config.component)=='string'){
 		let componentPath = config.component;
 		let componentUrl = jstack.config.controllersPath+componentPath;

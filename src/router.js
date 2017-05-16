@@ -6,7 +6,7 @@ const loadRoute = function($el,route){
 	
 	let component = route.component;
 	
-	if(typeof component == 'object'){
+	if(typeof component == 'object' && component.__esModule){
 		component = component.default;
 	}
 	
