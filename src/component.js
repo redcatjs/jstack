@@ -1,5 +1,10 @@
 jstack.Component = class {
 	constructor(element,options,config){
+		
+		if(options.extendWith){
+			$.extend(this,options.extendWith);
+		}
+		
 		let $el = $(element);
 		
 		this.element = $el;
