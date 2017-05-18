@@ -2398,6 +2398,7 @@ jstack.route = ( function( w, url ) {
 		if(options.replaceState){
 			path = w.location.href.split("#")[0]+'#'+path;
 			history.replaceState(null, null, path);
+			hashChanged();
 		}
 		else{
 			w.location.hash = path;
