@@ -374,7 +374,7 @@ class dataBinder {
 		let key = dataBinder.getKey(name);
 		if(key.substr(-1)=='.'&&input.type=='checkbox'){
 			let index;
-			$(input).closest('form').find(':checkbox[name="'+name+'"]').each(function(i){
+			$(input).closest('form,[is=form],body').find(':checkbox[name="'+name+'"]').each(function(i){
 				if(this===input){
 					index = i;
 					return false;
