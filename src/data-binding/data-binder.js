@@ -236,6 +236,8 @@ class dataBinder {
 	}
 
 	eventListener(){
+		if(this.noscope) return;
+		
 		let self = this;		
 		$(this.view).on('input change j:update', ':input[name]', function(e,value){
 			
