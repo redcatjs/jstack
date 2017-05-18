@@ -760,39 +760,69 @@ jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
-	key.split('.').reduce(function(obj,k,index,array){
-		if(array.length==index+1){
-			if(isDefault){
-				if(typeof(obj[k])==='undefined'){
-					if(setterCallback){
-						setterCallback(obj,k,value);
-					}
-					else{
-						obj[k] = value;
-						value = obj[k];
+	let isArray;
+	if(key.substr(-1)=='.'){
+		isArray = true;
+		if(key.substr(-2)=='..'){
+			key = key.substr(0,key.length-2);
+		}
+	}
+	
+	let arr = key.split('.');
+	let last = arr.length-1;
+	let beforeLast = last-1;
+	
+	let setValue = function(o,k,v){
+		if(o instanceof Array){
+			if(k === ''){
+				if(typeof v === 'undefined'){
+					let i = o.indexOf(k);
+					if(i!==-1){
+						o.splice(i,1);
 					}
 				}
 				else{
-					value = obj[k];
+					o.push(v);
 				}
 			}
 			else{
-				if(setterCallback){
-					setterCallback(obj,k,value);
+				if(typeof v === 'undefined'){
+					o.splice(k,1);
 				}
 				else{
-					obj[k] = value;
+					o.splice(k,0,v);
 				}
 			}
 		}
 		else{
+			if(typeof v === 'undefined'){
+				delete o[k];
+			}
+			else{
+				o[k] = v;
+			}
+		}
+		if(setterCallback){
+			setterCallback(o,k,v);
+		}
+	};
+	
+	arr.reduce(function(obj,k,index,array){
+		if(last==index){
+			if(isDefault){
+				if(typeof(obj[k])==='undefined'){
+					setValue(obj,k,value);
+				}
+				value = obj[k];
+			}
+			else{
+				setValue(obj,k,value);
+			}
+		}
+		else{
 			if(typeof(obj[k])!='object'||obj[k]===null){
-				if(setterCallback){
-					setterCallback(obj,k,{});
-				}
-				else{
-					obj[k] = {};
-				}
+				let defaultO = isArray&&index==beforeLast?[]:{};
+				obj[k] = defaultO;
 			}
 			return obj[k];
 		}
@@ -2792,8 +2822,6 @@ class dataBinder {
 		
 		//value = jstack.dotSet(data,key,value);
 		let setterCallback = function(target,k,v){
-			let oldValue = target[k];
-			target[k] = v;
 			target.modelTrigger({
 				type:'set',
 				target:target,
@@ -2885,6 +2913,8 @@ class dataBinder {
 	}
 
 	eventListener(){
+		if(this.noscope) return;
+		
 		let self = this;		
 		$(this.view).on('input change j:update', ':input[name]', function(e,value){
 			
@@ -3021,7 +3051,7 @@ class dataBinder {
 		let key = dataBinder.getKey(name);
 		if(key.substr(-1)=='.'&&input.type=='checkbox'){
 			let index;
-			$(input).closest('form').find(':checkbox[name="'+name+'"]').each(function(i){
+			$(input).closest('form,[is=form],body').find(':checkbox[name="'+name+'"]').each(function(i){
 				if(this===input){
 					index = i;
 					return false;
@@ -3044,7 +3074,8 @@ class dataBinder {
 				switch(el.type){
 					case 'checkbox':
 						let $el = $(el);
-						return $el.prop('checked')?$el.val():'';
+						//return $el.prop('checked')?$el.val():'';
+						return $el.prop('checked')?$el.val():undefined;
 					break;
 					case 'radio':
 						let form;
