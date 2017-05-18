@@ -143,8 +143,6 @@ class dataBinder {
 		
 		//value = jstack.dotSet(data,key,value);
 		let setterCallback = function(target,k,v){
-			let oldValue = target[k];
-			target[k] = v;
 			target.modelTrigger({
 				type:'set',
 				target:target,
@@ -397,7 +395,8 @@ class dataBinder {
 				switch(el.type){
 					case 'checkbox':
 						let $el = $(el);
-						return $el.prop('checked')?$el.val():'';
+						//return $el.prop('checked')?$el.val():'';
+						return $el.prop('checked')?$el.val():undefined;
 					break;
 					case 'radio':
 						let form;
