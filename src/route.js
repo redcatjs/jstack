@@ -120,7 +120,7 @@ jstack.route = ( function( w, url ) {
 		
 	};
 
-	var routie = function( path, fn, extendParams ) {
+	var routie = function( path, fn, options ) {		
 		if ( typeof fn == "function" ) {
 			addHandler( path, fn );
 		} else if ( typeof path == "object" ) {
@@ -130,16 +130,8 @@ jstack.route = ( function( w, url ) {
 		} else if ( typeof fn === "undefined" ) {
 			routie.navigate( path );
 		} else if ( typeof fn === "object" ) {
-			var params = {};
-			if ( extendParams ) {
-				$.extend( params, getParams() );
-			}
-			$.extend( params, url.getParams( path ), fn );
-			var query = url.buildQuery( params );
-			if ( query )
-				query = "?" + query;
-			path = url.getPath( path );
-			routie.navigate( path + query );
+			options.queryParams = fn;
+			routie.navigate( path, options );
 		}
 	};
 
@@ -166,20 +158,33 @@ jstack.route = ( function( w, url ) {
 
 	routie.navigate = function( path, options ) {
 		options = options || {};
-		var silent = options.silent || false;
-
-		if ( silent ) {
-			removeListener();
+		
+		let params = {};
+		if ( options.extendParams ) {
+			$.extend( params, getParams() );
 		}
-		setTimeout( function() {
+		$.extend( params, url.getParams( path ) );
+		if( options.queryParams ){
+			$.extend( params, options.queryParams );
+		}
+		var query = url.buildQuery( params );
+		if ( query )
+			query = "?" + query;
+			
+		path = url.getPath( path );
+		path += query;
+		
+		//setTimeout( function() {
+		
+		if(options.replaceState){
+			path = w.location.href.split("#")[0]+'#'+path;
+			history.replaceState(null, null, path);
+		}
+		else{
 			w.location.hash = path;
-			if ( silent ) {
-				setTimeout( function() {
-					addListener();
-				}, 1 );
-			}
-
-		}, 1 );
+		}
+		
+		//}, 1);
 	};
 
 	var getHash2 = function() {
