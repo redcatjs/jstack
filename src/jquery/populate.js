@@ -1,10 +1,10 @@
 (function(){
 
-var populateSelect = function( input, value, config ) {
-	var isSelect2 = input.hasClass('select2-hidden-accessible');
+let populateSelect = function( input, value, config ) {
+	let isSelect2 = input.hasClass('select2-hidden-accessible');
 	if(input[0].hasAttribute('data-preselect')&&!isSelect2){
 		if(config.push){
-			var v = input.data('preselect') || [];
+			let v = input.data('preselect') || [];
 			if(typeof(v)!='object'){
 				v = [v];
 			}
@@ -20,7 +20,7 @@ var populateSelect = function( input, value, config ) {
 	}
 	
 	if(isSelect2){
-		var setValue;
+		let setValue;
 		if(config.preventValEvent){
 			setValue = function(input,val){
 				input.setVal(val);
@@ -32,7 +32,7 @@ var populateSelect = function( input, value, config ) {
 			};
 		}
 		if(config.push){
-			var v = input.val();
+			let v = input.val();
 			if(v===null){
 				v = [];
 			}
@@ -54,10 +54,10 @@ var populateSelect = function( input, value, config ) {
 		return;
 	}
 	
-	var found = false;
-	var optFirstTagName = 'option';
+	let found = false;
+	let optFirstTagName = 'option';
 	input.children().each(function(i){
-		var opt = $(this);
+		let opt = $(this);
 		if(this.tagName.toLowerCase()=='option'){
 			if (opt.val() == value){
 				opt.prop('selected', true);
@@ -86,8 +86,8 @@ var populateSelect = function( input, value, config ) {
 	} );
 	
 	if ( !found && config.addMissing && typeof(value)!='undefined' && value!==null ) {
-		var optionValue;
-		var optionText;
+		let optionValue;
+		let optionText;
 		if($.type(value)=='object'){
 			optionValue = value.value;
 			optionText = value.text;
@@ -115,7 +115,7 @@ $.fn.populateInput = function( value, config ) {
 		preventValEvent: false,
 		push: false,
 	},config);
-	var setValue;
+	let setValue;
 	if(config.preventValEvent){
 		setValue = function(input,val){
 			input.setVal(val);
@@ -127,16 +127,16 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	return this.each(function(){
-		var input = $(this);
+		let input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		var nodeName = this.tagName.toLowerCase();
+		let nodeName = this.tagName.toLowerCase();
 		if (nodeName =='select' || nodeName == 'j-select' ) {
 			if ( value instanceof Array ) {
 				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );
 				}
 				else{
-					for ( var i = 0, l = value.length; i < l; i++ ) {
+					for ( let i = 0, l = value.length; i < l; i++ ) {
 						populateSelect( input, value[ i ], config );
 					}
 				}
@@ -172,10 +172,10 @@ $.fn.populateInput = function( value, config ) {
 				case "checkbox":
 					if ( input.length > 1 ) {
 						$.each( input, function( index ) {
-							var elemValue = this.value;
-							var elemValueInData = undefined;
-							var singleVal;
-							for ( var i = 0; i < value.length; i++ ) {
+							let elemValue = this.value;
+							let elemValueInData = undefined;
+							let singleVal;
+							for ( let i = 0; i < value.length; i++ ) {
 								singleVal = value[ i ];
 								if ( singleVal === elemValue ){
 									elemValueInData = singleVal;
@@ -211,37 +211,37 @@ $.fn.populateForm = function( data, config ) {
 		not: false,
 		notContainer: false
 	},config);
-	var $this = this;
+	let $this = this;
 	
-	var assignValue = function(key, value){
+	let assignValue = function(key, value){
 		if(value===null){
 			value = '';
 		}
-		var inputs = $this.find(':input[name="'+key+'"]');
+		let inputs = $this.find(':input[name="'+key+'"]');
 		if(config.addMissing&&!inputs.length){
 			$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
 		}
 		inputs.each(function(){
-			var input = $(this);
+			let input = $(this);
 			if(config.not&&input.is(config.not)) return;
 			if(config.notContainer&&input.closest(config.notContainer).length) return;
 			input.populateInput(value, config);
 		});
 	};
-	var assignValueMulti = function(key, value){
-		var inputs = $this.find(':input[name="'+key+'"],:input[name="'+key+'[]"]');
+	let assignValueMulti = function(key, value){
+		let inputs = $this.find(':input[name="'+key+'"],:input[name="'+key+'[]"]');
 		inputs.each(function(){
-			var input = $(this);
+			let input = $(this);
 			if(config.not&&input.is(config.not)) return;
 			if(config.notContainer&&input.closest(config.notContainer).length) return;
 			input.populateInput(value, config);
 		});	
 	};
 	
-	var assignValueRecursive = function(key, value){
+	let assignValueRecursive = function(key, value){
 		assignValueMulti(key,value);
 		$.each(value,function(k,v){
-			var keyAssign = key+'['+k+']';
+			let keyAssign = key+'['+k+']';
 			if(typeof(v)=='object'&&v!=null){
 				assignValueRecursive(keyAssign, v);
 			}
@@ -278,8 +278,8 @@ $.fn.populateReset = function(){
 			$(this).find(':input[name]').populateReset();
 		}
 		else{
-			var el = $(this);
-			var type = el.prop('type');
+			let el = $(this);
+			let type = el.prop('type');
 			if(type=="checkbox"||type=="radio"){
 				el.prop('checked',this.defaultChecked);
 			}
