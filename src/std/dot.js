@@ -19,11 +19,11 @@ jstack.dotGet = function(data,key){
 		l++;
 		if(i===''){
 			let r = {};
+			let skey = x.join('.');
 			obj.each(function(o,k){
-				r[k] = jstack.dotGet(o,x.slice(l).join('.'));
+				r[k] = jstack.dotGet(o,skey);
 			});
-			obj = r;
-			break;
+			return r;
 		}
 		if(typeof(obj)=='object'&&obj!==null){
 			obj = typeof(obj[i])!='undefined'?obj[i]:undefined;
