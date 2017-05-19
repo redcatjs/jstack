@@ -19,6 +19,8 @@ let populateSelect = function( input, value, config ) {
 		return;
 	}
 	
+	//console.log('select',input);
+	
 	if(isSelect2){
 		let setValue;
 		if(config.preventValEvent){
@@ -56,10 +58,26 @@ let populateSelect = function( input, value, config ) {
 	
 	let found = false;
 	let optFirstTagName = 'option';
+	
+	let valueMatch;
+	if(typeof(value)=='object'&&value!==null){
+		if(!(value instanceof Array)){
+			value = Object.values(value);
+		}
+		valueMatch = function(check){
+			return value.indexOf(check)!==-1;
+		};
+	}
+	else{
+		valueMatch = function(check){
+			return value == check;
+		};
+	}
+	
 	input.children().each(function(i){
 		let opt = $(this);
 		if(this.tagName.toLowerCase()=='option'){
-			if (opt.val() == value){
+			if (valueMatch(opt.val())){
 				opt.prop('selected', true);
 				found = true;
 			}
@@ -73,7 +91,7 @@ let populateSelect = function( input, value, config ) {
 			if(i==0){
 				optFirstTagName = opt[0].tagName.toLowerCase();
 			}
-			if(opt[0].getAttribute('value') == value) {
+			if(valueMatch( opt[0].getAttribute('value') )) {
 				opt[0].setAttribute('selected', 'selected');
 				found = true;
 			}

@@ -39,22 +39,36 @@ jstack.dataBindingElementCompiler.push({
 		
 		//model to default dom value
 		if(modelValue!==val){
+			
 			let nodeName = el.tagName.toLowerCase();
 			if(nodeName=='select'){
+				
+				let valueMatch;
+				let value = modelValue;
 				let found;
+				if(typeof(value)=='object'&&value!==null){
+					if(!(value instanceof Array)){
+						value = Object.values(value);
+					}
+					found = true;
+					valueMatch = function(check){
+						if(value.indexOf(check)===-1){
+							found = false;
+							return false;
+						}
+					};
+				}
+				else{
+					valueMatch = function(check){
+						if(value == check){
+							found = true;
+							return false;
+						}
+					};
+				}
+				
 				$el.find('option').each(function(){
-					if(this.hasAttribute('value')){
-						if(this.value==modelValue){
-							found = true;
-							return false;
-						}
-					}
-					else{
-						if($(this).text()==modelValue){
-							found = true;
-							return false;
-						}
-					}
+					return valueMatch( this.hasAttribute('value')?this.value:$(this).text() );
 				});
 				if(found){
 					$el.populateInput(modelValue,{preventValEvent:true});
