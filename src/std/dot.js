@@ -12,22 +12,27 @@ jstack.dotGet = function(data,key){
 	}
 	let x = key.split('.');
 	let l = 0;
-	return x.reduce(function(obj,i){
+	let r;
+	let obj = data;
+	while(x.length){
+		let i = x.shift();
 		l++;
 		if(i===''){
 			let r = {};
 			obj.each(function(o,k){
 				r[k] = jstack.dotGet(o,x.slice(l).join('.'));
 			});
-			return r;
+			obj = r;
+			break;
 		}
 		if(typeof(obj)=='object'&&obj!==null){
-			return typeof(obj[i])!='undefined'?obj[i]:undefined;
+			obj = typeof(obj[i])!='undefined'?obj[i]:undefined;
 		}
 		else{
-			return undefined;
+			obj = undefined;
 		}
-	}, data);
+	}
+	return obj;
 };
 jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 	if(typeof(data)!='object'||data===null){
