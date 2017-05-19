@@ -1,6 +1,6 @@
 jstack.dataBindingElementCompiler.push({
 	match(n){
-		let tagName = n.hasAttribute('is')?n.getAttribute('is'):n.tagName;
+		let tagName = n.hasAttribute('is')?n.getAttribute('is'):n.tagName.toLowerCase();
 		tagName = jstack.snakeCase(tagName);
 		return typeof(jstack.__directives[tagName])!=='undefined';
 	},
