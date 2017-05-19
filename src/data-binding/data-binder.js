@@ -354,7 +354,7 @@ class dataBinder {
 		return tokens;
 	}
 	static getKey(key){
-		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
+		return key.replace('[]','.').replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
 	}
 	static getClosestFormNamespace(p){
 		while(p){
