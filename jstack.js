@@ -747,14 +747,29 @@ jstack.dotGet = function(data,key){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
-	return key.split('.').reduce(function(obj,i){
+	let x = key.split('.');
+	let l = 0;
+	let r;
+	let obj = data;
+	while(x.length){
+		let i = x.shift();
+		l++;
+		if(i===''){
+			let r = {};
+			let skey = x.join('.');
+			obj.each(function(o,k){
+				r[k] = jstack.dotGet(o,skey);
+			});
+			return r;
+		}
 		if(typeof(obj)=='object'&&obj!==null){
-			return typeof(obj[i])!='undefined'?obj[i]:undefined;
+			obj = typeof(obj[i])!='undefined'?obj[i]:undefined;
 		}
 		else{
-			return undefined;
+			obj = undefined;
 		}
-	}, data);
+	}
+	return obj;
 };
 jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 	if(typeof(data)!='object'||data===null){
@@ -1465,11 +1480,11 @@ $.fn.val = function() {
 };
 (function(){
 
-var populateSelect = function( input, value, config ) {
-	var isSelect2 = input.hasClass('select2-hidden-accessible');
+let populateSelect = function( input, value, config ) {
+	let isSelect2 = input.hasClass('select2-hidden-accessible');
 	if(input[0].hasAttribute('data-preselect')&&!isSelect2){
 		if(config.push){
-			var v = input.data('preselect') || [];
+			let v = input.data('preselect') || [];
 			if(typeof(v)!='object'){
 				v = [v];
 			}
@@ -1484,8 +1499,10 @@ var populateSelect = function( input, value, config ) {
 		return;
 	}
 	
+	//console.log('select',input);
+	
 	if(isSelect2){
-		var setValue;
+		let setValue;
 		if(config.preventValEvent){
 			setValue = function(input,val){
 				input.setVal(val);
@@ -1497,7 +1514,7 @@ var populateSelect = function( input, value, config ) {
 			};
 		}
 		if(config.push){
-			var v = input.val();
+			let v = input.val();
 			if(v===null){
 				v = [];
 			}
@@ -1519,12 +1536,28 @@ var populateSelect = function( input, value, config ) {
 		return;
 	}
 	
-	var found = false;
-	var optFirstTagName = 'option';
+	let found = false;
+	let optFirstTagName = 'option';
+	
+	let valueMatch;
+	if(typeof(value)=='object'&&value!==null){
+		if(!(value instanceof Array)){
+			value = Object.values(value);
+		}
+		valueMatch = function(check){
+			return value.indexOf(check)!==-1;
+		};
+	}
+	else{
+		valueMatch = function(check){
+			return value == check;
+		};
+	}
+	
 	input.children().each(function(i){
-		var opt = $(this);
+		let opt = $(this);
 		if(this.tagName.toLowerCase()=='option'){
-			if (opt.val() == value){
+			if (valueMatch(opt.val())){
 				opt.prop('selected', true);
 				found = true;
 			}
@@ -1538,7 +1571,7 @@ var populateSelect = function( input, value, config ) {
 			if(i==0){
 				optFirstTagName = opt[0].tagName.toLowerCase();
 			}
-			if(opt[0].getAttribute('value') == value) {
+			if(valueMatch( opt[0].getAttribute('value') )) {
 				opt[0].setAttribute('selected', 'selected');
 				found = true;
 			}
@@ -1551,8 +1584,8 @@ var populateSelect = function( input, value, config ) {
 	} );
 	
 	if ( !found && config.addMissing && typeof(value)!='undefined' && value!==null ) {
-		var optionValue;
-		var optionText;
+		let optionValue;
+		let optionText;
 		if($.type(value)=='object'){
 			optionValue = value.value;
 			optionText = value.text;
@@ -1580,7 +1613,7 @@ $.fn.populateInput = function( value, config ) {
 		preventValEvent: false,
 		push: false,
 	},config);
-	var setValue;
+	let setValue;
 	if(config.preventValEvent){
 		setValue = function(input,val){
 			input.setVal(val);
@@ -1592,16 +1625,16 @@ $.fn.populateInput = function( value, config ) {
 		};
 	}
 	return this.each(function(){
-		var input = $(this);
+		let input = $(this);
 		if(input.data('j:populate:prevent')) return;
-		var nodeName = this.tagName.toLowerCase();
+		let nodeName = this.tagName.toLowerCase();
 		if (nodeName =='select' || nodeName == 'j-select' ) {
 			if ( value instanceof Array ) {
 				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );
 				}
 				else{
-					for ( var i = 0, l = value.length; i < l; i++ ) {
+					for ( let i = 0, l = value.length; i < l; i++ ) {
 						populateSelect( input, value[ i ], config );
 					}
 				}
@@ -1637,10 +1670,10 @@ $.fn.populateInput = function( value, config ) {
 				case "checkbox":
 					if ( input.length > 1 ) {
 						$.each( input, function( index ) {
-							var elemValue = this.value;
-							var elemValueInData = undefined;
-							var singleVal;
-							for ( var i = 0; i < value.length; i++ ) {
+							let elemValue = this.value;
+							let elemValueInData = undefined;
+							let singleVal;
+							for ( let i = 0; i < value.length; i++ ) {
 								singleVal = value[ i ];
 								if ( singleVal === elemValue ){
 									elemValueInData = singleVal;
@@ -1676,37 +1709,37 @@ $.fn.populateForm = function( data, config ) {
 		not: false,
 		notContainer: false
 	},config);
-	var $this = this;
+	let $this = this;
 	
-	var assignValue = function(key, value){
+	let assignValue = function(key, value){
 		if(value===null){
 			value = '';
 		}
-		var inputs = $this.find(':input[name="'+key+'"]');
+		let inputs = $this.find(':input[name="'+key+'"]');
 		if(config.addMissing&&!inputs.length){
 			$this.append('<input type="hidden" name="'+key+'" value="'+value+'">');
 		}
 		inputs.each(function(){
-			var input = $(this);
+			let input = $(this);
 			if(config.not&&input.is(config.not)) return;
 			if(config.notContainer&&input.closest(config.notContainer).length) return;
 			input.populateInput(value, config);
 		});
 	};
-	var assignValueMulti = function(key, value){
-		var inputs = $this.find(':input[name="'+key+'"],:input[name="'+key+'[]"]');
+	let assignValueMulti = function(key, value){
+		let inputs = $this.find(':input[name="'+key+'"],:input[name="'+key+'[]"]');
 		inputs.each(function(){
-			var input = $(this);
+			let input = $(this);
 			if(config.not&&input.is(config.not)) return;
 			if(config.notContainer&&input.closest(config.notContainer).length) return;
 			input.populateInput(value, config);
 		});	
 	};
 	
-	var assignValueRecursive = function(key, value){
+	let assignValueRecursive = function(key, value){
 		assignValueMulti(key,value);
 		$.each(value,function(k,v){
-			var keyAssign = key+'['+k+']';
+			let keyAssign = key+'['+k+']';
 			if(typeof(v)=='object'&&v!=null){
 				assignValueRecursive(keyAssign, v);
 			}
@@ -1743,8 +1776,8 @@ $.fn.populateReset = function(){
 			$(this).find(':input[name]').populateReset();
 		}
 		else{
-			var el = $(this);
-			var type = el.prop('type');
+			let el = $(this);
+			let type = el.prop('type');
 			if(type=="checkbox"||type=="radio"){
 				el.prop('checked',this.defaultChecked);
 			}
@@ -1757,6 +1790,7 @@ $.fn.populateReset = function(){
 };
 
 })();
+
 $.fn.outerHTML = function(){
 	if (this.length){
 		var div = $('<tmpl style="display:none;"></tmpl>');
@@ -3033,7 +3067,7 @@ class dataBinder {
 		return tokens;
 	}
 	static getKey(key){
-		return key.replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
+		return key.replace('[]','.').replace( /\[(["']?)([^\1]+?)\1?\]/g, ".$2" ).replace( /^\./, "" ).replace(/\[\]/g, '.');
 	}
 	static getClosestFormNamespace(p){
 		while(p){
@@ -4124,7 +4158,18 @@ jstack.dataBindingElementCompiler.push({
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
+		
+		
+		//let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
+		
+		let modelValue = jstack.dotGet(dataBinder.model,key);
+		
+		if(typeof(modelValue)=='undefined'){
+			modelValue = val;
+			jstack.dotSet(dataBinder.model,key,modelValue);
+		}
+		
+		
 		
 		if(!modelValue){
 			modelValue = '';
@@ -4133,22 +4178,36 @@ jstack.dataBindingElementCompiler.push({
 		
 		//model to default dom value
 		if(modelValue!==val){
+			
 			let nodeName = el.tagName.toLowerCase();
 			if(nodeName=='select'){
+				
+				let valueMatch;
+				let value = modelValue;
 				let found;
+				if(typeof(value)=='object'&&value!==null){
+					if(!(value instanceof Array)){
+						value = Object.values(value);
+					}
+					found = true;
+					valueMatch = function(check){
+						if(value.indexOf(check)===-1){
+							found = false;
+							return false;
+						}
+					};
+				}
+				else{
+					valueMatch = function(check){
+						if(value == check){
+							found = true;
+							return false;
+						}
+					};
+				}
+				
 				$el.find('option').each(function(){
-					if(this.hasAttribute('value')){
-						if(this.value==modelValue){
-							found = true;
-							return false;
-						}
-					}
-					else{
-						if($(this).text()==modelValue){
-							found = true;
-							return false;
-						}
-					}
+					return valueMatch( this.hasAttribute('value')?this.value:$(this).text() );
 				});
 				if(found){
 					$el.populateInput(modelValue,{preventValEvent:true});
