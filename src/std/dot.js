@@ -10,7 +10,17 @@ jstack.dotGet = function(data,key){
 	if(typeof(data)!='object'||data===null){
 		return;
 	}
-	return key.split('.').reduce(function(obj,i){
+	let x = key.split('.');
+	let l = 0;
+	return x.reduce(function(obj,i){
+		l++;
+		if(i===''){
+			let r = {};
+			obj.each(function(o,k){
+				r[k] = jstack.dotGet(o,x.slice(l).join('.'));
+			});
+			return r;
+		}
 		if(typeof(obj)=='object'&&obj!==null){
 			return typeof(obj[i])!='undefined'?obj[i]:undefined;
 		}
