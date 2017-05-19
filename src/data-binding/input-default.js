@@ -19,7 +19,18 @@ jstack.dataBindingElementCompiler.push({
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
+		
+		
+		//let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
+		
+		let modelValue = jstack.dotGet(dataBinder.model,key);
+		
+		if(typeof(modelValue)=='undefined'){
+			modelValue = val;
+			jstack.dotSet(dataBinder.model,key,modelValue);
+		}
+		
+		
 		
 		if(!modelValue){
 			modelValue = '';
