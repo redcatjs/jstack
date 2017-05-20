@@ -141,7 +141,7 @@ class dataBinder {
 		
 		let oldValue = jstack.dotGet(data,key);
 		
-		//value = jstack.dotSet(data,key,value);
+		
 		let setterCallback = function(target,k,v){
 			target.modelTrigger({
 				type:'set',
@@ -151,7 +151,8 @@ class dataBinder {
 				value:value,
 			});
 		};
-		value = jstack.dotSet(data,key,value,false,setterCallback);
+		
+		value = jstack.dotSet(data,key,value,setterCallback);
 		
 		input.trigger('j:input:model',[value]);
 		

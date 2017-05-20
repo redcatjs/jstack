@@ -34,9 +34,9 @@ jstack.dotGet = function(data,key){
 	}
 	return obj;
 };
-jstack.dotSet = function(data,key,value,isDefault,setterCallback){
+jstack.dotSet = function(data,key,value,callback){
 	if(typeof(data)!='object'||data===null){
-		return;
+		return data;
 	}
 	let isArray;
 	if(key.substr(-1)=='.'){
@@ -80,32 +80,55 @@ jstack.dotSet = function(data,key,value,isDefault,setterCallback){
 				o[k] = v;
 			}
 		}
-		if(setterCallback){
-			setterCallback(o,k,v);
+		if(callback){
+			callback(o,k,v);
 		}
 	};
 	
-	arr.reduce(function(obj,k,index,array){
-		if(last==index){
-			if(isDefault){
-				if(typeof(obj[k])==='undefined'){
-					setValue(obj,k,value);
-				}
-				value = obj[k];
+	let x = key.split('.');
+	let l = 0;
+	let r;
+	let obj = data;
+	let previousK;
+	let previousO;
+	while(x.length){
+		let k = x.shift();
+	
+		if(k===''){
+			let skey = x.join('.');
+			if(typeof(value)!=='object'||value===null){
+				value = [value];
 			}
-			else{
-				setValue(obj,k,value);
+			let r = [];
+			value.each(function(val){
+				let o = {};
+				jstack.dotSet(o, skey, val);
+				r.push(o);
+			});
+			previousO[previousK] = r;
+			if(callback){
+				callback(previousO, previousK, r);
 			}
+			break;
 		}
-		else{
-			if(typeof(obj[k])!='object'||obj[k]===null){
-				let defaultO = isArray&&index==beforeLast?[]:{};
-				obj[k] = defaultO;
-			}
-			return obj[k];
+		if(last==l){	
+			setValue(obj,k,value);
+			break;
 		}
-	}, data);
-	return value;
+		
+		if(typeof(obj[k])!='object'||obj[k]===null){
+			obj[k] = isArray&&l==beforeLast?[]:{};
+		}
+		
+		previousO = obj;
+		previousK = k;
+		
+		obj = obj[k];
+		
+		l++;
+	}
+	
+	return data;
 };
 jstack.dotDel = function(data,key,value){
 	if(typeof(data)!='object'||data===null){

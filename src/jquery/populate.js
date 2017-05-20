@@ -149,7 +149,8 @@ $.fn.populateInput = function( value, config ) {
 		if(input.data('j:populate:prevent')) return;
 		let nodeName = this.tagName.toLowerCase();
 		if (nodeName =='select' || nodeName == 'j-select' ) {
-			if ( value instanceof Array ) {
+			//if ( value instanceof Array ) {
+			if ( typeof value == 'object' && value!==null ) {
 				if(this.getAttribute('name').substr(-2)=='[]'||this.hasAttribute('multiple')){
 					populateSelect( input, value, config );
 				}

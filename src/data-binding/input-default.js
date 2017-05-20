@@ -19,10 +19,6 @@ jstack.dataBindingElementCompiler.push({
 		let key = jstack.dataBinder.getScopedInput(el);
 		let val = jstack.dataBinder.getInputVal(el);
 		
-		
-		
-		//let modelValue = jstack.dotSet(dataBinder.model,key,val,true);
-		
 		let modelValue = jstack.dotGet(dataBinder.model,key);
 		
 		if(typeof(modelValue)=='undefined'){
@@ -50,10 +46,10 @@ jstack.dataBindingElementCompiler.push({
 					if(!(value instanceof Array)){
 						value = Object.values(value);
 					}
-					found = true;
+					found = false;
 					valueMatch = function(check){
-						if(value.indexOf(check)===-1){
-							found = false;
+						if(value.indexOf(check)!==-1){
+							found = true;
 							return false;
 						}
 					};
@@ -68,7 +64,7 @@ jstack.dataBindingElementCompiler.push({
 				}
 				
 				$el.find('option').each(function(){
-					return valueMatch( this.hasAttribute('value')?this.value:$(this).text() );
+					return valueMatch( $(this).val() );
 				});
 				if(found){
 					$el.populateInput(modelValue,{preventValEvent:true});
