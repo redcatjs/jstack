@@ -1504,60 +1504,6 @@ $.fn.val = function() {
 (function(){
 
 let populateSelect = function( input, value, config ) {
-	let isSelect2 = input.hasClass('select2-hidden-accessible');
-	if(input[0].hasAttribute('data-preselect')&&!isSelect2){
-		if(config.push){
-			let v = input.data('preselect') || [];
-			if(typeof(v)!='object'){
-				v = [v];
-			}
-			if(v.indexOf(value)===-1){
-				v.push(value);
-			}
-			input.data('preselect',v);
-		}
-		else{
-			input.data('preselect',value);
-		}
-		return;
-	}
-	
-	//console.log('select',input);
-	
-	if(isSelect2){
-		let setValue;
-		if(config.preventValEvent){
-			setValue = function(input,val){
-				input.setVal(val);
-			};
-		}
-		else{
-			setValue = function(input,val){
-				input.val(val);
-			};
-		}
-		if(config.push){
-			let v = input.val();
-			if(v===null){
-				v = [];
-			}
-			if(typeof(v)!='object'){
-				v = [v];
-			}
-			if(v.indexOf(value)===-1){
-				v.push(value);
-			}
-			setValue(input,value);
-		}
-		else{
-			setValue(input,value);
-		}
-		if(!config.preventValEvent){
-			//console.log(input,value);
-			input.trigger('change');
-		}
-		return;
-	}
 	
 	let found = false;
 	let optFirstTagName = 'option';
@@ -2852,6 +2798,7 @@ class dataBinder {
 		else{
 			value = dataBinder.getInputVal(el);
 		}
+		
 		
 		let filteredValue = this.filter(el,value);
 

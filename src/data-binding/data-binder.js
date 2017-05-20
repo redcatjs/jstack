@@ -116,6 +116,7 @@ class dataBinder {
 			value = dataBinder.getInputVal(el);
 		}
 		
+		
 		let filteredValue = this.filter(el,value);
 
 		if(typeof(filteredValue)=='object'&&filteredValue!==null&&typeof(filteredValue.promise)=='function'){
