@@ -130,6 +130,9 @@ jstack.route = ( function( w, url ) {
 		} else if ( typeof fn === "undefined" ) {
 			routie.navigate( path );
 		} else if ( typeof fn === "object" ) {
+			if(typeof options != 'object'){
+				options = {};
+			}
 			options.queryParams = fn;
 			routie.navigate( path, options );
 		}
