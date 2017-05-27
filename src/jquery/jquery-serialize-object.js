@@ -26,11 +26,12 @@ $.fn.serializeArrayWithEmpty = function() {
 		// Use .is( ":disabled" ) so that fieldset[disabled] works
 		return this.name && !$( this ).is( ":disabled" ) &&
 			rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type )
-			&&( this.checked || !rcheckableType.test( type ) )
+			//&&( this.checked || !rcheckableType.test( type ) ) //surikat
 		;
 	} )
 	.map( function( i, elem ) {
-		let val = $( this ).val();
+		//let val = $( this ).val(); //surikat
+		let val = this.checked || !rcheckableType.test( this.type ) ? $( this ).val() : '';
 
 		if ( val == null ) {
 			//return null;
