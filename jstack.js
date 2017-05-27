@@ -1788,35 +1788,36 @@ $.fn.hasAttr = function(attr){
 (function(){
 
 //surikat
-var rCRLF = /\r?\n/g,
+const rCRLF = /\r?\n/g,
 	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
 	rsubmittable = /^(?:input|select|textarea|keygen)/i,
 	rcheckableType = ( /^(?:checkbox|radio)$/i );
-jQuery.fn.serializeArrayWithEmpty = function() {
+$.fn.serializeArrayWithEmpty = function() {
 	return this.map( function() {
-
 		// Can add propHook for "elements" to filter or add form elements
-		var elements = jQuery.prop( this, "elements" );
-		return elements ? jQuery.makeArray( elements ) : this;
+		let elements = $.prop( this, "elements" );
+		return elements ? $.makeArray( elements ) : this;
 	} )
 	.filter( function() {
-		var type = this.type;
+		let type = this.type;
 
 		// Use .is( ":disabled" ) so that fieldset[disabled] works
-		return this.name && !jQuery( this ).is( ":disabled" ) &&
-			rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type ) &&
-			( this.checked || !rcheckableType.test( type ) );
+		return this.name && !$( this ).is( ":disabled" ) &&
+			rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type )
+			//&&( this.checked || !rcheckableType.test( type ) ) //surikat
+		;
 	} )
 	.map( function( i, elem ) {
-		var val = jQuery( this ).val();
+		//let val = $( this ).val(); //surikat
+		let val = this.checked || !rcheckableType.test( this.type ) ? $( this ).val() : '';
 
 		if ( val == null ) {
 			//return null;
 			val = ''; //surikat
 		}
 
-		if ( jQuery.isArray( val ) ) {
-			return jQuery.map( val, function( val ) {
+		if ( $.isArray( val ) ) {
+			return $.map( val, function( val ) {
 				return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
 			} );
 		}
@@ -1826,7 +1827,7 @@ jQuery.fn.serializeArrayWithEmpty = function() {
 }; 
 
 
-var patterns = {
+const patterns = {
 	validate: /^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,
 	key:			/[a-z0-9_]+|(?=\[\])/gi,
 	push:		 /^$/,
@@ -1837,7 +1838,7 @@ var patterns = {
 function FormSerializer(helper, $form) {
 
 	// private variables
-	var data		 = {},
+	let data		 = {},
 			pushes	 = {};
 
 	// private API
@@ -1848,13 +1849,13 @@ function FormSerializer(helper, $form) {
 
 	function makeObject(root, value) {
 
-		var keys = root.match(patterns.key), k;
+		let keys = root.match(patterns.key), k;
 
 		// nest, nest, ..., nest
 		while ((k = keys.pop()) !== undefined) {
 			// foo[]
 			if (patterns.push.test(k)) {
-				var idx = incrementPush(root.replace(/\[\]$/, ''));
+				let idx = incrementPush(root.replace(/\[\]$/, ''));
 				value = build([], idx, value);
 			}
 
@@ -1892,7 +1893,7 @@ function FormSerializer(helper, $form) {
 
 	function addPair(pair) {
 		if (!patterns.validate.test(pair.name)) return this;
-		var obj = makeObject(pair.name, encode(pair));
+		let obj = makeObject(pair.name, encode(pair));
 		data = helper.extend(true, data, obj);
 		return this;
 	}
@@ -1901,7 +1902,7 @@ function FormSerializer(helper, $form) {
 		if (!helper.isArray(pairs)) {
 			throw new Error("formSerializer.addPairs expects an Array");
 		}
-		for (var i=0, len=pairs.length; i<len; i++) {
+		for (let i=0, len=pairs.length; i<len; i++) {
 			this.addPair(pairs[i]);
 		}
 		return this;
