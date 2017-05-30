@@ -26,10 +26,15 @@ jstack.dotGet = function(data,key){
 			return r;
 		}
 		if(typeof(obj)=='object'&&obj!==null){
-			obj = typeof(obj[i])!='undefined'?obj[i]:undefined;
+			if(typeof(obj[i])=='undefined'){
+				obj = undefined;
+				break;
+			}
+			obj = obj[i];
 		}
 		else{
 			obj = undefined;
+			break;
 		}
 	}
 	return obj;
