@@ -1,6 +1,6 @@
 {
   "name": "jstack",
-  "version": "12.10.5",
+  "version": "12.10.6",
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
   "dependencies": {},
