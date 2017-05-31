@@ -1,15 +1,15 @@
 jstack.Component = class {
 	constructor(element,options,config){
 		
-		if(options.extendWith){
-			$.extend(this,options.extendWith);
-		}
-		
 		let $el = $(element);
 		
 		this.element = $el;
 		this.options = options || {};
 		this.config = config || {};
+		
+		if(this.options.extendWith){
+			$.extend(this,this.options.extendWith);
+		}
 		
 		let data = config.data || $el.data('jModel') || {};
 		
@@ -195,9 +195,6 @@ jstack.Component = class {
 	}
 	
 	static factory(componentClass, element, options, config){
-		if(!options){
-			options = {};
-		}
 		let newInstance = function(className){
 			return new className(element,options,config);
 		};
