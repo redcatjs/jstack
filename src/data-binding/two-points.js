@@ -19,7 +19,7 @@ jstack.dataBindingElementCompiler.push({
 		let $this = $(el);
 		let attrsVars = {};
 		let attrsVarsCurrent = {};
-		let propAttrs = ['selected','checked','multiple','readonly'];
+		let propAttrs = ['selected','checked','multiple','readonly','disabled'];
 		attrs.each(function(v,k){
 			let tokens = jstack.dataBinder.textTokenizer(v);
 			let key = k.substr(1);

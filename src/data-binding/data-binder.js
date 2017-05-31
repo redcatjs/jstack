@@ -430,6 +430,7 @@ class dataBinder {
 			case 'j-select':
 				el = $(el);
 				let multiple = el[0].hasAttribute('multiple');
+				//let multiple = false;
 				let data = el.data('preselect');
 				if(!data){
 					if(multiple){

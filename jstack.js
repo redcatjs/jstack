@@ -763,10 +763,15 @@ jstack.dotGet = function(data,key){
 			return r;
 		}
 		if(typeof(obj)=='object'&&obj!==null){
-			obj = typeof(obj[i])!='undefined'?obj[i]:undefined;
+			if(typeof(obj[i])=='undefined'){
+				obj = undefined;
+				break;
+			}
+			obj = obj[i];
 		}
 		else{
 			obj = undefined;
+			break;
 		}
 	}
 	return obj;
@@ -3117,6 +3122,7 @@ class dataBinder {
 			case 'j-select':
 				el = $(el);
 				let multiple = el[0].hasAttribute('multiple');
+				//let multiple = false;
 				let data = el.data('preselect');
 				if(!data){
 					if(multiple){
@@ -3975,7 +3981,7 @@ jstack.dataBindingElementCompiler.push({
 		let $this = $(el);
 		let attrsVars = {};
 		let attrsVarsCurrent = {};
-		let propAttrs = ['selected','checked','multiple','readonly'];
+		let propAttrs = ['selected','checked','multiple','readonly','disabled'];
 		attrs.each(function(v,k){
 			let tokens = jstack.dataBinder.textTokenizer(v);
 			let key = k.substr(1);
