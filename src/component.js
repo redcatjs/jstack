@@ -11,7 +11,7 @@ jstack.Component = class {
 			$.extend(this,this.options.extendWith);
 		}
 		
-		let data = config.data || $el.data('jModel') || {};
+		let data = this.config.data || $el.data('jModel') || {};
 		
 		let route = this.config.route || {};
 		let hash = route.hash;
