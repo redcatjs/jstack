@@ -194,7 +194,10 @@ jstack.Component = class {
 		
 	}
 	
-	static factory(componentClass, element, options, config){		
+	static factory(componentClass, element, options, config){
+		if(!options){
+			options = {};
+		}
 		let newInstance = function(className){
 			return new className(element,options,config);
 		};
