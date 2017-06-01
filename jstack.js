@@ -898,6 +898,15 @@ jstack.snakeCase = function(str){
 	return str.replace( /([A-Z])/g, function( $1 ) {return "-" + $1.toLowerCase();} );
 };
 
+jstack.extendDefault = function(target, ext){
+	ext.each(function(v,k){
+		if(typeof(target[k])==='undefined'){
+			target[k] = v;
+		}
+	});
+	return target;
+};
+
 (function(){
 
 
@@ -3493,11 +3502,6 @@ jstack.dataBindingElementCompiler.push({
 				dataBinder.compileDom( addRow, scopeExtend );
 				jforClose.before(addRow.childNodes);
 				
-				//jforClose.before(childNodes);
-				//childNodes.forEach(function(n){
-					//dataBinder.compileDom( n, scopeExtend );
-				//});
-				
 				return commentOpener;
 			};
 			removeRow = function(n){
@@ -3506,7 +3510,7 @@ jstack.dataBindingElementCompiler.push({
 		}
 		else{
 			buildNewRow = function(k, jforClose, scopeExtend){
-				//let addRow = $(document.createElement('div'));
+
 				let addRow = $this.clone();
 				addRow.attr('j-for-id',k);
 				
@@ -3524,6 +3528,11 @@ jstack.dataBindingElementCompiler.push({
 		let forStack = {};
 		
 		let render = function(){
+			
+			forStack.each(function(row,k){
+				$.extend(row.scope, dataBinder.model, scope, row.scopeLocal);
+			});
+			
 			let data = jstack.dataBinder.getValueEval(jfor[0],myvar,scope);
 			
 			if(!data){
@@ -3538,19 +3547,21 @@ jstack.dataBindingElementCompiler.push({
 			//add
 			let i = 1;
 			data[method](function(v,k){
-				let scopeExtend = $.extend({},dataBinder.model,scope);
-				scopeExtend[value] = v;
+				let scopeLocal = {};
+				scopeLocal[value] = v;
 				if(key){
-					scopeExtend[key] = k;
+					scopeLocal[key] = k;
 				}
 				if(index){
-					scopeExtend[index] = i;
+					scopeLocal[index] = i;
 				}
+				let scopeExtend = $.extend({},dataBinder.model,scope,scopeLocal);
 				let row = forStack[k];
 				if(typeof(row)==='undefined'){
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
+						scopeLocal:scopeLocal,
 					};
 				}
 				else if(row.scope[value]!==v){
@@ -3558,6 +3569,7 @@ jstack.dataBindingElementCompiler.push({
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
+						scopeLocal:scopeLocal,
 					};
 				}
 				else if(index){
@@ -4158,6 +4170,7 @@ jstack.dataBindingElementCompiler.push({
 		if(typeof(modelValue)=='undefined'){
 			modelValue = val;
 			jstack.dotSet(dataBinder.model,key,modelValue);
+			jstack.dotSet(scope,key,modelValue);
 		}
 		
 		
@@ -4165,6 +4178,7 @@ jstack.dataBindingElementCompiler.push({
 		if(!modelValue){
 			modelValue = '';
 		}
+		
 		
 		
 		//model to default dom value
@@ -4205,6 +4219,7 @@ jstack.dataBindingElementCompiler.push({
 				}
 				else{
 					jstack.dotSet(dataBinder.model,key,val);
+					jstack.dotSet(scope,key,val);
 				}
 			}
 			else{
