@@ -49,27 +49,38 @@ jstack.dataBindingElementCompiler.push({
 		
 		
 		let buildNewRow;
+		let removeRow;
 		
 		$(el).detach();
 		if(isTemplate){
 			let content = el.content;
 			buildNewRow = function(k, jforClose, scopeExtend){
 				let addRow = document.createElement('div');
+				
+				let uid = jstack.uniqid();
+				let commentOpener = document.createComment('j-for-uid:'+uid);
+				addRow.appendChild( commentOpener );
 				addRow.appendChild( document.importNode(content, true) );
+				addRow.appendChild( document.createComment('/j-for-uid:'+uid) );
 				
 				jstack.copyAttributes(el,addRow);
+				addRow.removeAttribute('j-for');
 				
-				let contents = $(addRow).contents();
+				let childNodes = addRow.childNodes;
 				
-				jforClose.before(contents);
+				dataBinder.compileDom( addRow, scopeExtend );
+				jforClose.before(addRow.childNodes);
 				
-				contents.each(function(){
-					dataBinder.compileDom( this, scopeExtend );
-				});
+				//jforClose.before(childNodes);
+				//childNodes.forEach(function(n){
+					//dataBinder.compileDom( n, scopeExtend );
+				//});
 				
-				return addRow;
+				return commentOpener;
 			};
-			
+			removeRow = function(n){
+				$(n).commentChildren().remove();
+			};
 		}
 		else{
 			buildNewRow = function(k, jforClose, scopeExtend){
@@ -83,7 +94,9 @@ jstack.dataBindingElementCompiler.push({
 				
 				return addRow;
 			};
-			
+			removeRow = function(n){
+				n.remove();
+			};
 		}
 		
 		let forStack = {};
@@ -93,7 +106,7 @@ jstack.dataBindingElementCompiler.push({
 			
 			if(!data){
 				forStack.each(function(n){
-					n.el.remove();
+					removeRow(n.el);
 				});
 				return;
 			}
@@ -119,7 +132,7 @@ jstack.dataBindingElementCompiler.push({
 					};
 				}
 				else if(row.scope[value]!==v){
-					row.el.remove(); //remove
+					removeRow(row.el); //remove
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
@@ -136,7 +149,7 @@ jstack.dataBindingElementCompiler.push({
 			forStack.each(function(row,k){
 				if(typeof(data[k])==='undefined'){
 					delete forStack[k];
-					row.el.remove();
+					removeRow(row.el);
 				}
 				i++;
 			});
