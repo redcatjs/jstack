@@ -102,6 +102,11 @@ jstack.dataBindingElementCompiler.push({
 		let forStack = {};
 		
 		let render = function(){
+			
+			forStack.each(function(row,k){
+				$.extend(row.scope, dataBinder.model, scope, row.scopeLocal);
+			});
+			
 			let data = jstack.dataBinder.getValueEval(jfor[0],myvar,scope);
 			
 			if(!data){
@@ -116,19 +121,21 @@ jstack.dataBindingElementCompiler.push({
 			//add
 			let i = 1;
 			data[method](function(v,k){
-				let scopeExtend = $.extend({},dataBinder.model,scope);
-				scopeExtend[value] = v;
+				let scopeLocal = {};
+				scopeLocal[value] = v;
 				if(key){
-					scopeExtend[key] = k;
+					scopeLocal[key] = k;
 				}
 				if(index){
-					scopeExtend[index] = i;
+					scopeLocal[index] = i;
 				}
+				let scopeExtend = $.extend({},dataBinder.model,scope,scopeLocal);
 				let row = forStack[k];
 				if(typeof(row)==='undefined'){
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
+						scopeLocal:scopeLocal,
 					};
 				}
 				else if(row.scope[value]!==v){
@@ -136,6 +143,7 @@ jstack.dataBindingElementCompiler.push({
 					forStack[k] = {
 						el:buildNewRow(k,jforClose,scopeExtend),
 						scope:scopeExtend,
+						scopeLocal:scopeLocal,
 					};
 				}
 				else if(index){
