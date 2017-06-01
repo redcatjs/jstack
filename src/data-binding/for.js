@@ -71,11 +71,6 @@ jstack.dataBindingElementCompiler.push({
 				dataBinder.compileDom( addRow, scopeExtend );
 				jforClose.before(addRow.childNodes);
 				
-				//jforClose.before(childNodes);
-				//childNodes.forEach(function(n){
-					//dataBinder.compileDom( n, scopeExtend );
-				//});
-				
 				return commentOpener;
 			};
 			removeRow = function(n){
@@ -84,7 +79,7 @@ jstack.dataBindingElementCompiler.push({
 		}
 		else{
 			buildNewRow = function(k, jforClose, scopeExtend){
-				//let addRow = $(document.createElement('div'));
+
 				let addRow = $this.clone();
 				addRow.attr('j-for-id',k);
 				
