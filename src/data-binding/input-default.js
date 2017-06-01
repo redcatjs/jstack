@@ -24,6 +24,7 @@ jstack.dataBindingElementCompiler.push({
 		if(typeof(modelValue)=='undefined'){
 			modelValue = val;
 			jstack.dotSet(dataBinder.model,key,modelValue);
+			jstack.dotSet(scope,key,modelValue);
 		}
 		
 		
@@ -31,6 +32,7 @@ jstack.dataBindingElementCompiler.push({
 		if(!modelValue){
 			modelValue = '';
 		}
+		
 		
 		
 		//model to default dom value
@@ -71,6 +73,7 @@ jstack.dataBindingElementCompiler.push({
 				}
 				else{
 					jstack.dotSet(dataBinder.model,key,val);
+					jstack.dotSet(scope,key,val);
 				}
 			}
 			else{
