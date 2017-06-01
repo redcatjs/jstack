@@ -23,6 +23,7 @@ grunt.initConfig({
 				"src/std/isMobile.js",
 				"src/std/dot.js",
 				"src/std/string.js",
+				"src/std/extendDefault.js",
 				
 				"src/prototype/string.js",
 				"src/prototype/object.js",
