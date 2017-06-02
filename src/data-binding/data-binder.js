@@ -313,7 +313,7 @@ class dataBinder {
 		return filter;
 	}
 	compilerAttrRender(el,tokens,scope){
-		let r = '';
+		let r;
 		for(let i = 0, l = tokens.length; i<l; i++){
 			let token = tokens[i];
 			if(token.substr(0,2)=='{{'){
@@ -324,10 +324,15 @@ class dataBinder {
 					token = token.substr(2);
 					freeze = true;
 				}
-				
 				token = dataBinder.getValueEval(el,token,scope);
 			}
-			r += typeof(token)!=='undefined'&&token!==null?token:'';
+			token = typeof(token)!=='undefined'&&token!==null?token:'';
+			if(typeof(r)=='undefined'){
+				r = token;
+			}
+			else{
+				r += token;
+			}
 		}
 		return r;
 	}
