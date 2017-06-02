@@ -98,10 +98,6 @@ jstack.dataBindingElementCompiler.push({
 		
 		let render = function(){
 			
-			forStack.each(function(row,k){
-				$.extend(row.scope, dataBinder.model, scope, row.scopeLocal);
-			});
-			
 			let data = jstack.dataBinder.getValueEval(jfor[0],myvar,scope);
 			
 			if(!data){
@@ -124,7 +120,9 @@ jstack.dataBindingElementCompiler.push({
 				if(index){
 					scopeLocal[index] = i;
 				}
+				
 				let scopeExtend = $.extend({},dataBinder.model,scope,scopeLocal);
+				
 				let row = forStack[k];
 				if(typeof(row)==='undefined'){
 					forStack[k] = {
