@@ -4023,7 +4023,7 @@ jstack.dataBindingElementCompiler.push({
 				attrsVarsCurrent[k] = value;
 
 				if(propAttrs.indexOf(k)!==-1){
-					$this.prop(k,value);
+					$this.prop(k,Boolean(value));
 				}
 				else if(typeof(value) === "boolean"){
 					if(value){
