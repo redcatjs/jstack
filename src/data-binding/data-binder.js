@@ -429,8 +429,14 @@ class dataBinder {
 				}
 			break;
 			case 'textarea':
-			case 'select':
 				return $(el).val();
+			break;
+			case 'select':
+				let val = $(el).val();
+				if(val instanceof Array){
+					val = [...new Set(val)]; //array unique
+				}
+				return val;
 			break;
 			case 'j-select':
 				el = $(el);
