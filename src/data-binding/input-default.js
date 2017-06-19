@@ -21,6 +21,7 @@ jstack.dataBindingElementCompiler.push({
 		
 		let modelValue = jstack.dotGet(dataBinder.model,key);
 		
+		
 		if(typeof(modelValue)=='undefined'){
 			modelValue = val;
 			jstack.dotSet(dataBinder.model,key,modelValue);
@@ -28,12 +29,10 @@ jstack.dataBindingElementCompiler.push({
 		}
 		
 		
-		
+
 		if(!modelValue){
 			modelValue = '';
 		}
-		
-		
 		
 		//model to default dom value
 		if(modelValue!==val){

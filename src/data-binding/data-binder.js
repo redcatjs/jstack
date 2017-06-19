@@ -432,7 +432,11 @@ class dataBinder {
 				return $(el).val();
 			break;
 			case 'select':
-				let val = $(el).val();
+				el = $(el);
+				if(!el.find('option').length){
+					return;
+				}
+				let val = el.val();
 				if(val instanceof Array){
 					val = [...new Set(val)]; //array unique
 				}

@@ -3133,7 +3133,11 @@ class dataBinder {
 				return $(el).val();
 			break;
 			case 'select':
-				let val = $(el).val();
+				el = $(el);
+				if(!el.find('option').length){
+					return;
+				}
+				let val = el.val();
 				if(val instanceof Array){
 					val = [...new Set(val)]; //array unique
 				}
@@ -4176,6 +4180,7 @@ jstack.dataBindingElementCompiler.push({
 		
 		let modelValue = jstack.dotGet(dataBinder.model,key);
 		
+		
 		if(typeof(modelValue)=='undefined'){
 			modelValue = val;
 			jstack.dotSet(dataBinder.model,key,modelValue);
@@ -4183,12 +4188,10 @@ jstack.dataBindingElementCompiler.push({
 		}
 		
 		
-		
+
 		if(!modelValue){
 			modelValue = '';
 		}
-		
-		
 		
 		//model to default dom value
 		if(modelValue!==val){
