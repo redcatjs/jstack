@@ -1,6 +1,6 @@
 {
   "name": "jstack",
-  "version": "12.13.0",
+  "version": "12.13.1",
   "description": "JS MVC Routing, Templating, Data-Binding and Helpers based on jQuery",
   "main": "jstack.js",
   "dependencies": {},
@@ -12,8 +12,8 @@
     "uglify-js": "github:mishoo/UglifyJS2#harmony"
   },
   "scripts": {
-	"dev": "grunt watch",
-	"build": "grunt watch"
+    "dev": "grunt watch",
+    "build": "grunt watch"
   },
   "repository": {
     "type": "git",
