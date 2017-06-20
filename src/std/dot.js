@@ -66,6 +66,7 @@ jstack.dotSet = function(data,key,value,callback){
 				}
 				else{
 					o.push(v);
+					v = o[o.length-1];
 				}
 			}
 			else{
@@ -83,11 +84,13 @@ jstack.dotSet = function(data,key,value,callback){
 			}
 			else{
 				o[k] = v;
+				v = o[k];
 			}
 		}
 		if(callback){
 			callback(o,k,v);
 		}
+		return v;
 	};
 	
 	let x = key.split('.');
@@ -111,13 +114,14 @@ jstack.dotSet = function(data,key,value,callback){
 				r.push(o);
 			});
 			previousO[previousK] = r;
+			value = previousO[previousK];
 			if(callback){
-				callback(previousO, previousK, r);
+				callback(previousO, previousK, value);
 			}
 			break;
 		}
-		if(last==l){	
-			setValue(obj,k,value);
+		if(last==l){
+			value = setValue(obj,k,value);
 			break;
 		}
 		
@@ -133,7 +137,7 @@ jstack.dotSet = function(data,key,value,callback){
 		l++;
 	}
 	
-	return data;
+	return value;
 };
 jstack.dotDel = function(data,key,value){
 	if(typeof(data)!='object'||data===null){
