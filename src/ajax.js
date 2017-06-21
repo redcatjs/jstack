@@ -70,7 +70,7 @@
 	jstack.ajaxNamespace = undefined;
 	
 	jstack.ajax = function() {
-		let settings, files = {};
+		let settings, files = {}, sendAsJSON, jsonKey;
 		if ( arguments.length == 2 ) {
 			settings = arguments[ 1 ] || {};
 			settings.url = arguments[ 0 ];
@@ -81,6 +81,36 @@
 		if ( settings.data ) {
 			settings.data = recurseFormat( settings.data, files );
 		}
+		
+		if(typeof(settings.sendAsJSON)!=='undefined'){
+			sendAsJSON = settings.sendAsJSON;
+			delete settings.sendAsJSON;
+		}
+		if(sendAsJSON){
+			if(typeof(settings.jsonKey)!=='undefined'){
+				jsonKey = settings.jsonKey;
+				delete settings.jsonKey;
+			}
+			if(!jsonKey){
+				if(sendAsJSON!==true){
+					jsonKey = sendAsJSON;
+				}
+				else if(!$.isEmptyObject( files )){
+					jsonKey = 'json';
+				}
+			}
+			
+			let data = JSON.stringify(settings.data);
+			if(jsonKey){
+				settings.data = {};
+				settings.data[jsonKey] = data;
+			}
+			else{
+				settings.contentType = 'application/json; charset=UTF-8';
+				settings.data = data;
+			}
+		}
+		
 		if ( !$.isEmptyObject( files ) ) {
 			let haveFiles;
 			let fd = new FormData();
